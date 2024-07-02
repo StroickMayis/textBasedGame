@@ -17,7 +17,8 @@
 
 const combatLog = {
     critHit: function (caster, target, damage) {
-        console.log(`${caster.name} CRITICALLY HITS ${target.name} for ${damage * 2} damage!!!`)
+        let damageDisplayArray = this.damageDisplay(damage);
+        console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
     },
     attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus) {
         const attack = attackRoll + attackBonus;
@@ -27,18 +28,35 @@ const combatLog = {
             against a defend roll of ${defendRoll} and a defend bonus of ${defendBonus}. 
             Total Attack: ${attack} vs. Total Defend: ${defend}`);
     },
+    damageDisplay: function(damage) {
+        let damageRollDisplay = [];
+        damageRollDisplay[0] = ``;
+        damageRollDisplay[1] = sumOfArray(damage);
+        let damageBonus = damage.pop();
+        for(let i = 0; i < damage.length; i++) {
+            damageRollDisplay[0] += `${damage[i]} + `
+        }
+        damageRollDisplay[0] += `a ${damageBonus} bonus`;
+
+        return damageRollDisplay;
+    },
     hit: function (caster, target, damage) {
-        console.log(`${caster.name} hits ${target.name} for ${damage} damage!`);
+        let damageDisplayArray = this.damageDisplay(damage);
+        console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage!`);
     },
     defend: function (caster, target) {
         console.log(`${target.name} defends ${caster.name}'s attack!`);
-    }
+    },
+
+    
 }
 
 /* #endregion Combat Log*/
 
+/* #region  Ability Effects & Logic */
+
 const effect = {
-    determineAttackType: function(caster) {
+    determineAttackType: function (caster) {
         let type;
         switch (caster.equipment.mainHand.type) {
             case `melee`:
@@ -54,13 +72,13 @@ const effect = {
         }
         return type;
     },
-    determineDefendBonus: function(caster, target) {
+    determineDefendBonus: function (caster, target) {
         const parry = Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4));
         const dodge = Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4));
         const disrupt = Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4));
         const block = Math.floor(target.stats.initiative / 2);
         let defendBonus;
-        switch (determineAttackType(caster)) {
+        switch (this.determineAttackType(caster)) {
             case `melee`:
                 defendBonus = Math.max(parry, block)
                 break;
@@ -73,18 +91,18 @@ const effect = {
         }
         return defendBonus;
     },
-    multiplyWeaponDamageDice: function(weaponDamage, weaponDamageDiceMultiplier) {
-        let damage = 0;
+    multiplyWeaponDamageDice: function (weaponDamageDice, weaponDamageDiceMultiplier) {
+        let damage = [];
         for (weaponDamageDiceMultiplier; weaponDamageDiceMultiplier > 0; weaponDamageDiceMultiplier--) {
-            damage += dice(weaponDamage);
+            damage.push(dice(weaponDamageDice));
         }
         return damage;
     },
-    determineDamageBonus: function(caster) {
+    determineDamage: function (caster) {
+        let damage;
+
         let damageBonus;
-        let weaponDamage = caster.equipment.mainHand.damage;
-        let weaponDamageDiceMultiplier = caster.equipment.mainHand.damageDiceMultiplier;
-        switch (determineAttackType(caster)) {
+        switch (this.determineAttackType(caster)) {
             case `melee`:
                 damageBonus = caster.stats.strength
                 break;
@@ -96,32 +114,49 @@ const effect = {
                 break;
             default: return null;
         }
-        weaponDamage = multiplyWeaponDamageDice(weaponDamage, weaponDamageDiceMultiplier);
-        // console.log(weaponDamage)
-        // console.log(damageBonus)
-        return weaponDamage += damageBonus;
+
+        let weaponDamageDice = caster.equipment.mainHand.damage;
+        let weaponDamageDiceMultiplier = caster.equipment.mainHand.damageDiceMultiplier;
+        
+        damage = this.multiplyWeaponDamageDice(weaponDamageDice, weaponDamageDiceMultiplier)
+        damage.push(damageBonus);
+        return damage;
     },
     attack: function (caster, target) {
         const attackRoll = dice(100);
         const defendRoll = dice(20);
         const attackBonus = caster.stats.dexterity;
-        const defendBonus = determineDefendBonus(caster, target);
-        const damage = determineDamageBonus(caster);
+        const defendBonus = this.determineDefendBonus(caster, target);
+        const damage = this.determineDamage(caster);
+        const attack = attackRoll + attackBonus;
+        const defend = defendRoll + defendBonus;
         if (attackRoll === 100) {
-            target.hp -= damage * 2;
+            target.hp -= sumOfArray(damage) * 2;
             combatLog.critHit(caster, target, damage);
         } else {
             combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
             if (attack >= defend) {
-                target.hp -= damage;
+                target.hp -= sumOfArray(damage);
                 combatLog.hit(caster, target, damage);
             } else {
                 combatLog.defend(caster, target);
             }
         }
     },
-    
+
 }
+
+function dice(dMax) {
+    return Math.floor(Math.random() * dMax + 1);
+}
+
+function sumOfArray(arrayOfNumbers) {
+    let sum = 0;
+    arrayOfNumbers.forEach((el) => sum += el);
+    return sum;
+}
+
+/* #endregion Ability Effects & Logic*/
 
 /* #region All Lists */
 
@@ -129,7 +164,7 @@ const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
         name: `Attack`,
-        effect: effect.attack(caster, target),
+        effect: function(caster, target) {effect.attack(caster, target)},
     }
     // allAbilities[1] = {
     //     name: `Powerful Strike`,
@@ -335,6 +370,7 @@ const unassignedGroup = {
 
 function Char(name, race) {
     this.name = `${name}`;
+    
     this.raceName = `${race.name}`;
     this.talent1Name = ``;
     this.talent2Name = ``;
@@ -425,15 +461,14 @@ function characterCreator(name, race, talent1, talent2, group) {
 
 /* #endregion Char Creation*/
 
-function dice(dMax) {
-    return Math.floor(Math.random() * dMax + 1);
-}
 
 defineAllAbilities();
 defineAllWeapons();
+defineAllRaces();
+defineAllTalents();
 
-characterCreator(`Stroick`, race.man, talents.strong, talents.dexterous, party);
-characterCreator(`Evil`, race.elf, talents.genius, talents.soulful, encounter);
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], party);
+characterCreator(`Evil`, allRaces[1], allTalents[4], allTalents[5], encounter);
 
 const stroick = party.charList[0];
 const evil = encounter.charList[0];
