@@ -31,7 +31,11 @@ const combatLog = {
     damageDisplay: function(damage) {
         let damageRollDisplay = [];
         damageRollDisplay[0] = ``;
-        damageRollDisplay[1] = sumOfArray(damage);
+        if (sumOfArray(damage) < 1) {
+            damageRollDisplay[1] = 1;
+        } else {
+            damageRollDisplay[1] = sumOfArray(damage);
+        }
         let damageBonus = damage.pop();
         for(let i = 0; i < damage.length; i++) {
             damageRollDisplay[0] += `${damage[i]} + `
@@ -131,13 +135,23 @@ const effect = {
         const attack = attackRoll + attackBonus;
         const defend = defendRoll + defendBonus;
         if (attackRoll === 100) {
-            target.hp -= sumOfArray(damage) * 2;
             combatLog.critHit(caster, target, damage);
+            if (sumOfArray(damage) < 1) {
+                target.hp -= 2;
+            } else {
+                target.hp -= sumOfArray(damage) * 2;
+            }
         } else {
             combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
             if (attack >= defend) {
-                target.hp -= sumOfArray(damage);
+                console.log(damage)
                 combatLog.hit(caster, target, damage);
+                console.log(damage)
+                if (sumOfArray(damage) < 1) {
+                    target.hp -= 1;
+                } else {
+                    target.hp -= sumOfArray(damage);
+                }
             } else {
                 combatLog.defend(caster, target);
             }
@@ -153,6 +167,7 @@ function dice(dMax) {
 function sumOfArray(arrayOfNumbers) {
     let sum = 0;
     arrayOfNumbers.forEach((el) => sum += el);
+    console.log(sum)
     return sum;
 }
 
