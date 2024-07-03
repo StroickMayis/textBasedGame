@@ -13,7 +13,7 @@
 
 /* #endregion Notes*/
 
-/* #region  Combat Log */
+/* #region  Combat Log */ 
 
 const combatLog = {
     critHit: function (caster, target, damage) {
@@ -36,9 +36,10 @@ const combatLog = {
         } else {
             damageRollDisplay[1] = sumOfArray(damage);
         }
-        let damageBonus = damage.pop();
-        for(let i = 0; i < damage.length; i++) {
-            damageRollDisplay[0] += `${damage[i]} + `
+        let damageBonus = popArrayPopValue(damage);
+        let damageCopy = popArrayArrayValue(damage);
+        for(let i = 0; i < damageCopy.length; i++) {
+            damageRollDisplay[0] += `${damageCopy[i]} + `
         }
         damageRollDisplay[0] += `a ${damageBonus} bonus`;
 
@@ -144,9 +145,7 @@ const effect = {
         } else {
             combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
             if (attack >= defend) {
-                console.log(damage)
                 combatLog.hit(caster, target, damage);
-                console.log(damage)
                 if (sumOfArray(damage) < 1) {
                     target.hp -= 1;
                 } else {
@@ -167,8 +166,18 @@ function dice(dMax) {
 function sumOfArray(arrayOfNumbers) {
     let sum = 0;
     arrayOfNumbers.forEach((el) => sum += el);
-    console.log(sum)
     return sum;
+}
+
+function popArrayPopValue(array) {
+    arrayCopy = Object.assign([], array);
+    return arrayCopy.pop();
+}
+
+function popArrayArrayValue(array) {
+    arrayCopy = Object.assign([], array);
+    arrayCopy.pop();
+    return arrayCopy;
 }
 
 /* #endregion Ability Effects & Logic*/
