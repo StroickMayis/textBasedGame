@@ -1,4 +1,80 @@
+* {
+    color: white;
+    box-sizing: border-box;
+}
+
 body {
     background-color: black;
     margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
+
+.gameDivision,
+.chatDivision,
+.utilDivision {
+    border: 1px solid white;
+    text-align: center;
+    height: 100vh;
+}
+
+.chatDivision,
+.utilDivision {
+    flex: 1 1 10dvw;
+}
+
+.gameDivision {
+    flex: 2.5 2.5 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.gameDivision .topBar,
+.gameDivision .midBar,
+.gameDivision .botBar {
+    border: 1px solid white;
+}
+
+.gameDivision .topBar{
+    flex: 2 1 auto;
+}
+
+.gameDivision .midBar{
+    flex: 90 1 10dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.gameDivision .botBar{
+    flex: 10 1 auto;
+}
+
+.targetBar {
+    border: 1px solid white;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.casterBar {
+    border: 1px solid white;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.target {
+    border: 1px solid white;
+    width: 125px;
+    height: 125px;
+}
+
+.caster {
+    border: 1px solid white;
+    width: 125px;
+    height: 125px;
+}
+
