@@ -13,7 +13,7 @@
 
 /* #endregion Notes*/
 
-/* #region  Combat Log */ 
+/* #region  Combat Log */
 
 const combatLog = {
     critHit: function (caster, target, damage) {
@@ -28,7 +28,7 @@ const combatLog = {
             against a defend roll of ${defendRoll} and a defend bonus of ${defendBonus}. 
             Total Attack: ${attack} vs. Total Defend: ${defend}`);
     },
-    damageDisplay: function(damage) {
+    damageDisplay: function (damage) {
         let damageRollDisplay = [];
         damageRollDisplay[0] = ``;
         if (sumOfArray(damage) < 1) {
@@ -38,7 +38,7 @@ const combatLog = {
         }
         let damageBonus = popArrayPopValue(damage);
         let damageCopy = popArrayArrayValue(damage);
-        for(let i = 0; i < damageCopy.length; i++) {
+        for (let i = 0; i < damageCopy.length; i++) {
             damageRollDisplay[0] += `${damageCopy[i]} + `
         }
         damageRollDisplay[0] += `a ${damageBonus} bonus`;
@@ -53,7 +53,7 @@ const combatLog = {
         console.log(`${target.name} defends ${caster.name}'s attack!`);
     },
 
-    
+
 }
 
 /* #endregion Combat Log*/
@@ -122,7 +122,7 @@ const effect = {
 
         let weaponDamageDice = caster.equipment.mainHand.damage;
         let weaponDamageDiceMultiplier = caster.equipment.mainHand.damageDiceMultiplier;
-        
+
         damage = this.multiplyWeaponDamageDice(weaponDamageDice, weaponDamageDiceMultiplier)
         damage.push(damageBonus);
         return damage;
@@ -188,7 +188,7 @@ const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
         name: `Attack`,
-        effect: function(caster, target) {effect.attack(caster, target)},
+        effect: function (caster, target) { effect.attack(caster, target) },
     }
     // allAbilities[1] = {
     //     name: `Powerful Strike`,
@@ -376,15 +376,18 @@ function defineAllTalents() {
 
 // Index 0 is always the main/player character
 
-const party = {
+const PCs = {
+    name: `PC`,
     charList: [],
 }
 
-const encounter = {
+const NPCs = {
+    name: `NPC`,
     charList: [],
 }
 
 const unassignedGroup = {
+    name: `Unassigned`,
     charList: [],
 }
 
@@ -394,7 +397,7 @@ const unassignedGroup = {
 
 function Char(name, race) {
     this.name = `${name}`;
-    
+    this.groupName = ``;
     this.raceName = `${race.name}`;
     this.talent1Name = ``;
     this.talent2Name = ``;
@@ -433,6 +436,7 @@ function Char(name, race) {
         if (abilityIndex in this.abilities) {
             allAbilities[abilityIndex].effect(this, target);
         }
+        DOM.update();
     }
     this.getTalentNames = function () {
         return this.talent1Name + this.talent2Name;
@@ -475,6 +479,7 @@ function characterCreator(name, race, talent1, talent2, group) {
     }
     function assignGroup(group) {
         const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
+        targetChar.groupName = group.name;
         group.charList.push(targetChar);
         unassignedGroup.charList.pop();
     }
@@ -485,14 +490,75 @@ function characterCreator(name, race, talent1, talent2, group) {
 
 /* #endregion Char Creation*/
 
+/* #region  DOM */
+const DOM = {
+    PCBar: document.querySelector(`.PCBar`),
+    NPCBar: document.querySelector(`.NPCBar`),
+    selectPC: function (target) {
+        if(target.className === `PC`) {
+            if(target.style.borderColor === `blue`) {
+                target.style.borderColor = `White`;
+            } else {
+                target.style.borderColor = `Blue`;
+            }
+        } else {
+            // then set all border colors to white
+        }
+    },
+    listenForPCSelection: function () {
+        this.PCBar.addEventListener(`click`, (e) => {
+            console.log(e.target)
+            if(e.target.className === `PC`) {
+                this.selectPC(e.target);
+            }
+        })
+    },
+    update: function () {
+        this.PCBar.innerHTML = ``;
+        this.NPCBar.innerHTML = ``;
+        for(let i = (PCs.charList.length - 1); i >= 0; i--) {
+            this.createChar(PCs.charList[i], i)
+        };
+        for(let i = (NPCs.charList.length - 1); i >= 0; i--) {
+            this.createChar(NPCs.charList[i], i)
+        };
+    }, 
+    createChar: function (char, charListIndex) {
+        const i = document.createElement(`div`);
+        i.className = char.groupName;
+        i.innerHTML = `<div data-group-index=${charListIndex} class="name">${char.name}</div>
+                       <div class="HP">HP: ${char.hp}</div>`
+        switch(char.groupName) {
+            case `PC`:
+                this.PCBar.append(i)
+            break;
+
+            case `NPC`:
+                this.NPCBar.append(i)
+            break;
+
+            case `Unassigned`:
+                console.log(`Error: Tried to put char with unassigned group onto DOM.`);
+            break;
+
+            default:
+                console.log(`Error: Something weird happened here.`);
+            break;
+        }
+    },
+}
+/* #endregion DOM*/
 
 defineAllAbilities();
 defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], party);
-characterCreator(`Evil`, allRaces[1], allTalents[4], allTalents[5], encounter);
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
+characterCreator(`Evil`, allRaces[1], allTalents[4], allTalents[5], NPCs);
 
-const stroick = party.charList[0];
-const evil = encounter.charList[0];
+const stroick = PCs.charList[0];
+const evil = NPCs.charList[0];
+
+DOM.update();
+DOM.listenForPCSelection();

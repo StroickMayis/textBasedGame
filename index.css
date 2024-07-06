@@ -50,7 +50,7 @@ body {
     flex: 10 1 auto;
 }
 
-.targetBar {
+.NPCBar {
     border: 1px solid white;
     flex: 1 1 auto;
     display: flex;
@@ -58,7 +58,7 @@ body {
     align-items: center;
 }
 
-.casterBar {
+.PCBar {
     border: 1px solid white;
     flex: 1 1 auto;
     display: flex;
@@ -66,13 +66,13 @@ body {
     align-items: center;
 }
 
-.target {
+.NPC {
     border: 1px solid white;
     width: 125px;
     height: 125px;
 }
 
-.caster {
+.PC {
     border: 1px solid white;
     width: 125px;
     height: 125px;
