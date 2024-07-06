@@ -502,7 +502,7 @@ const DOM = {
                 target.style.borderColor = `Blue`;
             }
         } else {
-            // then set all border colors to white
+            // TODO : then set all border colors to white
         }
     },
     listenForPCSelection: function () {
