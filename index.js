@@ -156,7 +156,6 @@ const effect = {
             }
         }
     },
-
 }
 
 function dice(dMax) {
@@ -491,28 +490,33 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #endregion Char Creation*/
 
 /* #region  DOM */
+
 const DOM = {
     PCBar: document.querySelector(`.PCBar`),
     NPCBar: document.querySelector(`.NPCBar`),
     selectPC: function (target) {
-        if(target.className === `PC`) {
-            if(target.style.borderColor === `blue`) {
-                target.style.borderColor = `White`;
-            } else {
-                target.style.borderColor = `Blue`;
-            }
+        if(target.style.borderColor === `blue`) {
+            target.style.borderColor = `white`;
         } else {
-            // TODO : then set all border colors to white
+            target.style.borderColor = `blue`;
         }
     },
+
+    deselectPC: function (PCList) {
+        PCList.forEach((element) => element.style.borderColor = `white`);
+    },
+
     listenForPCSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
-            console.log(e.target)
+            let PCList = document.querySelectorAll(`.PC`);
             if(e.target.className === `PC`) {
                 this.selectPC(e.target);
+            } else {
+                this.deselectPC(PCList);
             }
         })
     },
+
     update: function () {
         this.PCBar.innerHTML = ``;
         this.NPCBar.innerHTML = ``;
@@ -523,6 +527,7 @@ const DOM = {
             this.createChar(NPCs.charList[i], i)
         };
     }, 
+
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
         i.className = char.groupName;
@@ -545,8 +550,11 @@ const DOM = {
                 console.log(`Error: Something weird happened here.`);
             break;
         }
+
     },
-}
+
+};
+
 /* #endregion DOM*/
 
 defineAllAbilities();
