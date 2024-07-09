@@ -464,7 +464,6 @@ function Char(name, race) {
         if (abilityIndex in this.abilities) {
             allAbilities[abilityIndex].effect(this, target);
         }
-        DOM.update();
     }
     this.getTalentNames = function () {
         return this.talent1Name + this.talent2Name;
@@ -534,11 +533,10 @@ const DOM = {
 
         if((this.PCSelectionState && this.NPCSelectionState) !== null) {
             this.PCSelectionState.useAbility(abilityDatasetIndex, this.NPCSelectionState)
-            this.deselectPC();
-            this.deselectNPC();
         } else {
             console.log(`invalid targets`);
         }
+        DOM.update();
     },
 
     listenForBotBar: function () {
@@ -585,6 +583,7 @@ const DOM = {
         let PCList = document.querySelectorAll(`.PC`);
         this.PCSelectionState = null;
         PCList.forEach((element) => element.style.borderColor = `white`);
+        this.updateBotBar();
     },
 
     listenForPCSelection: function () {
@@ -641,10 +640,16 @@ const DOM = {
                        <div class="HP">HP: ${char.hp}</div>`
         switch(char.groupName) {
             case `PC`:
+                if(this.PCSelectionState === char) {
+                    i.style.borderColor = `blue`;
+                }
                 this.PCBar.append(i)
             break;
 
             case `NPC`:
+                if(this.NPCSelectionState === char) {
+                    i.style.borderColor = `red`;
+                }
                 this.NPCBar.append(i)
             break;
 
