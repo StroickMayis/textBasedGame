@@ -556,8 +556,11 @@ const DOM = {
     NPCBar: document.querySelector(`.NPCBar`),
     abilityListContainer: document.querySelector(`.abilityListContainer`),
     botBar: document.querySelector(`.botBar`),
-    PCSelectionState: null,
-    NPCSelectionState: null,
+    midBar: document.querySelector(`.midBar`),
+    casterSelection: null,
+    targetSelection: null,
+    casterSelectionState: null,
+    targetSelectionState: null,
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
@@ -568,8 +571,8 @@ const DOM = {
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
         const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
-        if((this.PCSelectionState && this.NPCSelectionState) !== null) {
-            this.PCSelectionState.useAbility(abilityDatasetIndex, this.NPCSelectionState)
+        if((this.casterSelectionState && this.targetSelectionState) !== null) {
+            this.casterSelectionState.useAbility(abilityDatasetIndex, this.targetSelectionState)
         } else {
             console.log(`invalid targets`);
         }
@@ -612,69 +615,87 @@ const DOM = {
         this.abilityListContainer.append(i);          
     },
 
-    selectPC: function (target) {
-        const targetNameDiv = target.querySelector(`.name`);
-        const targetGroupIndex = targetNameDiv.dataset.groupIndex;
-        if((this.PCSelectionState !== null) && (this.PCSelectionState !== PCs.charList[targetGroupIndex])) {
-            const previouslySelectedTargetIndex = PCs.charList.findIndex((char) => char === this.PCSelectionState);
-            const previouslySelectedTarget = this.PCBar.querySelector(`#index${previouslySelectedTargetIndex}`);
-            previouslySelectedTarget.style.borderColor = `white`;
+    // selectTarget: function (target) {
+    //     this.targetSelection = target;
+    //     let targetGroup = target.className;
+    //     const targetGroupIndex = target.dataset.groupIndex;
+    //     if(targetGroup === `NPC`) {
+    //         this.targetSelectionState = NPCs.charList[targetGroupIndex];
+    //         target.style.borderColor = `red`;
+    //     };
+    //     if(targetGroup === `PC`) {
+    //         this.targetSelectionState = PCs.charList[targetGroupIndex];
+    //         target.style.borderColor = `yellow`;
+    //     }
+    // },
 
-            this.PCSelectionState = PCs.charList[targetGroupIndex];
-            if(target.style.borderColor !== `blue`) {
-                target.style.borderColor = `blue`;
-            }
-        } else {
-            this.PCSelectionState = PCs.charList[targetGroupIndex];
-            if(target.style.borderColor !== `blue`) {
-                target.style.borderColor = `blue`;
-            }
+    selectCaster: function (target) {
+        if(this.casterSelection !== null && target !== this.casterSelection) {
+            this.deselectCaster();
         }
+        const targetGroupIndex = target.dataset.groupIndex;
+        this.casterSelectionState = PCs.charList[targetGroupIndex];
+        this.casterSelection = target;
+        this.casterSelection.style.borderColor = `blue`; 
+
         this.updateBotBar();
     },
 
-    deselectPC: function () {
-        let PCList = document.querySelectorAll(`.PC`);
-        this.PCSelectionState = null;
-        PCList.forEach((element) => element.style.borderColor = `white`);
-        this.updateBotBar();
+    deselectCaster: function () {
+        if(this.casterSelection) {
+           this.casterSelection.style.borderColor = `white`;
+           this.casterSelection = null;
+           this.casterSelectionState = null;
+        }
+        this.updateBotBar(); 
     },
 
-    listenForPCSelection: function () {
+    listenForCasterSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
 
             if(e.target.className === `PC`) {
-                this.selectPC(e.target);
+                this.selectCaster(e.target);
             } else {
-                this.deselectPC();
+                this.deselectCaster();
             }
-            this.updateBotBar(this.PCSelectionState);
+            this.updateBotBar(this.casterSelectionState);
         })
     },
 
-    selectNPC: function (target) {
-        const targetNameDiv = target.querySelector(`.name`);
-        const targetGroupIndex = targetNameDiv.dataset.groupIndex;
-        this.NPCSelectionState = NPCs.charList[targetGroupIndex];
-        if(target.style.borderColor !== `red`) {
+    listenForTargetSelection: function () {
+        this.midBar.addEventListener(`contextmenu`, (e) => {
+            e.preventDefault();
+            if(e.target.className === `PC` || e.target.className === `NPC`) {
+                this.selectTarget(e.target);
+            } else {
+                this.deselectTarget();
+            }
+        })
+    },
+
+    selectTarget: function (target) {
+        if(this.targetSelection !== null && target !== this.targetSelection) {
+            this.deselectTarget();
+        }
+        this.targetSelection = target;
+        let targetGroup = target.className;
+        const targetGroupIndex = target.dataset.groupIndex;
+        if(targetGroup === `NPC`) {
+            this.targetSelectionState = NPCs.charList[targetGroupIndex];
             target.style.borderColor = `red`;
+        };
+        if(targetGroup === `PC`) {
+            this.targetSelectionState = PCs.charList[targetGroupIndex];
+            target.style.borderColor = `yellow`;
         }
     },
 
-    deselectNPC: function () {
-        let NPCList = document.querySelectorAll(`.NPC`);
-        this.NPCSelectionState = null;
-        NPCList.forEach((element) => element.style.borderColor = `white`);
-    },
-
-    listenForNPCSelection: function () {
-        this.NPCBar.addEventListener(`click`, (e) => {
-            if(e.target.className === `NPC`) {
-                this.selectNPC(e.target);
-            } else {
-                this.deselectNPC();
-            }
-        })
+    deselectTarget: function () {
+        if(this.targetSelection) {
+           this.targetSelection.style.borderColor = `white`;
+           this.targetSelection = null;
+           this.targetSelectionState = null;
+        }
     },
 
     update: function () {
@@ -692,21 +713,27 @@ const DOM = {
         const i = document.createElement(`div`);
         i.className = `${char.groupName}`;
         i.id = `index${charListIndex}`;
-        i.innerHTML = `<div data-group-index=${charListIndex} class="name">${char.name}</div>
+        i.dataset.groupIndex = charListIndex;
+        i.innerHTML = `<div class="name">${char.name}</div>
                        <div class="HP">HP: ${char.hp}</div>
                        <div class="race">Race: ${char.raceName}</div>
                        <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`
         switch(char.groupName) {
             case `PC`:
-                if(this.PCSelectionState === char) {
+                if(this.casterSelectionState === char) {
                     i.style.borderColor = `blue`;
+                    this.casterSelection = i;
+                } else if(this.targetSelectionState === char){
+                    i.style.borderColor = `yellow`;
+                    this.targetSelection = i;
                 }
                 this.PCBar.append(i)
             break;
 
             case `NPC`:
-                if(this.NPCSelectionState === char) {
+                if(this.targetSelectionState === char) {
                     i.style.borderColor = `red`;
+                    this.targetSelection = i;
                 }
                 this.NPCBar.append(i)
             break;
@@ -739,7 +766,7 @@ const kliftin = PCs.charList[1];
 
 
 DOM.update();
-DOM.listenForPCSelection();
-DOM.listenForNPCSelection();
+DOM.listenForCasterSelection();
 DOM.listenForBotBar();
 DOM.listenForEndTurnButton();
+DOM.listenForTargetSelection();
