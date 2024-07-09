@@ -239,11 +239,10 @@ function defineAllAbilities() {
         name: `Riposte`,
         effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
         APCost: 25,
-
     }
     allAbilities[7] = {
         name: `Advise`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { console.log(`working`); if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
         APCost: 25,
     }
     allAbilities[8] = {
@@ -492,7 +491,7 @@ function Char(name, race) {
         }
     }
     this.useAbility = function (abilityIndex, target) {
-        if (abilityIndex in this.abilities) {
+        if (this.abilities.includes(+abilityIndex)) {
             allAbilities[abilityIndex].effect(this, target);
         }
     }
@@ -569,7 +568,6 @@ const DOM = {
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
         const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
-
         if((this.PCSelectionState && this.NPCSelectionState) !== null) {
             this.PCSelectionState.useAbility(abilityDatasetIndex, this.NPCSelectionState)
         } else {
@@ -722,7 +720,6 @@ const DOM = {
             break;
         }
     },
-
 };
 
 /* #endregion DOM*/
@@ -732,12 +729,14 @@ defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[2], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
 
 const stroick = PCs.charList[0];
 const evil = NPCs.charList[0];
+const kliftin = PCs.charList[1];
+
 
 DOM.update();
 DOM.listenForPCSelection();
