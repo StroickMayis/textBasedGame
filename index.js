@@ -68,8 +68,7 @@ const turn = {
             // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
             // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
             const attackingNPC = NPCs.charList[0];
-            console.log(attackingNPC);
-            attackingNPC.useAbility( 0 ,PCs.charList[0]);
+            attackingNPC.useAbility( 0 , PCs.charList[diceMinus1(PCs.charList.length)]);
         };
         this.AP = 100;
         DOM.update();
@@ -177,6 +176,10 @@ const effect = {
 
 function dice(dMax) {
     return Math.floor(Math.random() * dMax + 1);
+}
+
+function diceMinus1(dMax) {
+    return Math.floor(Math.random() * dMax + 1) - 1;
 }
 
 function sumOfArray(arrayOfNumbers) {
@@ -559,7 +562,6 @@ const DOM = {
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
-            console.log(`working`)
             turn.end();
         })
     },
@@ -615,10 +617,22 @@ const DOM = {
     selectPC: function (target) {
         const targetNameDiv = target.querySelector(`.name`);
         const targetGroupIndex = targetNameDiv.dataset.groupIndex;
-        this.PCSelectionState = PCs.charList[targetGroupIndex];
-        if(target.style.borderColor !== `blue`) {
-            target.style.borderColor = `blue`;
+        if((this.PCSelectionState !== null) && (this.PCSelectionState !== PCs.charList[targetGroupIndex])) {
+            const previouslySelectedTargetIndex = PCs.charList.findIndex((char) => char === this.PCSelectionState);
+            const previouslySelectedTarget = this.PCBar.querySelector(`#index${previouslySelectedTargetIndex}`);
+            previouslySelectedTarget.style.borderColor = `white`;
+
+            this.PCSelectionState = PCs.charList[targetGroupIndex];
+            if(target.style.borderColor !== `blue`) {
+                target.style.borderColor = `blue`;
+            }
+        } else {
+            this.PCSelectionState = PCs.charList[targetGroupIndex];
+            if(target.style.borderColor !== `blue`) {
+                target.style.borderColor = `blue`;
+            }
         }
+        this.updateBotBar();
     },
 
     deselectPC: function () {
@@ -630,6 +644,7 @@ const DOM = {
 
     listenForPCSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
+
             if(e.target.className === `PC`) {
                 this.selectPC(e.target);
             } else {
@@ -677,9 +692,12 @@ const DOM = {
 
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
-        i.className = char.groupName;
+        i.className = `${char.groupName}`;
+        i.id = `index${charListIndex}`;
         i.innerHTML = `<div data-group-index=${charListIndex} class="name">${char.name}</div>
-                       <div class="HP">HP: ${char.hp}</div>`
+                       <div class="HP">HP: ${char.hp}</div>
+                       <div class="race">Race: ${char.raceName}</div>
+                       <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`
         switch(char.groupName) {
             case `PC`:
                 if(this.PCSelectionState === char) {
@@ -715,7 +733,8 @@ defineAllRaces();
 defineAllTalents();
 
 characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
-characterCreator(`Evil`, allRaces[1], allTalents[4], allTalents[5], NPCs);
+characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
+characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
 
 const stroick = PCs.charList[0];
 const evil = NPCs.charList[0];
