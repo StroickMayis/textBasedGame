@@ -189,13 +189,42 @@ function defineAllAbilities() {
         name: `Attack`,
         effect: function (caster, target) { effect.attack(caster, target) },
     }
-    // allAbilities[1] = {
-    //     name: `Powerful Strike`,
-    //     effect: function(caster, target) {
-    //         const bonus = caster.stats.strength * 2;
-    //         target.hp -= 1 + bonus;
-    //     }
-    // }
+    allAbilities[1] = {
+        name: `Powerful Strike`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[2] = {
+        name: `Precision Strike`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[3] = {
+        name: `Healing Word`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[4] = {
+        name: `Guard`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[5] = {
+        name: `Leaping Strike`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[6] = {
+        name: `Riposte`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[7] = {
+        name: `Advise`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[8] = {
+        name: `Taunt`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
+    allAbilities[9] = {
+        name: `Flicker`,
+        effect: function (caster, target) { effect.attack(caster, target) },
+    }
 }
 
 const allWeapons = [];
@@ -494,15 +523,66 @@ function characterCreator(name, race, talent1, talent2, group) {
 const DOM = {
     PCBar: document.querySelector(`.PCBar`),
     NPCBar: document.querySelector(`.NPCBar`),
-    selectPC: function (target) {
-        if(target.style.borderColor === `blue`) {
-            target.style.borderColor = `white`;
+    abilityListContainer: document.querySelector(`.abilityListContainer`),
+    botBar: document.querySelector(`.botBar`),
+    PCSelectionState: null,
+    NPCSelectionState: null,
+
+    attemptAbilityCast: function (target) {
+        const abilityNameSubDiv = target.querySelector(`.abilityName`);
+        const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
+
+        if((this.PCSelectionState && this.NPCSelectionState) !== null) {
+            this.PCSelectionState.useAbility(abilityDatasetIndex, this.NPCSelectionState)
+            this.deselectPC();
+            this.deselectNPC();
         } else {
+            console.log(`invalid targets`);
+        }
+    },
+
+    listenForBotBar: function () {
+        this.botBar.addEventListener(`click`, (e) => {
+            switch(e.target.className) {
+                case `ability`:
+                    this.attemptAbilityCast(e.target);
+                break;
+                case `slideLeft`:
+
+                break;
+                case `slideRight`:
+
+                break;
+            }
+        })
+    },
+
+    updateBotBar: function (selectedPC) {
+        if (selectedPC && !this.abilityListContainer.hasChildNodes()) {
+            selectedPC.abilities.forEach((element) => this.createAbility(element));
+        } else if (!selectedPC) {
+            this.abilityListContainer.innerHTML = ``;
+        }
+    },
+
+    createAbility: function (abilityIndex) {
+        const i = document.createElement(`div`);
+        i.className = `ability`;
+        i.innerHTML = `<div data-ability-index=${abilityIndex} class="abilityName">${allAbilities[abilityIndex].name}</div>`;
+        this.abilityListContainer.append(i);          
+    },
+
+    selectPC: function (target) {
+        const targetNameDiv = target.querySelector(`.name`);
+        const targetGroupIndex = targetNameDiv.dataset.groupIndex;
+        this.PCSelectionState = PCs.charList[targetGroupIndex];
+        if(target.style.borderColor !== `blue`) {
             target.style.borderColor = `blue`;
         }
     },
 
     deselectPC: function (PCList) {
+        this.PCSelectionState = null;
         PCList.forEach((element) => element.style.borderColor = `white`);
     },
 
@@ -513,6 +593,32 @@ const DOM = {
                 this.selectPC(e.target);
             } else {
                 this.deselectPC(PCList);
+            }
+            this.updateBotBar(this.PCSelectionState);
+        })
+    },
+
+    selectNPC: function (target) {
+        const targetNameDiv = target.querySelector(`.name`);
+        const targetGroupIndex = targetNameDiv.dataset.groupIndex;
+        this.NPCSelectionState = NPCs.charList[targetGroupIndex];
+        if(target.style.borderColor !== `red`) {
+            target.style.borderColor = `red`;
+        }
+    },
+
+    deselectNPC: function (NPCList) {
+        this.NPCSelectionState = null;
+        NPCList.forEach((element) => element.style.borderColor = `white`);
+    },
+
+    listenForNPCSelection: function () {
+        this.NPCBar.addEventListener(`click`, (e) => {
+            let NPCList = document.querySelectorAll(`.NPC`);
+            if(e.target.className === `NPC`) {
+                this.selectNPC(e.target);
+            } else {
+                this.deselectNPC(NPCList);
             }
         })
     },
@@ -550,7 +656,6 @@ const DOM = {
                 console.log(`Error: Something weird happened here.`);
             break;
         }
-
     },
 
 };
@@ -570,3 +675,5 @@ const evil = NPCs.charList[0];
 
 DOM.update();
 DOM.listenForPCSelection();
+DOM.listenForNPCSelection();
+DOM.listenForBotBar();

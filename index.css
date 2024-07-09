@@ -78,3 +78,23 @@ body {
     height: 125px;
 }
 
+.ability {
+    border: 1px solid white;
+    flex: 1 1 auto;
+}
+
+.slideLeft,
+.slideRight {
+    border: 1px solid white;
+    flex: .025 1 auto;
+}
+
+.botBar {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.abilityListContainer {
+    display: flex;
+    flex: 1 1 auto;
+}
