@@ -60,6 +60,23 @@ const combatLog = {
 
 /* #region  Ability Effects & Logic */
 
+const turn = {
+    AP: 100,
+    end: function () {
+        this.AP = 100;
+        while(this.AP > 0) {
+            // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
+            // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
+            const attackingNPC = NPCs.charList[0];
+            console.log(attackingNPC);
+            attackingNPC.useAbility( 0 ,PCs.charList[0]);
+        };
+        this.AP = 100;
+        DOM.update();
+        DOM.updateTopBar();
+    },
+}
+
 const effect = {
     determineAttackType: function (caster) {
         let type;
@@ -187,43 +204,54 @@ const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
         name: `Attack`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[1] = {
         name: `Powerful Strike`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[2] = {
         name: `Precision Strike`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[3] = {
         name: `Healing Word`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[4] = {
         name: `Guard`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[5] = {
         name: `Leaping Strike`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[6] = {
         name: `Riposte`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
+
     }
     allAbilities[7] = {
         name: `Advise`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[8] = {
         name: `Taunt`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
     allAbilities[9] = {
         name: `Flicker`,
-        effect: function (caster, target) { effect.attack(caster, target) },
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        APCost: 25,
     }
 }
 
@@ -520,12 +548,21 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #region  DOM */
 
 const DOM = {
+    endTurnButton: document.querySelector(`.endTurnButton`),
+    APCount: document.querySelector(`.APCount`),
     PCBar: document.querySelector(`.PCBar`),
     NPCBar: document.querySelector(`.NPCBar`),
     abilityListContainer: document.querySelector(`.abilityListContainer`),
     botBar: document.querySelector(`.botBar`),
     PCSelectionState: null,
     NPCSelectionState: null,
+
+    listenForEndTurnButton: function () {
+        this.endTurnButton.addEventListener(`click`, (e) => {
+            console.log(`working`)
+            turn.end();
+        })
+    },
 
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
@@ -536,7 +573,8 @@ const DOM = {
         } else {
             console.log(`invalid targets`);
         }
-        DOM.update();
+        this.update();
+        this.updateTopBar();
     },
 
     listenForBotBar: function () {
@@ -553,6 +591,10 @@ const DOM = {
                 break;
             }
         })
+    },
+
+    updateTopBar: function () {
+        this.APCount.textContent = `Action Points: ${turn.AP}`;
     },
 
     updateBotBar: function (selectedPC) {
@@ -682,3 +724,4 @@ DOM.update();
 DOM.listenForPCSelection();
 DOM.listenForNPCSelection();
 DOM.listenForBotBar();
+DOM.listenForEndTurnButton();

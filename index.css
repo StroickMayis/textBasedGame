@@ -98,3 +98,18 @@ body {
     display: flex;
     flex: 1 1 auto;
 }
+
+.utilDivision {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.endTurnButton {
+    border: 1px solid white;
+    flex: .09 1 auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
