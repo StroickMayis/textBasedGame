@@ -143,6 +143,15 @@ const effect = {
         damage.push(damageBonus);
         return damage;
     },
+    heal: function (caster, target) {
+        const healRoll = dice(100);
+        const healAmountRoll = dice(4);
+        const healBonus = caster.stats.willpower;
+        const healAmount = healAmountRoll + healBonus;
+        if(healRoll === 100) {
+            combatLog.critHeal(caster, target, healAmount)
+        } // TODO: FILL OUT ALL THE HEALING SHIT & MAKE IT TO WHERE YOU CANNOT HEAL ENEMIES AND CANNOT DAMAGE FRIENDS.
+    },
     attack: function (caster, target) {
         const attackRoll = dice(100);
         const defendRoll = dice(20);
@@ -223,7 +232,7 @@ function defineAllAbilities() {
     allAbilities[3] = {
         name: `Healing Word`,
         effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
-        APCost: 25,
+        APCost: 50,
     }
     allAbilities[4] = {
         name: `Guard`,
@@ -242,7 +251,7 @@ function defineAllAbilities() {
     }
     allAbilities[7] = {
         name: `Advise`,
-        effect: function (caster, target) { console.log(`working`); if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
         APCost: 25,
     }
     allAbilities[8] = {
