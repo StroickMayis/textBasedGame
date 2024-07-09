@@ -581,18 +581,18 @@ const DOM = {
         }
     },
 
-    deselectPC: function (PCList) {
+    deselectPC: function () {
+        let PCList = document.querySelectorAll(`.PC`);
         this.PCSelectionState = null;
         PCList.forEach((element) => element.style.borderColor = `white`);
     },
 
     listenForPCSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
-            let PCList = document.querySelectorAll(`.PC`);
             if(e.target.className === `PC`) {
                 this.selectPC(e.target);
             } else {
-                this.deselectPC(PCList);
+                this.deselectPC();
             }
             this.updateBotBar(this.PCSelectionState);
         })
@@ -607,18 +607,18 @@ const DOM = {
         }
     },
 
-    deselectNPC: function (NPCList) {
+    deselectNPC: function () {
+        let NPCList = document.querySelectorAll(`.NPC`);
         this.NPCSelectionState = null;
         NPCList.forEach((element) => element.style.borderColor = `white`);
     },
 
     listenForNPCSelection: function () {
         this.NPCBar.addEventListener(`click`, (e) => {
-            let NPCList = document.querySelectorAll(`.NPC`);
             if(e.target.className === `NPC`) {
                 this.selectNPC(e.target);
             } else {
-                this.deselectNPC(NPCList);
+                this.deselectNPC();
             }
         })
     },
