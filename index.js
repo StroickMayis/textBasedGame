@@ -52,8 +52,21 @@ const combatLog = {
     defend: function (caster, target) {
         console.log(`${target.name} defends ${caster.name}'s attack!`);
     },
-
-
+    critHeal: function (caster, target, healAmountRoll, healBonus, healAmount) {
+        console.log(`${caster.name} CRITICALLY HEALS ${target.name} and rolls a ${healAmountRoll} with a ${healBonus} bonus times 2 for a total of ${healAmount} healing!`)
+    },
+    healAttempt: function (caster, target, healRoll, healBonus) {
+        console.log(`${caster.name} attempts to heal ${target.name} with a roll of: ${healRoll}.`)
+    },
+    heal: function (caster, target, healAmountRoll, healBonus, healAmount) {
+        console.log(`${caster.name} heals ${target.name} with a heal roll of ${healAmountRoll} and a ${healBonus} bonus for a total of ${healAmount} healing!`)
+    },
+    healFail: function (caster, target) {
+        console.log(`${caster.name} fails to heal ${target.name}!`)
+    },
+    noAP: function (abilityName, abilityAPCost) {
+        console.log(`Not enough AP to cast ${abilityName}. Total AP: ${turn.AP} - Ability Cost: ${abilityAPCost} `)
+    }
 }
 
 /* #endregion Combat Log*/
@@ -149,8 +162,25 @@ const effect = {
         const healBonus = caster.stats.willpower;
         const healAmount = healAmountRoll + healBonus;
         if(healRoll === 100) {
-            combatLog.critHeal(caster, target, healAmount)
-        } // TODO: FILL OUT ALL THE HEALING SHIT & MAKE IT TO WHERE YOU CANNOT HEAL ENEMIES AND CANNOT DAMAGE FRIENDS.
+            combatLog.critHeal(caster, target, healAmountRoll, healBonus, healAmount);
+            if(healAmount < 1) {
+                target.hp += 2;
+            } else {
+                target.hp += healAmount * 2;
+            }
+        } else {
+            combatLog.healAttempt(caster, target, healRoll, healBonus);
+            if(healRoll > 1) {
+                combatLog.heal(caster, target, healAmountRoll, healBonus, healAmount);
+                if(healAmount < 1) {
+                    target.hp += 1;
+                } else {
+                    target.hp += healAmount;
+                }
+            } else {
+                combatLog.healFail(caster, target);
+            }
+        }
     },
     attack: function (caster, target) {
         const attackRoll = dice(100);
@@ -208,6 +238,28 @@ function popArrayArrayValue(array) {
     return arrayCopy;
 }
 
+function isAttackingAllies(caster, target) {
+    if(caster.groupName === `PC` && target.groupName === `PC`) {
+        console.log(`Don't attack your allies!`);
+        return true
+    }
+    if(caster.groupName === `NPC` && target.groupName === `NPC`) {
+        return true
+    }
+    return false;
+};
+
+function isHealingEnemies(caster,target) {
+    if(caster.groupName === `PC` && target.groupName === `NPC`) {
+        console.log(`Don't heal the enemy!`);
+        return true
+    }
+    if(caster.groupName === `NPC` && target.groupName === `PC`) {
+        return true
+    }
+    return false;
+}
+
 /* #endregion Ability Effects & Logic*/
 
 /* #region All Lists */
@@ -216,52 +268,132 @@ const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
         name: `Attack`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[1] = {
         name: `Powerful Strike`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[2] = {
         name: `Precision Strike`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[3] = {
         name: `Healing Word`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isHealingEnemies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.heal(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 50,
     }
     allAbilities[4] = {
         name: `Guard`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[5] = {
         name: `Leaping Strike`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[6] = {
         name: `Riposte`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[7] = {
         name: `Advise`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[8] = {
         name: `Taunt`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
     allAbilities[9] = {
         name: `Flicker`,
-        effect: function (caster, target) { if(turn.AP >= this.APCost) {effect.attack(caster, target); turn.AP -= this.APCost}},
+        effect: function (caster, target) { 
+            if(!isAttackingAllies(caster, target)) {
+                if(turn.AP >= this.APCost) {
+                    effect.attack(caster, target); turn.AP -= this.APCost
+                } else {
+                    combatLog.noAP(this.name, this.APCost);
+                }
+            } 
+        },
         APCost: 25,
     }
 }
