@@ -261,6 +261,13 @@ function isHealingEnemies(caster,target) {
         return true
     }
     return false;
+};
+
+function isHealingDeadTarget(target,abilityName) {
+    if(target.hp < 1) {
+        console.log(`${abilityName} is not powerful enough to ressurect ${target.name}.`)
+        return true
+    }
 }
 
 function forceHPtoZero(char) {
@@ -318,11 +325,13 @@ function defineAllAbilities() {
         name: `Healing Word`,
         effect: function (caster, target) { 
             if(!isHealingEnemies(caster, target)) {
-                if(turn.AP >= this.APCost) {
-                    effect.heal(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
-                }
+                if(!isHealingDeadTarget(target, this.name)) {
+                    if(turn.AP >= this.APCost) {
+                        effect.heal(caster, target); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
+                } 
             } 
         },
         APCost: 50,
