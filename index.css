@@ -113,3 +113,12 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+.topBar {
+    display: flex;
+    justify-content: space-betweens;
+}
+
+.topBar div {
+    flex: 1 1 auto;
+}

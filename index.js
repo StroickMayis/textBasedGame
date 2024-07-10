@@ -66,7 +66,10 @@ const combatLog = {
     },
     noAP: function (abilityName, abilityAPCost) {
         console.log(`Not enough AP to cast ${abilityName}. Total AP: ${turn.AP} - Ability Cost: ${abilityAPCost} `)
-    }
+    },
+    charIsDead: function (char, ability) {
+        console.log(`${char.name} cannot cast ${ability.name} while he is dead!`);
+    },
 }
 
 /* #endregion Combat Log*/
@@ -260,6 +263,12 @@ function isHealingEnemies(caster,target) {
     return false;
 }
 
+function forceHPtoZero(char) {
+    if(char.hp < 0) {
+        char.hp = 0;
+    }
+}
+
 /* #endregion Ability Effects & Logic*/
 
 /* #region All Lists */
@@ -371,7 +380,7 @@ function defineAllAbilities() {
         APCost: 25,
     }
     allAbilities[8] = {
-        name: `Taunt`,
+        name: `Flesh Eating`,
         effect: function (caster, target) { 
             if(!isAttackingAllies(caster, target)) {
                 if(turn.AP >= this.APCost) {
@@ -393,7 +402,7 @@ function defineAllAbilities() {
                     combatLog.noAP(this.name, this.APCost);
                 }
             } 
-        },
+        }, 
         APCost: 25,
     }
 }
@@ -632,8 +641,12 @@ function Char(name, race) {
         }
     }
     this.useAbility = function (abilityIndex, target) {
-        if (this.abilities.includes(+abilityIndex)) {
-            allAbilities[abilityIndex].effect(this, target);
+        if(this.hp > 0) {
+            if (this.abilities.includes(+abilityIndex)) {
+                allAbilities[abilityIndex].effect(this, target);
+            }
+        } else {
+            combatLog.charIsDead(this, allAbilities[abilityIndex]);
         }
     }
     this.getTalentNames = function () {
@@ -693,6 +706,8 @@ function characterCreator(name, race, talent1, talent2, group) {
 const DOM = {
     endTurnButton: document.querySelector(`.endTurnButton`),
     APCount: document.querySelector(`.APCount`),
+    casterSelectionDisplay: document.querySelector(`.casterSelectionDisplay`),
+    targetSelectionDisplay: document.querySelector(`.targetSelectionDisplay`),
     PCBar: document.querySelector(`.PCBar`),
     NPCBar: document.querySelector(`.NPCBar`),
     abilityListContainer: document.querySelector(`.abilityListContainer`),
@@ -738,6 +753,17 @@ const DOM = {
     },
 
     updateTopBar: function () {
+        if(this.casterSelectionState) {
+            this.casterSelectionDisplay.textContent = `Caster: ${this.casterSelectionState.name}`;
+        } else {
+            this.casterSelectionDisplay.textContent = `Caster: None Selected`;
+        }
+
+        if(this.targetSelectionState) {
+            this.targetSelectionDisplay.textContent = `Target: ${this.targetSelectionState.name}`;
+        } else {
+            this.targetSelectionDisplay.textContent = `Target: None Selected`;
+        }
         this.APCount.textContent = `Action Points: ${turn.AP}`;
     },
 
@@ -777,17 +803,40 @@ const DOM = {
         const targetGroupIndex = target.dataset.groupIndex;
         this.casterSelectionState = PCs.charList[targetGroupIndex];
         this.casterSelection = target;
-        this.casterSelection.style.borderColor = `blue`; 
-
+        if(this.casterSelectionState.hp === 0) {
+            this.casterSelection.style.borderColor = `rgb(75,75,150)`; 
+        } else {
+            this.casterSelection.style.borderColor = `blue`; 
+        }
         this.updateBotBar();
     },
 
     deselectCaster: function () {
         if(this.casterSelection) {
-           this.casterSelection.style.borderColor = `white`;
-           this.casterSelection = null;
-           this.casterSelectionState = null;
+            if(this.casterSelection === this.targetSelection) {
+                this.targetSelection.style.borderColor = `yellow`;
+                this.casterSelection = null;
+                this.casterSelectionState = null;
+           } else {
+                if(this.casterSelectionState.hp === 0) {
+                    this.casterSelection.style.borderColor = `rgb(50,50,50)`;
+                } else {
+                    this.casterSelection.style.borderColor = `white`;
+                }
+                this.casterSelection = null;
+                this.casterSelectionState = null;
+           } 
         }
+
+        // if(this.casterSelection) {
+        //    if(this.casterSelectionState.hp === 0) {
+        //         this.casterSelection.style.borderColor = `rgb(50,50,50)`;
+        //    } else {
+        //         this.casterSelection.style.borderColor = `white`;
+        //    }
+        //    this.casterSelection = null;
+        //    this.casterSelectionState = null;
+        // }
         this.updateBotBar(); 
     },
 
@@ -799,6 +848,7 @@ const DOM = {
             } else {
                 this.deselectCaster();
             }
+            this.updateTopBar();
             this.updateBotBar(this.casterSelectionState);
         })
     },
@@ -811,6 +861,7 @@ const DOM = {
             } else {
                 this.deselectTarget();
             }
+            this.updateTopBar();
         })
     },
 
@@ -833,9 +884,23 @@ const DOM = {
 
     deselectTarget: function () {
         if(this.targetSelection) {
-           this.targetSelection.style.borderColor = `white`;
-           this.targetSelection = null;
-           this.targetSelectionState = null;
+            if(this.targetSelection === this.casterSelection) {
+                if(this.targetSelectionState.hp === 0) {
+                    this.targetSelection.style.borderColor = `rgb(75,75,150)`;
+                } else {
+                    this.targetSelection.style.borderColor = `blue`;
+                }
+                this.targetSelection = null;
+                this.targetSelectionState = null;
+           } else {
+                if(this.targetSelectionState.hp === 0) {
+                    this.targetSelection.style.borderColor = `rgb(50,50,50)`;
+                } else {
+                    this.targetSelection.style.borderColor = `white`;
+                }
+                this.targetSelection = null;
+                this.targetSelectionState = null;
+           } 
         }
     },
 
@@ -855,14 +920,28 @@ const DOM = {
         i.className = `${char.groupName}`;
         i.id = `index${charListIndex}`;
         i.dataset.groupIndex = charListIndex;
-        i.innerHTML = `<div class="name">${char.name}</div>
-                       <div class="HP">HP: ${char.hp}</div>
-                       <div class="race">Race: ${char.raceName}</div>
-                       <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`
+        forceHPtoZero(char);
+        if(char.hp === 0) {
+            i.style.borderColor = `rgb(50,50,50)`;
+            i.innerHTML = `<div class="name">${char.name}</div>
+                           <div class="HP">HP: ${char.hp} (Dead)</div>
+                           <div class="race">Race: ${char.raceName}</div>
+                           <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`;
+        } else {
+            i.innerHTML = `<div class="name">${char.name}</div>
+                           <div class="HP">HP: ${char.hp}</div>
+                           <div class="race">Race: ${char.raceName}</div>
+                           <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`;
+        }
+        
         switch(char.groupName) {
             case `PC`:
                 if(this.casterSelectionState === char) {
-                    i.style.borderColor = `blue`;
+                    if(this.casterSelectionState.hp === 0) {
+                        i.style.borderColor = `rgb(75,75,150)`;
+                    } else {
+                        i.style.borderColor = `blue`;
+                    }
                     this.casterSelection = i;
                 } else if(this.targetSelectionState === char){
                     i.style.borderColor = `yellow`;
@@ -896,9 +975,10 @@ defineAllAbilities();
 defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
-
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[2], PCs);
+   
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
+characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs);
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
 
 const stroick = PCs.charList[0];
