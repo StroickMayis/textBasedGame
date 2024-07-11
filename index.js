@@ -792,20 +792,6 @@ const DOM = {
         this.abilityListContainer.append(i);          
     },
 
-    // selectTarget: function (target) {
-    //     this.targetSelection = target;
-    //     let targetGroup = target.className;
-    //     const targetGroupIndex = target.dataset.groupIndex;
-    //     if(targetGroup === `NPC`) {
-    //         this.targetSelectionState = NPCs.charList[targetGroupIndex];
-    //         target.style.borderColor = `red`;
-    //     };
-    //     if(targetGroup === `PC`) {
-    //         this.targetSelectionState = PCs.charList[targetGroupIndex];
-    //         target.style.borderColor = `yellow`;
-    //     }
-    // },
-
     selectCaster: function (target) {
         if(this.casterSelection !== null && target !== this.casterSelection) {
             this.deselectCaster();
@@ -849,11 +835,11 @@ const DOM = {
         //    this.casterSelectionState = null;
         // }
         this.updateBotBar(); 
+        this.updateEquipmentList();
     },
 
     listenForCasterSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
-
             if(e.target.className === `PC`) {
                 this.selectCaster(e.target);
             } else {
@@ -927,10 +913,12 @@ const DOM = {
     }, 
 
     updateEquipmentList: function () {
-        this.equipmentList.innerHTML = ``;
-        for(let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
-            this.createEquipmentDisplay(this.casterSelectionState, i)
-        };
+        this.equipmentList.innerHTML = `Equipment:`;
+        if(this.casterSelectionState) {
+            for(let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
+                this.createEquipmentDisplay(this.casterSelectionState, i)
+            };
+        }
     },
 
     createChar: function (char, charListIndex) {
