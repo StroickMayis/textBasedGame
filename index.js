@@ -990,8 +990,12 @@ const DOM = {
         const i = document.createElement(`div`);
         const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
         const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfItem];
-        const item = char.equipment.itemKeyName; // ! HOW TO MAKE THIS WORK??
-        i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damageDiceMultiplier}D${item.damage}</div>`;
+        const item = char.equipment[itemKeyName];
+        if(item === null) {
+            i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
+        } else {
+            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damageDiceMultiplier}D${item.damage}</div>`;
+        }
         this.equipmentList.append(i);
     },
 };
