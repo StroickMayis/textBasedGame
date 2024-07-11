@@ -713,6 +713,7 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #region  DOM */
 
 const DOM = {
+    equipmentList: document.querySelector(`.equipmentList`),
     endTurnButton: document.querySelector(`.endTurnButton`),
     APCount: document.querySelector(`.APCount`),
     casterSelectionDisplay: document.querySelector(`.casterSelectionDisplay`),
@@ -818,6 +819,7 @@ const DOM = {
             this.casterSelection.style.borderColor = `blue`; 
         }
         this.updateBotBar();
+        this.updateEquipmentList();
     },
 
     deselectCaster: function () {
@@ -924,6 +926,13 @@ const DOM = {
         };
     }, 
 
+    updateEquipmentList: function () {
+        this.equipmentList.innerHTML = ``;
+        for(let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
+            this.createEquipmentDisplay(this.casterSelectionState, i)
+        };
+    },
+
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
         i.className = `${char.groupName}`;
@@ -975,6 +984,15 @@ const DOM = {
                 console.log(`Error: Something weird happened here.`);
             break;
         }
+    },
+
+    createEquipmentDisplay: function (char, keyNumberOfItem) {
+        const i = document.createElement(`div`);
+        const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
+        const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfItem];
+        const item = char.equipment.itemKeyName; // ! HOW TO MAKE THIS WORK??
+        i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damageDiceMultiplier}D${item.damage}</div>`;
+        this.equipmentList.append(i);
     },
 };
 
