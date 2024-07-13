@@ -94,7 +94,6 @@ const turn = {
 
 const effect = {
     meleeAttack: function (caster, target, mods) {
-        console.log(mods);
 
         const attackRoll = dice(mods.attackRollDice);
         const attack = attackRoll + mods.attackBonus;
@@ -366,13 +365,13 @@ function defineAllAbilities() {
                 if(turn.AP >= this.APCost) {
                     const mods = {
                         attackRollDice: 100,
-                        attackBonus: caster.stats.dexterity,
+                        attackBonus: caster.stats.strength,
                         damageRollDice: {
                             mainHandWeapon: caster.equipment.mainHand.damage, 
                             offHandWeapon: caster.equipment.offHand.damage, 
                             ability: null,
                         },
-                        damageBonus: caster.stats.strength * 2,
+                        damageBonus: Math.floor(caster.stats.strength * 1.5),
                         critThreshold: 100,
                         critMultiplier: 2,
                         defendRollDice: 20,
