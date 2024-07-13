@@ -83,7 +83,7 @@ const turn = {
         while(this.AP > 0) {
             // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
             // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
-            const attackingNPC = NPCs.charList[0];
+            const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
             attackingNPC.useAbility( 0 , PCs.charList[diceMinus1(PCs.charList.length)]);
         };
         this.AP = 100;
@@ -93,99 +93,55 @@ const turn = {
 }
 
 const effect = {
-    determineAttackType: function (caster) {
-        let type;
-        switch (caster.equipment.mainHand.type) {
-            case `melee`:
-                type = `melee`;
-                break;
-            case `ranged`:
-                type = `ranged`;
-                break;
-            case `magic`:
-                type = `magic`;
-                break;
-            default: return null;
-        }
-        return type;
-    },
-    determineDefendBonus: function (caster, target) {
-        const parry = Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4));
-        const dodge = Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4));
-        const disrupt = Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4));
-        const block = Math.floor(target.stats.initiative / 2);
-        let defendBonus;
-        switch (this.determineAttackType(caster)) {
-            case `melee`:
-                defendBonus = Math.max(parry, block)
-                break;
-            case `ranged`:
-                defendBonus = Math.max(dodge, block)
-                break;
-            case `magic`:
-                defendBonus = Math.max(disrupt, block)
-                break;
-        }
-        return defendBonus;
-    },
-    multiplyWeaponDamageDice: function (weaponDamageDice, weaponDamageDiceMultiplier) {
-        let damage = [];
-        for (weaponDamageDiceMultiplier; weaponDamageDiceMultiplier > 0; weaponDamageDiceMultiplier--) {
-            damage.push(dice(weaponDamageDice));
-        }
-        return damage;
-    },
-    determineDamage: function (caster) {
-        let damage;
+    meleeAttack: function (caster, target, mods) {
+        console.log(mods);
 
-        let damageBonus;
-        switch (this.determineAttackType(caster)) {
-            case `melee`:
-                damageBonus = caster.stats.strength
-                break;
-            case `ranged`:
-                damageBonus = caster.stats.dexterity
-                break;
-            case `magic`:
-                damageBonus = caster.stats.intelligence
-                break;
-            default: return null;
+        const attackRoll = dice(mods.attackRollDice);
+        const attack = attackRoll + mods.attackBonus;
+
+        const defendRoll = dice(mods.defendRollDice);
+        const defend = defendRoll + mods.getDefendBonus();
+
+        combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus());
+
+        if(attack <= defend) { // * ON DEFEND
+            combatLog.defend(caster, target);
+            return;
         }
 
-        let weaponDamageDice = caster.equipment.mainHand.damage;
-        let weaponDamageDiceMultiplier = caster.equipment.mainHand.damageDiceMultiplier;
+        const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
+                               
+        damageRollArr.push(mods.damageBonus);
 
-        damage = this.multiplyWeaponDamageDice(weaponDamageDice, weaponDamageDiceMultiplier)
-        damage.push(damageBonus);
-        return damage;
-    },
-    heal: function (caster, target) {
-        const healRoll = dice(100);
-        const healAmountRoll = dice(4);
-        const healBonus = caster.stats.willpower;
-        const healAmount = healAmountRoll + healBonus;
-        if(healRoll === 100) {
-            combatLog.critHeal(caster, target, healAmountRoll, healBonus, healAmount);
-            if(healAmount < 1) {
-                target.hp += 2;
+        if (attackRoll >= mods.critThreshold) { // * ON CRIT
+            combatLog.critHit(caster, target, damageRollArr);
+
+            if (sumOfArray(damageRollArr) < 1) {
+                target.hp -= 2;
             } else {
-                target.hp += healAmount * 2;
+                target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
             }
+            return;
+        }
+
+        combatLog.hit(caster, target, damageRollArr); // * ON HIT
+
+        if (sumOfArray(damageRollArr) < 1) {
+            target.hp -= 1;
         } else {
-            combatLog.healAttempt(caster, target, healRoll, healBonus);
-            if(healRoll > 1) {
-                combatLog.heal(caster, target, healAmountRoll, healBonus, healAmount);
-                if(healAmount < 1) {
-                    target.hp += 1;
-                } else {
-                    target.hp += healAmount;
-                }
-            } else {
-                combatLog.healFail(caster, target);
-            }
+            target.hp -= sumOfArray(damageRollArr);
         }
+        return;
     },
-    attack: function (caster, target) {
+
+    rangedAttack: function (caster, target) {
+        const mods = {
+            attackRollDice: 100,
+            attackBonus: caster.stats.dexterity,
+            defendRollDice: 20,
+            defendBonus
+
+        }
         const attackRoll = dice(100);
         const defendRoll = dice(20);
         const attackBonus = caster.stats.dexterity;
@@ -214,22 +170,110 @@ const effect = {
             }
         }
     },
+
+    magicalAttack: function (caster, target) {
+        const mods = {
+            attackRollDice: 100,
+            attackBonus: caster.stats.dexterity,
+            defendRollDice: 20,
+            defendBonus
+
+        }
+        const attackRoll = dice(100);
+        const defendRoll = dice(20);
+        const attackBonus = caster.stats.dexterity;
+        const defendBonus = this.determineDefendBonus(caster, target);
+        const damage = this.determineDamage(caster);
+        const attack = attackRoll + attackBonus;
+        const defend = defendRoll + defendBonus;
+        if (attackRoll === 100) {
+            combatLog.critHit(caster, target, damage);
+            if (sumOfArray(damage) < 1) {
+                target.hp -= 2;
+            } else {
+                target.hp -= sumOfArray(damage) * 2;
+            }
+        } else {
+            combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
+            if (attack >= defend) {
+                combatLog.hit(caster, target, damage);
+                if (sumOfArray(damage) < 1) {
+                    target.hp -= 1;
+                } else {
+                    target.hp -= sumOfArray(damage);
+                }
+            } else {
+                combatLog.defend(caster, target);
+            }
+        }
+    },
+
+    heal: function (caster, target) {
+        const healRoll = dice(100);
+        const healAmountRoll = dice(4);
+        const healBonus = caster.stats.willpower;
+        const healAmount = healAmountRoll + healBonus;
+        if(healRoll === 100) {
+            combatLog.critHeal(caster, target, healAmountRoll, healBonus, healAmount);
+            if(healAmount < 1) {
+                target.hp += 2;
+            } else {
+                target.hp += healAmount * 2;
+            }
+        } else {
+            combatLog.healAttempt(caster, target, healRoll, healBonus);
+            if(healRoll > 1) {
+                combatLog.heal(caster, target, healAmountRoll, healBonus, healAmount);
+                if(healAmount < 1) {
+                    target.hp += 1;
+                } else {
+                    target.hp += healAmount;
+                }
+            } else {
+                combatLog.healFail(caster, target);
+            }
+        }
+    },
 }
 
-function dice(dMax) {
+function concatRollDice (...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
+    outputArr = [];
+    args.forEach((el) => {
+        if(el) {
+            let i = rollDice(el);
+            outputArr = outputArr.concat(i);
+        }
+    });
+    return outputArr;
+}
+
+function rollDice (diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result.
+    if (diceArr === null) {
+        return null;
+    }
+    let rollArr = [];
+    for ( let i = 0;  i < diceArr.length; i++) {
+        for ( let x = 0; x < diceArr[i][0]; x++) {
+            rollArr.push(dice(diceArr[i][1]));
+        }
+    }
+    return rollArr;
+}
+
+function dice(dMax) { // * Takes an integer number X as input and outputs a random number between 1 and X like a single dice roll.
     return Math.floor(Math.random() * dMax + 1);
 }
 
-function diceMinus1(dMax) {
+function diceMinus1(dMax) { // * Takes an integer number X as input and outputs a random number between 0 and X.
     return Math.floor(Math.random() * dMax + 1) - 1;
 }
 
-function sumOfArray(arrayOfNumbers) {
+function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
     let sum = 0;
-    arrayOfNumbers.forEach((el) => sum += el);
+    arrayOfNumbers.forEach((el) => { if (el === null) {el = 0}sum += el});
     return sum;
 }
-
+  
 function popArrayPopValue(array) {
     arrayCopy = Object.assign([], array);
     return arrayCopy.pop();
@@ -287,7 +331,27 @@ function defineAllAbilities() {
         effect: function (caster, target) { 
             if(!isAttackingAllies(caster, target)) {
                 if(turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
+                    const mods = {
+                        attackRollDice: 100,
+                        attackBonus: caster.stats.dexterity,
+                        damageRollDice: {
+                            mainHandWeapon: caster.equipment.mainHand.damage, 
+                            offHandWeapon: caster.equipment.offHand.damage, 
+                            ability: null,
+                        },
+                        damageBonus: caster.stats.strength,
+                        critThreshold: 100,
+                        critMultiplier: 2,
+                        defendRollDice: 20,
+                        targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                        targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                        targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                        targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                        getDefendBonus: function () {
+                            return Math.max(this.targetParry, this.targetBlock)
+                        },
+                    };
+                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
@@ -300,7 +364,27 @@ function defineAllAbilities() {
         effect: function (caster, target) { 
             if(!isAttackingAllies(caster, target)) {
                 if(turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
+                    const mods = {
+                        attackRollDice: 100,
+                        attackBonus: caster.stats.dexterity,
+                        damageRollDice: {
+                            mainHandWeapon: caster.equipment.mainHand.damage, 
+                            offHandWeapon: caster.equipment.offHand.damage, 
+                            ability: null,
+                        },
+                        damageBonus: caster.stats.strength * 2,
+                        critThreshold: 100,
+                        critMultiplier: 2,
+                        defendRollDice: 20,
+                        targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                        targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                        targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                        targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                        getDefendBonus: function () {
+                            return Math.max(this.targetParry, this.targetBlock)
+                        },
+                    };
+                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
@@ -421,14 +505,38 @@ function defineAllWeapons() {
     allWeapons[0] = {
         name: `Unarmed`,
         type: `melee`,
-        damage: 4,
-        damageDiceMultiplier: 1,
+        damage: [[1,4]],
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
     }
     allWeapons[1] = {
         name: `Dagger`,
         type: `melee`,
-        damage: 4,
-        damageDiceMultiplier: 2,
+        damage: [[2,4]],
+        parry: 1,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+}
+
+const allArmors = [];
+function defineAllArmors() {
+    allArmors[0] = {
+        name: `None`,
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+    allArmors[1] = {
+        name: `Chainmail`,
+        parry: 1,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
     }
 }
 
@@ -619,8 +727,20 @@ function Char(name, race) {
     this.talent1Name = ``;
     this.talent2Name = ``;
     this.hp = 100;
-    this.abilities = [0],
-        this.stats = race.stats;
+    this.abilities = [0];
+    this.stats = race.stats;
+    this.equipment = {
+        mainHand: allWeapons[0],
+        offHand: allWeapons[0],
+        armor: allArmors[0],
+    };
+    this.addEquipment = function (slotName, equipment) {
+        this.equipment[slotName] = equipment;
+        this.parry = sumOfArray([this.equipment.mainHand.parry, this.equipment.offHand.parry, this.equipment.armor.parry]);
+        this.dodge = sumOfArray([this.equipment.mainHand.dodge, this.equipment.offHand.dodge, this.equipment.armor.dodge]);
+        this.disrupt = sumOfArray([this.equipment.mainHand.disrupt, this.equipment.offHand.disrupt, this.equipment.armor.disrupt]);
+        this.block = sumOfArray([this.equipment.mainHand.block, this.equipment.offHand.block, this.equipment.armor.block]);
+    };
     this.addStatBonus = function (statName, amount) {
         switch (statName) {
             case `strength`:
@@ -648,7 +768,7 @@ function Char(name, race) {
                 this.stats.charisma += amount;
                 break;
         }
-    }
+    };
     this.useAbility = function (abilityIndex, target) {
         if(this.hp > 0) {
             if (this.abilities.includes(+abilityIndex)) {
@@ -657,10 +777,15 @@ function Char(name, race) {
         } else {
             combatLog.charIsDead(this, allAbilities[abilityIndex]);
         }
-    }
+    };
     this.getTalentNames = function () {
         return this.talent1Name + this.talent2Name;
-    }
+    };
+    this.initCharReferenceForChildObjects = function (childObject) {
+        this[childObject].char = this;
+        delete this.initCharReferenceForChildObjects;
+        return this;
+    };
     /*     
         this.inventory = {
             hands: [null,null,null,null],
@@ -670,11 +795,7 @@ function Char(name, race) {
         };
         this.resists = race.resists; 
     */
-    this.equipment = {
-        mainHand: allWeapons[0],
-        offHand: allWeapons[0],
-        armor: null,
-    }
+    
 };
 
 function characterCreator(name, race, talent1, talent2, group) {
@@ -697,6 +818,10 @@ function characterCreator(name, race, talent1, talent2, group) {
         targetChar.abilities.push(talent1Ability);
         targetChar.abilities.push(talent2Ability);
     }
+    function addEquipment() {
+        const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
+        targetChar.addEquipment(`armor`, allArmors[0]);
+    }
     function assignGroup(group) {
         const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
         targetChar.groupName = group.name;
@@ -705,6 +830,7 @@ function characterCreator(name, race, talent1, talent2, group) {
     }
     createChar(name, race);
     addTalents(talent1, talent2);
+    addEquipment();
     assignGroup(group);
 };
 
@@ -994,6 +1120,7 @@ defineAllAbilities();
 defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
+defineAllArmors();
    
 characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
@@ -1001,9 +1128,9 @@ characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs)
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
 
 const stroick = PCs.charList[0];
-const evil = NPCs.charList[0];
+const evil = NPCs.charList[1];
 const kliftin = PCs.charList[1];
-
+const hobo = NPCs.charList[0];
 
 DOM.update();
 DOM.listenForCasterSelection();
