@@ -80,11 +80,11 @@ const turn = {
     AP: 100,
     end: function () {
         this.AP = 100;
-        while(this.AP > 0) {
+        while (this.AP > 0) {
             // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
             // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
             const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
-            attackingNPC.useAbility( 0 , PCs.charList[diceMinus1(PCs.charList.length)]);
+            attackingNPC.useAbility(0, PCs.charList[diceMinus1(PCs.charList.length)]);
         };
         this.AP = 100;
         DOM.update();
@@ -103,13 +103,13 @@ const effect = {
 
         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus());
 
-        if(attack <= defend) { // * ON DEFEND
+        if (attack <= defend) { // * ON DEFEND
             combatLog.defend(caster, target);
             return;
         }
 
         const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
-                               
+
         damageRollArr.push(mods.damageBonus);
 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
@@ -117,7 +117,8 @@ const effect = {
 
             if (sumOfArray(damageRollArr) < 1) {
                 target.hp -= 2;
-            } else {
+            } else { // * Resistances and buff and debuff checks all go here
+
                 target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
             }
             return;
@@ -127,7 +128,8 @@ const effect = {
 
         if (sumOfArray(damageRollArr) < 1) {
             target.hp -= 1;
-        } else {
+        } else { // * Resistances and buff and debuff checks all go here
+
             target.hp -= sumOfArray(damageRollArr);
         }
         return;
@@ -212,18 +214,18 @@ const effect = {
         const healAmountRoll = dice(4);
         const healBonus = caster.stats.willpower;
         const healAmount = healAmountRoll + healBonus;
-        if(healRoll === 100) {
+        if (healRoll === 100) {
             combatLog.critHeal(caster, target, healAmountRoll, healBonus, healAmount);
-            if(healAmount < 1) {
+            if (healAmount < 1) {
                 target.hp += 2;
             } else {
                 target.hp += healAmount * 2;
             }
         } else {
             combatLog.healAttempt(caster, target, healRoll, healBonus);
-            if(healRoll > 1) {
+            if (healRoll > 1) {
                 combatLog.heal(caster, target, healAmountRoll, healBonus, healAmount);
-                if(healAmount < 1) {
+                if (healAmount < 1) {
                     target.hp += 1;
                 } else {
                     target.hp += healAmount;
@@ -233,12 +235,22 @@ const effect = {
             }
         }
     },
+
+    buff: function (caster, target, mods) { // * For every attack made on the target, the caster takes half of that damage.
+        if(!target.buffs.includes(allBuffs[0])) {
+            target.buffs.push(allBuffs[0]);
+        } else {
+            //renew the buff.
+        }
+    },
 }
 
-function concatRollDice (...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
+/* #region  LOGIC */
+
+function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
     outputArr = [];
     args.forEach((el) => {
-        if(el) {
+        if (el) {
             let i = rollDice(el);
             outputArr = outputArr.concat(i);
         }
@@ -246,13 +258,13 @@ function concatRollDice (...args) { // * Takes multiple 2D dice array input like
     return outputArr;
 }
 
-function rollDice (diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result.
+function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result.
     if (diceArr === null) {
         return null;
     }
     let rollArr = [];
-    for ( let i = 0;  i < diceArr.length; i++) {
-        for ( let x = 0; x < diceArr[i][0]; x++) {
+    for (let i = 0; i < diceArr.length; i++) {
+        for (let x = 0; x < diceArr[i][0]; x++) {
             rollArr.push(dice(diceArr[i][1]));
         }
     }
@@ -269,10 +281,10 @@ function diceMinus1(dMax) { // * Takes an integer number X as input and outputs 
 
 function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
     let sum = 0;
-    arrayOfNumbers.forEach((el) => { if (el === null) {el = 0}sum += el});
+    arrayOfNumbers.forEach((el) => { if (el === null) { el = 0 } sum += el });
     return sum;
 }
-  
+
 function popArrayPopValue(array) {
     arrayCopy = Object.assign([], array);
     return arrayCopy.pop();
@@ -284,40 +296,60 @@ function popArrayArrayValue(array) {
     return arrayCopy;
 }
 
+function isTargetDead(target) {
+    if (target.hp < 1) {
+        console.log(`Target is dead.`)
+        return true
+    }
+}
+
 function isAttackingAllies(caster, target) {
-    if(caster.groupName === `PC` && target.groupName === `PC`) {
+    if (caster.groupName === `PC` && target.groupName === `PC`) {
         console.log(`Don't attack your allies!`);
         return true
     }
-    if(caster.groupName === `NPC` && target.groupName === `NPC`) {
+    if (caster.groupName === `NPC` && target.groupName === `NPC`) {
         return true
     }
     return false;
 };
 
-function isHealingEnemies(caster,target) {
-    if(caster.groupName === `PC` && target.groupName === `NPC`) {
+function isHealingEnemies(caster, target) {
+    if (caster.groupName === `PC` && target.groupName === `NPC`) {
         console.log(`Don't heal the enemy!`);
         return true
     }
-    if(caster.groupName === `NPC` && target.groupName === `PC`) {
+    if (caster.groupName === `NPC` && target.groupName === `PC`) {
         return true
     }
     return false;
 };
 
-function isHealingDeadTarget(target,abilityName) {
-    if(target.hp < 1) {
+function isBuffingEnemies(caster, target) {
+    if (caster.groupName === `PC` && target.groupName === `NPC`) {
+        console.log(`Don't buff the enemy!`);
+        return true
+    }
+    if (caster.groupName === `NPC` && target.groupName === `PC`) {
+        return true
+    }
+    return false;
+};
+
+function isHealingDeadTarget(target, abilityName) {
+    if (target.hp < 1) {
         console.log(`${abilityName} is not powerful enough to ressurect ${target.name}.`)
         return true
     }
 }
 
 function forceHPtoZero(char) {
-    if(char.hp < 0) {
+    if (char.hp < 0) {
         char.hp = 0;
     }
 }
+
+/* #endregion END LOGIC*/
 
 /* #endregion Ability Effects & Logic*/
 
@@ -327,176 +359,200 @@ const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
         name: `Attack`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
-                    const mods = {
-                        attackRollDice: 100,
-                        attackBonus: caster.stats.dexterity,
-                        damageRollDice: {
-                            mainHandWeapon: caster.equipment.mainHand.damage, 
-                            offHandWeapon: caster.equipment.offHand.damage, 
-                            ability: null,
-                        },
-                        damageBonus: caster.stats.strength,
-                        critThreshold: 100,
-                        critMultiplier: 2,
-                        defendRollDice: 20,
-                        targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
-                        targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
-                        targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
-                        targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
-                        getDefendBonus: function () {
-                            return Math.max(this.targetParry, this.targetBlock)
-                        },
-                    };
-                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.dexterity,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: caster.stats.strength,
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[1] = {
         name: `Powerful Strike`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
-                    const mods = {
-                        attackRollDice: 100,
-                        attackBonus: caster.stats.strength,
-                        damageRollDice: {
-                            mainHandWeapon: caster.equipment.mainHand.damage, 
-                            offHandWeapon: caster.equipment.offHand.damage, 
-                            ability: null,
-                        },
-                        damageBonus: Math.floor(caster.stats.strength * 1.5),
-                        critThreshold: 100,
-                        critMultiplier: 2,
-                        defendRollDice: 20,
-                        targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
-                        targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
-                        targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
-                        targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
-                        getDefendBonus: function () {
-                            return Math.max(this.targetParry, this.targetBlock)
-                        },
-                    };
-                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.strength,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: Math.floor(caster.stats.strength * 1.5),
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[2] = {
         name: `Precision Strike`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[3] = {
         name: `Healing Word`,
-        effect: function (caster, target) { 
-            if(!isHealingEnemies(caster, target)) {
-                if(!isHealingDeadTarget(target, this.name)) {
-                    if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isHealingEnemies(caster, target)) {
+                if (!isHealingDeadTarget(target, this.name)) {
+                    if (turn.AP >= this.APCost) {
                         effect.heal(caster, target); turn.AP -= this.APCost
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
-                } 
-            } 
+                }
+            }
         },
         APCost: 50,
     }
     allAbilities[4] = {
         name: `Guard`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+        effect: function (caster, target) {
+            if (!isBuffingEnemies(caster, target)) {
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            
+                        };
+                        effect.buff(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
-            } 
+            }
         },
-        APCost: 25,
+        APCost: 75,
     }
     allAbilities[5] = {
         name: `Leaping Strike`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[6] = {
         name: `Riposte`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[7] = {
         name: `Advise`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[8] = {
         name: `Flesh Eating`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
+            }
         },
         APCost: 25,
     }
     allAbilities[9] = {
         name: `Flicker`,
-        effect: function (caster, target) { 
-            if(!isAttackingAllies(caster, target)) {
-                if(turn.AP >= this.APCost) {
+        effect: function (caster, target) {
+            if (!isAttackingAllies(caster, target)) {
+                if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
-            } 
-        }, 
+            }
+        },
         APCost: 25,
     }
+}
+
+const allBuffs = [];
+function defineAllBuffs() {
+    allBuffs[0] = {
+        name: `Guarded`,
+        effect: function () {
+
+        },
+    }
+}
+
+const allDebuffs = [];
+function defineAllDebuffs() {
+    
 }
 
 const allWeapons = [];
@@ -504,7 +560,7 @@ function defineAllWeapons() {
     allWeapons[0] = {
         name: `Unarmed`,
         type: `melee`,
-        damage: [[1,4]],
+        damage: [[1, 4]],
         parry: 0,
         dodge: 0,
         disrupt: 0,
@@ -513,7 +569,7 @@ function defineAllWeapons() {
     allWeapons[1] = {
         name: `Dagger`,
         type: `melee`,
-        damage: [[2,4]],
+        damage: [[2, 4]],
         parry: 1,
         dodge: 0,
         disrupt: 0,
@@ -728,6 +784,8 @@ function Char(name, race) {
     this.hp = 100;
     this.abilities = [0];
     this.stats = race.stats;
+    this.buffs = [];
+    this.debuffs = [];
     this.equipment = {
         mainHand: allWeapons[0],
         offHand: allWeapons[0],
@@ -769,7 +827,7 @@ function Char(name, race) {
         }
     };
     this.useAbility = function (abilityIndex, target) {
-        if(this.hp > 0) {
+        if (this.hp > 0) {
             if (this.abilities.includes(+abilityIndex)) {
                 allAbilities[abilityIndex].effect(this, target);
             }
@@ -794,7 +852,7 @@ function Char(name, race) {
         };
         this.resists = race.resists; 
     */
-    
+
 };
 
 function characterCreator(name, race, talent1, talent2, group) {
@@ -862,7 +920,7 @@ const DOM = {
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
         const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
-        if((this.casterSelectionState && this.targetSelectionState) !== null) {
+        if ((this.casterSelectionState && this.targetSelectionState) !== null) {
             this.casterSelectionState.useAbility(abilityDatasetIndex, this.targetSelectionState)
         } else {
             console.log(`invalid targets`);
@@ -873,28 +931,28 @@ const DOM = {
 
     listenForBotBar: function () {
         this.botBar.addEventListener(`click`, (e) => {
-            switch(e.target.className) {
+            switch (e.target.className) {
                 case `ability`:
                     this.attemptAbilityCast(e.target);
-                break;
+                    break;
                 case `slideLeft`:
 
-                break;
+                    break;
                 case `slideRight`:
 
-                break;
+                    break;
             }
         })
     },
 
     updateTopBar: function () {
-        if(this.casterSelectionState) {
+        if (this.casterSelectionState) {
             this.casterSelectionDisplay.textContent = `Caster: ${this.casterSelectionState.name}`;
         } else {
             this.casterSelectionDisplay.textContent = `Caster: None Selected`;
         }
 
-        if(this.targetSelectionState) {
+        if (this.targetSelectionState) {
             this.targetSelectionDisplay.textContent = `Target: ${this.targetSelectionState.name}`;
         } else {
             this.targetSelectionDisplay.textContent = `Target: None Selected`;
@@ -914,40 +972,40 @@ const DOM = {
         const i = document.createElement(`div`);
         i.className = `ability`;
         i.innerHTML = `<div data-ability-index=${abilityIndex} class="abilityName">${allAbilities[abilityIndex].name}</div>`;
-        this.abilityListContainer.append(i);          
+        this.abilityListContainer.append(i);
     },
 
     selectCaster: function (target) {
-        if(this.casterSelection !== null && target !== this.casterSelection) {
+        if (this.casterSelection !== null && target !== this.casterSelection) {
             this.deselectCaster();
         }
         const targetGroupIndex = target.dataset.groupIndex;
         this.casterSelectionState = PCs.charList[targetGroupIndex];
         this.casterSelection = target;
-        if(this.casterSelectionState.hp === 0) {
-            this.casterSelection.style.borderColor = `rgb(75,75,150)`; 
+        if (this.casterSelectionState.hp === 0) {
+            this.casterSelection.style.borderColor = `rgb(75,75,150)`;
         } else {
-            this.casterSelection.style.borderColor = `blue`; 
+            this.casterSelection.style.borderColor = `blue`;
         }
         this.updateBotBar();
         this.updateEquipmentList();
     },
 
     deselectCaster: function () {
-        if(this.casterSelection) {
-            if(this.casterSelection === this.targetSelection) {
+        if (this.casterSelection) {
+            if (this.casterSelection === this.targetSelection) {
                 this.targetSelection.style.borderColor = `yellow`;
                 this.casterSelection = null;
                 this.casterSelectionState = null;
-           } else {
-                if(this.casterSelectionState.hp === 0) {
+            } else {
+                if (this.casterSelectionState.hp === 0) {
                     this.casterSelection.style.borderColor = `rgb(50,50,50)`;
                 } else {
                     this.casterSelection.style.borderColor = `white`;
                 }
                 this.casterSelection = null;
                 this.casterSelectionState = null;
-           } 
+            }
         }
 
         // if(this.casterSelection) {
@@ -959,13 +1017,13 @@ const DOM = {
         //    this.casterSelection = null;
         //    this.casterSelectionState = null;
         // }
-        this.updateBotBar(); 
+        this.updateBotBar();
         this.updateEquipmentList();
     },
 
     listenForCasterSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
-            if(e.target.className === `PC`) {
+            if (e.target.className === `PC`) {
                 this.selectCaster(e.target);
             } else {
                 this.deselectCaster();
@@ -978,7 +1036,7 @@ const DOM = {
     listenForTargetSelection: function () {
         this.midBar.addEventListener(`contextmenu`, (e) => {
             e.preventDefault();
-            if(e.target.className === `PC` || e.target.className === `NPC`) {
+            if (e.target.className === `PC` || e.target.className === `NPC`) {
                 this.selectTarget(e.target);
             } else {
                 this.deselectTarget();
@@ -988,59 +1046,59 @@ const DOM = {
     },
 
     selectTarget: function (target) {
-        if(this.targetSelection !== null && target !== this.targetSelection) {
+        if (this.targetSelection !== null && target !== this.targetSelection) {
             this.deselectTarget();
         }
         this.targetSelection = target;
         let targetGroup = target.className;
         const targetGroupIndex = target.dataset.groupIndex;
-        if(targetGroup === `NPC`) {
+        if (targetGroup === `NPC`) {
             this.targetSelectionState = NPCs.charList[targetGroupIndex];
             target.style.borderColor = `red`;
         };
-        if(targetGroup === `PC`) {
+        if (targetGroup === `PC`) {
             this.targetSelectionState = PCs.charList[targetGroupIndex];
             target.style.borderColor = `yellow`;
         }
     },
 
     deselectTarget: function () {
-        if(this.targetSelection) {
-            if(this.targetSelection === this.casterSelection) {
-                if(this.targetSelectionState.hp === 0) {
+        if (this.targetSelection) {
+            if (this.targetSelection === this.casterSelection) {
+                if (this.targetSelectionState.hp === 0) {
                     this.targetSelection.style.borderColor = `rgb(75,75,150)`;
                 } else {
                     this.targetSelection.style.borderColor = `blue`;
                 }
                 this.targetSelection = null;
                 this.targetSelectionState = null;
-           } else {
-                if(this.targetSelectionState.hp === 0) {
+            } else {
+                if (this.targetSelectionState.hp === 0) {
                     this.targetSelection.style.borderColor = `rgb(50,50,50)`;
                 } else {
                     this.targetSelection.style.borderColor = `white`;
                 }
                 this.targetSelection = null;
                 this.targetSelectionState = null;
-           } 
+            }
         }
     },
 
     update: function () {
         this.PCBar.innerHTML = ``;
         this.NPCBar.innerHTML = ``;
-        for(let i = (PCs.charList.length - 1); i >= 0; i--) {
+        for (let i = (PCs.charList.length - 1); i >= 0; i--) {
             this.createChar(PCs.charList[i], i)
         };
-        for(let i = (NPCs.charList.length - 1); i >= 0; i--) {
+        for (let i = (NPCs.charList.length - 1); i >= 0; i--) {
             this.createChar(NPCs.charList[i], i)
         };
-    }, 
+    },
 
     updateEquipmentList: function () {
         this.equipmentList.innerHTML = `Equipment:`;
-        if(this.casterSelectionState) {
-            for(let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
+        if (this.casterSelectionState) {
+            for (let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
                 this.createEquipmentDisplay(this.casterSelectionState, i)
             };
         }
@@ -1052,7 +1110,7 @@ const DOM = {
         i.id = `index${charListIndex}`;
         i.dataset.groupIndex = charListIndex;
         forceHPtoZero(char);
-        if(char.hp === 0) {
+        if (char.hp === 0) {
             i.style.borderColor = `rgb(50,50,50)`;
             i.innerHTML = `<div class="name">${char.name}</div>
                            <div class="HP">HP: ${char.hp} (Dead)</div>
@@ -1064,38 +1122,38 @@ const DOM = {
                            <div class="race">Race: ${char.raceName}</div>
                            <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`;
         }
-        
-        switch(char.groupName) {
+
+        switch (char.groupName) {
             case `PC`:
-                if(this.casterSelectionState === char) {
-                    if(this.casterSelectionState.hp === 0) {
+                if (this.casterSelectionState === char) {
+                    if (this.casterSelectionState.hp === 0) {
                         i.style.borderColor = `rgb(75,75,150)`;
                     } else {
                         i.style.borderColor = `blue`;
                     }
                     this.casterSelection = i;
-                } else if(this.targetSelectionState === char){
+                } else if (this.targetSelectionState === char) {
                     i.style.borderColor = `yellow`;
                     this.targetSelection = i;
                 }
                 this.PCBar.append(i)
-            break;
+                break;
 
             case `NPC`:
-                if(this.targetSelectionState === char) {
+                if (this.targetSelectionState === char) {
                     i.style.borderColor = `red`;
                     this.targetSelection = i;
                 }
                 this.NPCBar.append(i)
-            break;
+                break;
 
             case `Unassigned`:
                 console.log(`Error: Tried to put char with unassigned group onto DOM.`);
-            break;
+                break;
 
             default:
                 console.log(`Error: Something weird happened here.`);
-            break;
+                break;
         }
     },
 
@@ -1104,10 +1162,12 @@ const DOM = {
         const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
         const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfItem];
         const item = char.equipment[itemKeyName];
-        if(item === null) {
+        if (item === null) {
             i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
+        } else if (item.damage) {
+            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damage[0][0]}D${item.damage[0][1]}</div>`;
         } else {
-            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damageDiceMultiplier}D${item.damage}</div>`;
+            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
         }
         this.equipmentList.append(i);
     },
@@ -1120,8 +1180,10 @@ defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
 defineAllArmors();
-   
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[1], PCs);
+defineAllBuffs();
+defineAllDebuffs();
+
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[3], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
 characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs);
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
