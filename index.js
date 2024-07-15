@@ -18,7 +18,13 @@
 const combatLog = {
     critHit: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage);
-        console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
+        targetDamageSplit = Math.floor((damageDisplayArray[1] * 2) / 2);
+        guardDamageSplit = Math.ceil((damageDisplayArray[1] * 2) / 2);
+        if(target.buffs.guarded) {
+            console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} takes ${guardDamageSplit}.`);
+        } else {
+            console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
+        }
     },
     attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus) {
         const attack = attackRoll + attackBonus;
@@ -47,7 +53,15 @@ const combatLog = {
     },
     hit: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage);
-        console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage!`);
+
+        targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
+        guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
+        if(target.buffs.guarded) {
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} takes ${guardDamageSplit}.`);
+        } else {
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
+        }
+
     },
     defend: function (caster, target) {
         console.log(`${target.name} defends ${caster.name}'s attack!`);
@@ -69,6 +83,12 @@ const combatLog = {
     },
     charIsDead: function (char, ability) {
         console.log(`${char.name} cannot cast ${ability.name} while he is dead!`);
+    },
+    guard: function (caster, target) {
+        console.log(`${caster.name} casts his Guard onto ${target.name}.`);
+    },
+    guardSwitch: function (caster, target) {
+        console.log(`${caster.name} switches his Guard from ${caster.buffs.guarding.target.name} to ${target.name}.`);
     },
 }
 
@@ -119,8 +139,15 @@ const effect = {
                 target.hp -= 2;
             } else { // * Resistances and buff and debuff checks all go here
 
-                // TODO: create function that I can call here that will check if the target is guarded by somebody, consider making the buffs array into an object instead? Mayhaps? I can then just to the equivalent of pushing properties onto it. This will just make it easier to search for buffs on it, I think.
-                target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
+                if(target.buffs.guarded) {
+                    totalDamage = sumOfArray(damageRollArr) * mods.critMultiplier;
+                    targetDamage = Math.floor(totalDamage / 2);
+                    guardDamage = Math.ceil(totalDamage / 2);
+                    target.hp -= targetDamage;
+                    target.buffs.guarded.caster.hp -= guardDamage
+                } else {
+                    target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
+                }
             }
             return;
         }
@@ -130,8 +157,15 @@ const effect = {
         if (sumOfArray(damageRollArr) < 1) {
             target.hp -= 1;
         } else { // * Resistances and buff and debuff checks all go here
-
-            target.hp -= sumOfArray(damageRollArr);
+            if(target.buffs.guarded) {
+                totalDamage = sumOfArray(damageRollArr);
+                targetDamage = Math.floor(totalDamage / 2);
+                guardDamage = Math.ceil(totalDamage / 2);
+                target.hp -= targetDamage;
+                target.buffs.guarded.caster.hp -= guardDamage
+            } else {
+                target.hp -= sumOfArray(damageRollArr);
+            }
         }
         return;
     },
@@ -248,12 +282,15 @@ const effect = {
             desc: mods.buffDescForCaster,
             target: target,
         }
-        target.buffs.push(targetBuff);
-        if(doesArrayOfObjectsInclude(caster.buffs, `name`, `Guarding`)) {
-            const buffIndex = doesArrayOfObjectsIncludeIndexOf(caster.buffs, `name`, `Guarding`);
-            caster.buffs.splice(buffIndex, 1, casterBuff);
+        target.buffs.guarded = targetBuff;
+        if(caster.buffs.guarding) {
+            combatLog.guardSwitch(caster, target);
+            delete caster.buffs.guarding.target.buffs.guarded;
+            delete caster.buffs.guarding;
+            caster.buffs.guarding = casterBuff;
         } else {
-            caster.buffs.push(casterBuff);
+            combatLog.guard(caster, target);
+            caster.buffs.guarding = casterBuff;
         }
     },
 };
@@ -491,7 +528,7 @@ function defineAllAbilities() {
         effect: function (caster, target) {
             if (!isBuffingEnemies(caster, target)) {
                 if (!isTargetDead(target)) {
-                    if(!doesArrayOfObjectsInclude(target.buffs, `name`, `Guarded`)) {
+                    if(!target.buffs.guarded) {
                         if (turn.AP >= this.APCost) {
                             const mods = {
                                 buffNameForTarget: `Guarded`,
@@ -805,8 +842,8 @@ function Char(name, race) {
     this.hp = 100;
     this.abilities = [0];
     this.stats = race.stats;
-    this.buffs = [];
-    this.debuffs = [];
+    this.buffs = {};
+    this.debuffs = {};
     this.equipment = {
         mainHand: allWeapons[0],
         offHand: allWeapons[0],
