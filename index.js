@@ -119,6 +119,7 @@ const effect = {
                 target.hp -= 2;
             } else { // * Resistances and buff and debuff checks all go here
 
+                // TODO: create function that I can call here that will check if the target is guarded by somebody, consider making the buffs array into an object instead? Mayhaps? I can then just to the equivalent of pushing properties onto it. This will just make it easier to search for buffs on it, I think.
                 target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
             }
             return;
@@ -236,16 +237,46 @@ const effect = {
         }
     },
 
-    buff: function (caster, target, mods) { // * For every attack made on the target, the caster takes half of that damage.
-        if(!target.buffs.includes(allBuffs[0])) {
-            target.buffs.push(allBuffs[0]);
+    guard: function (caster, target, mods) { // * For every attack made on the target, the caster takes half of that damage.
+        const targetBuff = {
+            name: mods.buffNameForTarget,
+            desc: mods.buffDescForTarget,
+            caster: caster,
+        }
+        const casterBuff = {
+            name: mods.buffNameForCaster,
+            desc: mods.buffDescForCaster,
+            target: target,
+        }
+        target.buffs.push(targetBuff);
+        if(doesArrayOfObjectsInclude(caster.buffs, `name`, `Guarding`)) {
+            const buffIndex = doesArrayOfObjectsIncludeIndexOf(caster.buffs, `name`, `Guarding`);
+            caster.buffs.splice(buffIndex, 1, casterBuff);
         } else {
-            //renew the buff.
+            caster.buffs.push(casterBuff);
         }
     },
+};
+/* #region  LOGIC */
+
+function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
+    array.forEach((ele) => {
+        if(ele[propertyName] === value) {
+            let index = array.indexOf(ele);
+            return index;
+        } 
+        return false;
+    });
 }
 
-/* #region  LOGIC */
+function doesArrayOfObjectsInclude(array, propertyName, value) {
+    array.forEach((ele) => {
+        if(ele[propertyName] === value) {
+            return true;
+        } 
+        return false;
+    });
+}
 
 function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
     outputArr = [];
@@ -460,13 +491,18 @@ function defineAllAbilities() {
         effect: function (caster, target) {
             if (!isBuffingEnemies(caster, target)) {
                 if (!isTargetDead(target)) {
-                    if (turn.AP >= this.APCost) {
-                        const mods = {
-                            
-                        };
-                        effect.buff(caster, target, mods); turn.AP -= this.APCost
-                    } else {
-                        combatLog.noAP(this.name, this.APCost);
+                    if(!doesArrayOfObjectsInclude(target.buffs, `name`, `Guarded`)) {
+                        if (turn.AP >= this.APCost) {
+                            const mods = {
+                                buffNameForTarget: `Guarded`,
+                                buffNameForCaster: `Guarding`,
+                                buffDescForTarget: `Guarded by ${caster.name}`,
+                                buffDescForCaster: `Guarding ${target.name}`,
+                            };
+                            effect.guard(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.noAP(this.name, this.APCost);
+                        }
                     }
                 }
             }
@@ -538,21 +574,6 @@ function defineAllAbilities() {
         },
         APCost: 25,
     }
-}
-
-const allBuffs = [];
-function defineAllBuffs() {
-    allBuffs[0] = {
-        name: `Guarded`,
-        effect: function () {
-
-        },
-    }
-}
-
-const allDebuffs = [];
-function defineAllDebuffs() {
-    
 }
 
 const allWeapons = [];
@@ -1180,8 +1201,6 @@ defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
 defineAllArmors();
-defineAllBuffs();
-defineAllDebuffs();
 
 characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[3], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
