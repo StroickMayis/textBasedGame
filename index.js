@@ -98,6 +98,16 @@ const combatLog = {
     },
     riposte: function (caster, target) {
         console.log(`${caster.name} defends well enough to attempt a riposte on ${target.name}.`)
+    },
+    startNPCTurn: function () {
+        console.log(`
+            Start NPC Turn:
+            `);
+    },
+    startPCTurn: function () {
+        console.log(`
+            Start PC Turn:
+            `);
     }
 }
 
@@ -108,6 +118,7 @@ const combatLog = {
 const turn = {
     AP: 100,
     end: function () {
+        combatLog.startNPCTurn();
         this.AP = 100;
         while (this.AP > 0) {
             // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
@@ -118,6 +129,7 @@ const turn = {
         this.AP = 100;
         DOM.update();
         DOM.updateTopBar();
+        combatLog.startPCTurn();
     },
 }
 
@@ -172,7 +184,7 @@ const effect = {
         }
 
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
-        
+
         if(riposte) {
             combatLog.riposte(target, caster);
             target.useAbility(9, caster);
