@@ -57,7 +57,7 @@ const combatLog = {
         targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
         guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
         if(target.buffs.guarded) {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} takes ${guardDamageSplit}.`);
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
         }
@@ -65,6 +65,12 @@ const combatLog = {
     },
     defend: function (caster, target) {
         console.log(`${target.name} defends ${caster.name}'s attack!`);
+    },
+    guardDefend: function (caster, target, guard) {
+        console.log(`${guard.name} defends the incoming damage from ${caster.name} redirected to him from his guard target ${target}!`)
+    },
+    guardFailsDefend: function (caster, target, guard) {
+        console.log(`${guard.name} does not defend the incoming damage from ${caster.name} redirected to him from his guard target ${target.name}, ${guard.name} takes the damage.`)
     },
     critHeal: function (caster, target, healAmountRoll, healBonus, healAmount) {
         console.log(`${caster.name} CRITICALLY HEALS ${target.name} and rolls a ${healAmountRoll} with a ${healBonus} bonus times 2 for a total of ${healAmount} healing!`)
@@ -123,6 +129,8 @@ const effect = {
 
         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus());
 
+        // TODO: Going to add a riposte mechanic for melee attacks at some point.
+
         if (attack <= defend) { // * ON DEFEND
             combatLog.defend(caster, target);
             return;
@@ -157,17 +165,27 @@ const effect = {
         if (sumOfArray(damageRollArr) < 1) {
             target.hp -= 1;
         } else { // * Resistances and buff and debuff checks all go here
-            if(target.buffs.guarded) {
+            if(target.buffs.guarded) { // TODO: Make to where the guard can defend the damage on himself.
+                const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
                 totalDamage = sumOfArray(damageRollArr);
                 targetDamage = Math.floor(totalDamage / 2);
                 guardDamage = Math.ceil(totalDamage / 2);
                 target.hp -= targetDamage;
-                target.buffs.guarded.caster.hp -= guardDamage
+                if(attack > guardDefense) {
+                    combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
+                    target.buffs.guarded.caster.hp -= guardDamage;
+                } else {
+                    combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
+                }
             } else {
                 target.hp -= sumOfArray(damageRollArr);
             }
         }
         return;
+    },
+
+    riposte: function () {
+
     },
 
     rangedAttack: function (caster, target) {
@@ -295,6 +313,26 @@ const effect = {
     },
 };
 /* #region  LOGIC */
+
+function getGuardDefense(attackType, guarder) {
+    const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
+    let returnValue;
+    switch(attackType) {
+        case `melee`:
+            const guarderParry = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.dexterity / 4) + guarder.parry);
+            returnValue = Math.max(guarderParry, guarderBlock);
+        break;
+        case `ranged`:
+            const guarderDodge = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.agility / 4) + guarder.dodge);
+            returnValue = Math.max(guarderDodge, guarderBlock);
+        break;
+        case `magic`:
+            const guarderDisrupt = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.willpower / 4) + guarder.disrupt);
+            returnValue = Math.max(guarderDisrupt, guarderBlock);
+        break;
+    }
+    return returnValue;
+}
 
 function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
     array.forEach((ele) => {
