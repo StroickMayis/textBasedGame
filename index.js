@@ -212,10 +212,6 @@ const effect = {
         return;
     },
 
-    riposte: function () {
-
-    },
-
     rangedAttack: function (caster, target) {
         const mods = {
             attackRollDice: 100,
@@ -976,6 +972,8 @@ function Char(name, race) {
         if (this.hp > 0) {
             if (this.abilities.includes(+abilityIndex) || +abilityIndex === 9) {
                 allAbilities[abilityIndex].effect(this, target);
+            } else {
+                console.log(`Err: Char does not have this ability`);
             }
         } else {
             combatLog.charIsDead(this, allAbilities[abilityIndex]);
