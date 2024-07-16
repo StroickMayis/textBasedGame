@@ -26,10 +26,10 @@ const combatLog = {
             console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
         }
     },
-    attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus) {
+    attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability) {
         const attack = attackRoll + attackBonus;
         const defend = defendRoll + defendBonus;
-        console.log(`${caster.name} attacks ${target.name} with: ${caster.equipment.mainHand.name}, 
+        console.log(`${caster.name} attacks ${target.name} with: ${caster.equipment.mainHand.name} using: ${ability.name}, 
             with an attack roll of: ${attackRoll} and attack bonus of ${attackBonus} 
             against a defend roll of ${defendRoll} and a defend bonus of ${defendBonus}. 
             Total Attack: ${attack} vs. Total Defend: ${defend}`);
@@ -96,6 +96,9 @@ const combatLog = {
     guardSwitch: function (caster, target) {
         console.log(`${caster.name} switches his Guard from ${caster.buffs.guarding.target.name} to ${target.name}.`);
     },
+    riposte: function (caster, target) {
+        console.log(`${caster.name} defends well enough to attempt a riposte on ${target.name}.`)
+    }
 }
 
 /* #endregion Combat Log*/
@@ -120,6 +123,8 @@ const turn = {
 
 const effect = {
     meleeAttack: function (caster, target, mods) {
+        const ability = allAbilities[mods.abilityIndex];
+        let riposte = false;
 
         const attackRoll = dice(mods.attackRollDice);
         const attack = attackRoll + mods.attackBonus;
@@ -127,12 +132,18 @@ const effect = {
         const defendRoll = dice(mods.defendRollDice);
         const defend = defendRoll + mods.getDefendBonus();
 
-        combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus());
-
-        // TODO: Going to add a riposte mechanic for melee attacks at some point.
-
+        combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability);
+        if(!mods.isRiposte) {
+            if((Math.ceil(attack / 2)) <= defend) {
+                riposte = true
+            }
+        }
         if (attack <= defend) { // * ON DEFEND
             combatLog.defend(caster, target);
+            if(riposte) {
+                combatLog.riposte(target, caster);
+                target.useAbility(9, caster);
+            }
             return;
         }
 
@@ -161,11 +172,16 @@ const effect = {
         }
 
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
+        
+        if(riposte) {
+            combatLog.riposte(target, caster);
+            target.useAbility(9, caster);
+        }
 
         if (sumOfArray(damageRollArr) < 1) {
             target.hp -= 1;
         } else { // * Resistances and buff and debuff checks all go here
-            if(target.buffs.guarded) { // TODO: Make to where the guard can defend the damage on himself.
+            if(target.buffs.guarded) {
                 const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
                 totalDamage = sumOfArray(damageRollArr);
                 targetDamage = Math.floor(totalDamage / 2);
@@ -470,6 +486,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
+                            abilityIndex: 0,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity,
                             damageRollDice: {
@@ -505,6 +522,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
+                            abilityIndex: 1,
                             attackRollDice: 100,
                             attackBonus: caster.stats.strength,
                             damageRollDice: {
@@ -637,17 +655,37 @@ function defineAllAbilities() {
         APCost: 25,
     }
     allAbilities[9] = {
-        name: `Flicker`,
+        name: `Riposte`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
-                if (turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+                if (!isTargetDead(target)) {
+                    const mods = {
+                        isRiposte: true,
+                        abilityIndex: 9,
+                        attackRollDice: 100,
+                        attackBonus: caster.stats.dexterity,
+                        damageRollDice: {
+                            mainHandWeapon: caster.equipment.mainHand.damage,
+                            offHandWeapon: caster.equipment.offHand.damage,
+                            ability: null,
+                        },
+                        damageBonus: caster.stats.strength,
+                        critThreshold: 100,
+                        critMultiplier: 2,
+                        defendRollDice: 20,
+                        targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                        targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                        targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                        targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                        getDefendBonus: function () {
+                            return Math.max(this.targetParry, this.targetBlock)
+                        },
+                    };
+                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost 
                 }
             }
         },
-        APCost: 25,
+        APCost: 0,
     }
 }
 
@@ -924,7 +962,7 @@ function Char(name, race) {
     };
     this.useAbility = function (abilityIndex, target) {
         if (this.hp > 0) {
-            if (this.abilities.includes(+abilityIndex)) {
+            if (this.abilities.includes(+abilityIndex) || +abilityIndex === 9) {
                 allAbilities[abilityIndex].effect(this, target);
             }
         } else {
