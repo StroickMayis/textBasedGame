@@ -108,6 +108,9 @@ const combatLog = {
         console.log(`
             Start PC Turn:
             `);
+    },
+    casterOnlyBuff: function (caster, casterOnlyBuff) {
+        console.log(`${caster.name} casts ${casterOnlyBuff.name} on himself.`);
     }
 }
 
@@ -141,7 +144,12 @@ const effect = {
         const attackRoll = dice(mods.attackRollDice);
         const attack = attackRoll + mods.attackBonus;
 
-        const defendRoll = dice(mods.defendRollDice);
+        let defendRoll = null;
+        if(target.buffs.reflexiveFocus) {
+            defendRoll = Math.max(dice(mods.defendRollDice), dice(mods.defendRollDice));
+        } else {
+            defendRoll = dice(mods.defendRollDice);
+        }
         const defend = defendRoll + mods.getDefendBonus();
 
         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability);
@@ -335,6 +343,14 @@ const effect = {
             caster.buffs.guarding = casterBuff;
         }
     },
+    casterOnlyBuff: function (caster, mods) { // * Buff
+        const casterBuff = {
+            name: mods.buffNameForCaster,
+            desc: mods.buffDescForCaster,
+        }
+        caster.buffs[mods.buffNameForCasterBuffObj] = casterBuff;
+        combatLog.casterOnlyBuff(caster, casterBuff);
+    },
 };
 /* #region  LOGIC */
 
@@ -521,7 +537,7 @@ function defineAllAbilities() {
                 }
             }
         },
-        APCost: 25,
+        APCost: 20,
     }
     allAbilities[1] = {
         name: `Powerful Strike`,
@@ -563,10 +579,33 @@ function defineAllAbilities() {
         name: `Precision Strike`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
-                if (turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            abilityIndex: 1,
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.dexterity * 2,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: Math.floor(caster.stats.dexterity * 1.5),
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
             }
         },
@@ -585,7 +624,7 @@ function defineAllAbilities() {
                 }
             }
         },
-        APCost: 50,
+        APCost: 10,
     }
     allAbilities[4] = {
         name: `Guard`,
@@ -608,33 +647,61 @@ function defineAllAbilities() {
                 }
             }
         },
-        APCost: 75,
+        APCost: 50,
     }
     allAbilities[5] = {
         name: `Leaping Strike`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
-                if (turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            abilityIndex: 0,
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.dexterity,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: caster.stats.strength,
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
             }
         },
-        APCost: 25,
+        APCost: 20,
     }
     allAbilities[6] = {
-        name: `Riposte`,
+        name: `Reflexive Focus`, // TODO: Make this ability drain 5 ap every turn that it is active, also need a way to see that it is active and a way to disable it.
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
+            if(!caster.buffs.reflexiveFocus) {
                 if (turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
+                    const mods = {
+                        buffNameForCaster: `Reflexive Focus`,
+                        buffDescForCaster: `${caster.name} is focused on his defenses, giving advantage on defense rolls. `,
+                        buffNameForCasterBuffObj: `reflexiveFocus`,
+                    };
+                    effect.casterOnlyBuff(caster, mods); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
             }
         },
-        APCost: 25,
+        APCost: 5,
     }
     allAbilities[7] = {
         name: `Advise`,
@@ -1325,7 +1392,7 @@ defineAllRaces();
 defineAllTalents();
 defineAllArmors();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[3], PCs);
+characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[5], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
 characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs);
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
