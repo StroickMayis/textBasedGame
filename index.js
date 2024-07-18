@@ -109,8 +109,11 @@ const combatLog = {
             Start PC Turn:
             `);
     },
-    casterOnlyBuff: function (caster, casterOnlyBuff) {
-        console.log(`${caster.name} casts ${casterOnlyBuff.name} on himself.`);
+    casterOnlyBuff: function (caster, buff) {
+        console.log(`${caster.name} casts ${buff.name} on himself.`);
+    },
+    debuff: function (caster, target, targetDebuff) {
+        console.log(`${caster.name} casts ${targetDebuff.name} onto ${target.name}.`)
     }
 }
 
@@ -144,12 +147,10 @@ const effect = {
         const attackRoll = dice(mods.attackRollDice);
         const attack = attackRoll + mods.attackBonus;
 
-        let defendRoll = null;
-        if(target.buffs.reflexiveFocus) {
-            defendRoll = Math.max(dice(mods.defendRollDice), dice(mods.defendRollDice));
-        } else {
-            defendRoll = dice(mods.defendRollDice);
-        }
+
+        
+        let defendRollAdvantages = calcTargetDefendAdvatages(target);
+        defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
         const defend = defendRoll + mods.getDefendBonus();
 
         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability);
@@ -344,15 +345,52 @@ const effect = {
         }
     },
     casterOnlyBuff: function (caster, mods) { // * Buff
-        const casterBuff = {
-            name: mods.buffNameForCaster,
-            desc: mods.buffDescForCaster,
-        }
-        caster.buffs[mods.buffNameForCasterBuffObj] = casterBuff;
-        combatLog.casterOnlyBuff(caster, casterBuff);
+        const buff = mods;
+        caster.buffs[mods.buffNameForBuffObj] = buff;
+        combatLog.casterOnlyBuff(caster, buff);
+    },
+    debuff: function (caster, target, mods) { // * Buff
+        const targetDebuff = mods;
+        target.debuffs[mods.debuffNameForBuffObj] = targetDebuff;
+        combatLog.debuff(caster, target, targetDebuff);
     },
 };
 /* #region  LOGIC */
+
+function calcTargetDefendAdvatages(target) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
+    let defendRollAdvantages = [];
+    Object.keys(target.buffs).forEach((buffKey) => { 
+            if(target.buffs[buffKey].defendRollAdvantage) {
+            defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
+        } 
+    });
+    Object.keys(target.debuffs).forEach((buffKey) => {  
+        if(target.buffs[buffKey].defendRollAdvantage) {
+            defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
+        } 
+    });
+    return sumOfArray(defendRollAdvantages);
+}
+
+function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice size input, and a advantage or disadvantage count input (pos 1 will be a regular roll, lower will be disadvantage and higher will be advantage) returns the highest or lowest number respectiveley.
+        let arrOfRolls = [];
+        let isAdvantageCountPos;
+        if(advantageCount < 0) {
+            advantageCount *= -1;
+            isAdvantageCountPos = false;
+        } else {
+            isAdvantageCountPos = true;
+        }
+        advantageCount += 1;
+        for(i = 0; i < advantageCount; i++) {
+            arrOfRolls.push(dice(diceSize))
+        };
+        if(isAdvantageCountPos) {
+            return Math.max(...arrOfRolls);
+        } else {
+            return Math.min(...arrOfRolls);
+        }
+}
 
 function getGuardDefense(attackType, guarder) {
     const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
@@ -691,30 +729,42 @@ function defineAllAbilities() {
             if(!caster.buffs.reflexiveFocus) {
                 if (turn.AP >= this.APCost) {
                     const mods = {
-                        buffNameForCaster: `Reflexive Focus`,
-                        buffDescForCaster: `${caster.name} is focused on his defenses, giving advantage on defense rolls. `,
-                        buffNameForCasterBuffObj: `reflexiveFocus`,
+                        name: `Reflexive Focus`,
+                        desc: `${caster.name} is focused on his defenses, giving advantage on defense rolls. `,
+                        buffNameForBuffObj: `reflexiveFocus`,
+                        defendRollAdvantage: 1,
                     };
                     effect.casterOnlyBuff(caster, mods); turn.AP -= this.APCost
                 } else {
                     combatLog.noAP(this.name, this.APCost);
                 }
+            } else {
+                // TODO: Need a combat log for the target
             }
         },
         APCost: 5,
     }
     allAbilities[7] = {
-        name: `Advise`,
+        name: `Reveal Weakness`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
-                if (turn.AP >= this.APCost) {
-                    effect.attack(caster, target); turn.AP -= this.APCost
-                } else {
-                    combatLog.noAP(this.name, this.APCost);
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            name: `Reveal Weakness`,
+                            desc: `${caster.name} has revealed ${target.name}'s weakness, giving him disadvantage on defense, and he takes 1 extra damage from all attacks. `,
+                            debuffNameForBuffObj: `revealWeakness`,
+                            defendRollAdvantage: -1,
+                            
+                        };
+                        effect.debuff(caster, target, mods); turn.AP -= this.APCost
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
                 }
             }
         },
-        APCost: 25,
+        APCost: 75,
     }
     allAbilities[8] = {
         name: `Flesh Eating`,
