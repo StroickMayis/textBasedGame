@@ -20,7 +20,7 @@ const combatLog = {
         let damageDisplayArray = this.damageDisplay(damage);
         targetDamageSplit = Math.floor((damageDisplayArray[1] * 2) / 2);
         guardDamageSplit = Math.ceil((damageDisplayArray[1] * 2) / 2);
-        if(target.buffs.guarded) {
+        if (target.buffs.guarded) {
             console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} takes ${guardDamageSplit}.`);
         } else {
             console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
@@ -56,7 +56,7 @@ const combatLog = {
 
         targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
         guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
-        if(target.buffs.guarded) {
+        if (target.buffs.guarded) {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
@@ -144,29 +144,38 @@ const effect = {
         const ability = allAbilities[mods.abilityIndex];
         let riposte = false;
 
-        const attackRoll = dice(mods.attackRollDice);
+        /* #region  CASTER ATTACK */
+        let attackRollAdvantages = calcTargetAttackAdvatages(caster);
+        attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
         const attack = attackRoll + mods.attackBonus;
+        /* #endregion */
 
-
-        
+        /* #region  TARGET DEFEND */
         let defendRollAdvantages = calcTargetDefendAdvatages(target);
         defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
         const defend = defendRoll + mods.getDefendBonus();
+        /* #endregion */
 
         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability);
-        if(!mods.isRiposte) {
-            if((Math.ceil(attack / 2)) <= defend) {
+
+        /* #region  CHECK & SET RIPOSTE */
+        if (!mods.isRiposte) {
+            if ((Math.ceil(attack / 2)) <= defend) {
                 riposte = true
             }
         }
-        if (attack <= defend) { // * ON DEFEND
+        /* #endregion */
+
+        /* #region  IF TARGET DEFENDS ATTACK */
+        if (attack <= defend) {
             combatLog.defend(caster, target);
-            if(riposte) {
+            if (riposte) {
                 combatLog.riposte(target, caster);
                 target.useAbility(9, caster);
             }
             return;
         }
+        /* #endregion */
 
         const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
 
@@ -179,7 +188,7 @@ const effect = {
                 target.hp -= 2;
             } else { // * Resistances and buff and debuff checks all go here
 
-                if(target.buffs.guarded) {
+                if (target.buffs.guarded) {
                     totalDamage = sumOfArray(damageRollArr) * mods.critMultiplier;
                     targetDamage = Math.floor(totalDamage / 2);
                     guardDamage = Math.ceil(totalDamage / 2);
@@ -194,7 +203,7 @@ const effect = {
 
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
 
-        if(riposte) {
+        if (riposte) {
             combatLog.riposte(target, caster);
             target.useAbility(9, caster);
         }
@@ -202,13 +211,13 @@ const effect = {
         if (sumOfArray(damageRollArr) < 1) {
             target.hp -= 1;
         } else { // * Resistances and buff and debuff checks all go here
-            if(target.buffs.guarded) {
+            if (target.buffs.guarded) {
                 const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
                 totalDamage = sumOfArray(damageRollArr);
                 targetDamage = Math.floor(totalDamage / 2);
                 guardDamage = Math.ceil(totalDamage / 2);
                 target.hp -= targetDamage;
-                if(attack > guardDefense) {
+                if (attack > guardDefense) {
                     combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
                     target.buffs.guarded.caster.hp -= guardDamage;
                 } else {
@@ -334,7 +343,7 @@ const effect = {
             target: target,
         }
         target.buffs.guarded = targetBuff;
-        if(caster.buffs.guarding) {
+        if (caster.buffs.guarding) {
             combatLog.guardSwitch(caster, target);
             delete caster.buffs.guarding.target.buffs.guarded;
             delete caster.buffs.guarding;
@@ -357,76 +366,91 @@ const effect = {
 };
 /* #region  LOGIC */
 
+function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
+    let attackRollAdvantages = [];
+    Object.keys(caster.buffs).forEach((buffKey) => {
+        if (caster.buffs[buffKey].attackRollAdvantage) {
+            attackRollAdvantages.push(caster.buffs[buffKey].attackRollAdvantage);
+        }
+    });
+    Object.keys(caster.debuffs).forEach((buffKey) => {
+        if (caster.buffs[buffKey].attackRollAdvantage) {
+            attackRollAdvantages.push(caster.buffs[buffKey].attackRollAdvantage);
+        }
+    });
+    return sumOfArray(attackRollAdvantages);
+}
+
 function calcTargetDefendAdvatages(target) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
     let defendRollAdvantages = [];
-    Object.keys(target.buffs).forEach((buffKey) => { 
-            if(target.buffs[buffKey].defendRollAdvantage) {
+    Object.keys(target.buffs).forEach((buffKey) => {
+        if (target.buffs[buffKey].defendRollAdvantage) {
             defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
-        } 
+        }
     });
-    Object.keys(target.debuffs).forEach((buffKey) => {  
-        if(target.buffs[buffKey].defendRollAdvantage) {
+    Object.keys(target.debuffs).forEach((buffKey) => {
+        if (target.buffs[buffKey].defendRollAdvantage) {
             defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
-        } 
+        }
     });
     return sumOfArray(defendRollAdvantages);
 }
 
 function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice size input, and a advantage or disadvantage count input (pos 1 will be a regular roll, lower will be disadvantage and higher will be advantage) returns the highest or lowest number respectiveley.
-        let arrOfRolls = [];
-        let isAdvantageCountPos;
-        if(advantageCount < 0) {
-            advantageCount *= -1;
-            isAdvantageCountPos = false;
-        } else {
-            isAdvantageCountPos = true;
-        }
-        advantageCount += 1;
-        for(i = 0; i < advantageCount; i++) {
-            arrOfRolls.push(dice(diceSize))
-        };
-        if(isAdvantageCountPos) {
-            return Math.max(...arrOfRolls);
-        } else {
-            return Math.min(...arrOfRolls);
-        }
+    let arrOfRolls = [];
+    let isAdvantageCountPos;
+    if (advantageCount < 0) {
+        advantageCount *= -1;
+        isAdvantageCountPos = false;
+    } else {
+        isAdvantageCountPos = true;
+    }
+    advantageCount += 1;
+    for (i = 0; i < advantageCount; i++) {
+        arrOfRolls.push(dice(diceSize))
+    };
+    if (isAdvantageCountPos) {
+        return Math.max(...arrOfRolls);
+    } else {
+        return Math.min(...arrOfRolls);
+    }
 }
 
 function getGuardDefense(attackType, guarder) {
     const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
     let returnValue;
-    switch(attackType) {
+    switch (attackType) {
         case `melee`:
             const guarderParry = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.dexterity / 4) + guarder.parry);
             returnValue = Math.max(guarderParry, guarderBlock);
-        break;
+            break;
         case `ranged`:
             const guarderDodge = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.agility / 4) + guarder.dodge);
             returnValue = Math.max(guarderDodge, guarderBlock);
-        break;
+            break;
         case `magic`:
             const guarderDisrupt = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.willpower / 4) + guarder.disrupt);
             returnValue = Math.max(guarderDisrupt, guarderBlock);
-        break;
+            break;
     }
     return returnValue;
 }
 
 function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
     array.forEach((ele) => {
-        if(ele[propertyName] === value) {
+        if (ele[propertyName] === value) {
             let index = array.indexOf(ele);
             return index;
-        } 
+        }
         return false;
     });
 }
 
 function doesArrayOfObjectsInclude(array, propertyName, value) {
     array.forEach((ele) => {
-        if(ele[propertyName] === value) {
+        if (ele[propertyName] === value) {
             return true;
-        } 
+        }
         return false;
     });
 }
@@ -669,7 +693,7 @@ function defineAllAbilities() {
         effect: function (caster, target) {
             if (!isBuffingEnemies(caster, target)) {
                 if (!isTargetDead(target)) {
-                    if(!target.buffs.guarded) {
+                    if (!target.buffs.guarded) {
                         if (turn.AP >= this.APCost) {
                             const mods = {
                                 buffNameForTarget: `Guarded`,
@@ -726,7 +750,7 @@ function defineAllAbilities() {
     allAbilities[6] = {
         name: `Reflexive Focus`, // TODO: Make this ability drain 5 ap every turn that it is active, also need a way to see that it is active and a way to disable it.
         effect: function (caster, target) {
-            if(!caster.buffs.reflexiveFocus) {
+            if (!caster.buffs.reflexiveFocus) {
                 if (turn.AP >= this.APCost) {
                     const mods = {
                         name: `Reflexive Focus`,
@@ -755,7 +779,7 @@ function defineAllAbilities() {
                             desc: `${caster.name} has revealed ${target.name}'s weakness, giving him disadvantage on defense, and he takes 1 extra damage from all attacks. `,
                             debuffNameForBuffObj: `revealWeakness`,
                             defendRollAdvantage: -1,
-                            
+
                         };
                         effect.debuff(caster, target, mods); turn.AP -= this.APCost
                     } else {
@@ -806,7 +830,7 @@ function defineAllAbilities() {
                             return Math.max(this.targetParry, this.targetBlock)
                         },
                     };
-                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost 
+                    effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                 }
             }
         },
