@@ -1009,6 +1009,42 @@ function defineAllTalents() {
     };
 }
 
+const allFeats = [];
+function defineAllFeats() {
+    allFeats[0] = {
+        name: `Brute Force`,
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+    allFeats[1] = {
+        name: `Heavy Strikes`,
+        parry: 1,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+}
+
+const allBackgrounds = [];
+function defineAllBackgrounds() {
+    allBackgrounds[0] = {
+        name: `Peasant`,
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+    allBackgrounds[1] = {
+        name: `Mercenary`,
+        parry: 1,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+}
+
 /* #endregion All Lists*/
 
 /* #region  Groups */
@@ -1441,6 +1477,8 @@ defineAllWeapons();
 defineAllRaces();
 defineAllTalents();
 defineAllArmors();
+defineAllFeats();
+defineAllBackgrounds();
 
 characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[5], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
