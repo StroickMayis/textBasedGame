@@ -114,6 +114,9 @@ const combatLog = {
     },
     debuff: function (caster, target, targetDebuff) {
         console.log(`${caster.name} casts ${targetDebuff.name} onto ${target.name}.`)
+    },
+    targetNotInRange: function (target, abilityName) {
+        console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
     }
 }
 
@@ -126,7 +129,7 @@ const turn = {
     end: function () {
         combatLog.startNPCTurn();
         this.AP = 100;
-        while (this.AP > 0) {
+        while (this.AP > 0) { // TODO: Need to fix this big time.
             // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
             // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
             const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
@@ -549,13 +552,138 @@ function isHealingDeadTarget(target, abilityName) {
         console.log(`${abilityName} is not powerful enough to ressurect ${target.name}.`)
         return true
     }
-}
+};
 
 function forceHPtoZero(char) {
     if (char.hp < 0) {
         char.hp = 0;
     }
-}
+};
+
+function isTargetInRangeOfCaster(caster, target, abilityRange) {
+    let casterRowConverted;
+    let targetRowConverted;
+    if (caster.groupName !== target.groupName) {
+        if(caster.groupName === `PC`) {
+            switch (caster.row) {
+                case 3:
+                    casterRowConverted = 6;
+                break;
+                case 2:
+                    casterRowConverted = 5;
+                break;
+                case 1:
+                    casterRowConverted = 4;
+                break;
+            }
+            switch (target.row) {
+                case 3:
+                    targetRowConverted = 1;
+                break;
+                case 2:
+                    targetRowConverted = 2;
+                break;
+                case 1:
+                    targetRowConverted = 3;
+                break;
+            }
+            if(Math.abs(casterRowConverted - targetRowConverted) <= abilityRange) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        if(caster.groupName === `NPC`) {
+            switch (caster.row) {
+                case 3:
+                    casterRowConverted = 1;
+                break;
+                case 2:
+                    casterRowConverted = 2;
+                break;
+                case 1:
+                    casterRowConverted = 3;
+                break;
+            }
+            switch (target.row) {
+                case 3:
+                    targetRowConverted = 6;
+                break;
+                case 2:
+                    targetRowConverted = 5;
+                break;
+                case 1:
+                    targetRowConverted = 4;
+                break;
+            }
+            if(Math.abs(casterRowConverted - targetRowConverted) <= abilityRange) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    } else {
+        if(caster.groupName === `PC`) {
+            switch (caster.row) {
+                case 3:
+                    casterRowConverted = 6;
+                break;
+                case 2:
+                    casterRowConverted = 5;
+                break;
+                case 1:
+                    casterRowConverted = 4;
+                break;
+            }
+            switch (target.row) {
+                case 3:
+                    targetRowConverted = 6;
+                break;
+                case 2:
+                    targetRowConverted = 5;
+                break;
+                case 1:
+                    targetRowConverted = 4;
+                break;
+            }
+            if((Math.abs(casterRowConverted - targetRowConverted) <= abilityRange)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        if(caster.groupName === `NPC`) {
+            switch (caster.row) {
+                case 3:
+                    casterRowConverted = 1;
+                break;
+                case 2:
+                    casterRowConverted = 2;
+                break;
+                case 1:
+                    casterRowConverted = 3;
+                break;
+            }
+            switch (target.row) {
+                case 3:
+                    targetRowConverted = 1;
+                break;
+                case 2:
+                    targetRowConverted = 2;
+                break;
+                case 1:
+                    targetRowConverted = 3;
+                break;
+            }
+            if((Math.abs(casterRowConverted - targetRowConverted) <= abilityRange)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    
+};
 
 /* #endregion END LOGIC*/
 
@@ -573,6 +701,7 @@ function defineAllAbilities() {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 0,
+                            abilityRange: caster.equipment.mainHand.range,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity,
                             damageRollDice: {
@@ -592,7 +721,11 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -609,6 +742,7 @@ function defineAllAbilities() {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 1,
+                            abilityRange: 1,
                             attackRollDice: 100,
                             attackBonus: caster.stats.strength,
                             damageRollDice: {
@@ -628,7 +762,11 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -645,6 +783,7 @@ function defineAllAbilities() {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 1,
+                            abilityRange: caster.equipment.mainHand.range,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity * 2,
                             damageRollDice: {
@@ -664,7 +803,11 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -679,7 +822,33 @@ function defineAllAbilities() {
             if (!isHealingEnemies(caster, target)) {
                 if (!isHealingDeadTarget(target, this.name)) {
                     if (turn.AP >= this.APCost) {
-                        effect.heal(caster, target); turn.AP -= this.APCost
+                        const mods = {
+                            abilityIndex: 1,
+                            abilityRange: 1,
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.dexterity * 2,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: Math.floor(caster.stats.dexterity * 1.5),
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.heal(caster, target); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -696,12 +865,18 @@ function defineAllAbilities() {
                     if (!target.buffs.guarded) {
                         if (turn.AP >= this.APCost) {
                             const mods = {
+                                abilityIndex: 1,
+                                abilityRange: 1,
                                 buffNameForTarget: `Guarded`,
                                 buffNameForCaster: `Guarding`,
                                 buffDescForTarget: `Guarded by ${caster.name}`,
                                 buffDescForCaster: `Guarding ${target.name}`,
                             };
-                            effect.guard(caster, target, mods); turn.AP -= this.APCost
+                            if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                                effect.guard(caster, target, mods); turn.AP -= this.APCost
+                            } else {
+                                combatLog.targetNotInRange(target, this.name);
+                            }
                         } else {
                             combatLog.noAP(this.name, this.APCost);
                         }
@@ -719,6 +894,7 @@ function defineAllAbilities() {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 0,
+                            abilityRange: 2,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity,
                             damageRollDice: {
@@ -738,7 +914,11 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -779,9 +959,13 @@ function defineAllAbilities() {
                             desc: `${caster.name} has revealed ${target.name}'s weakness, giving him disadvantage on defense, and he takes 1 extra damage from all attacks. `,
                             debuffNameForBuffObj: `revealWeakness`,
                             defendRollAdvantage: -1,
-
+                            abilityRange: 5,
                         };
-                        effect.debuff(caster, target, mods); turn.AP -= this.APCost
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.debuff(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
                     } else {
                         combatLog.noAP(this.name, this.APCost);
                     }
@@ -844,6 +1028,7 @@ function defineAllWeapons() {
         name: `Unarmed`,
         type: `melee`,
         damage: [[1, 4]],
+        range: 1,
         parry: 0,
         dodge: 0,
         disrupt: 0,
@@ -853,6 +1038,7 @@ function defineAllWeapons() {
         name: `Dagger`,
         type: `melee`,
         damage: [[2, 4]],
+        range: 1,
         parry: 1,
         dodge: 0,
         disrupt: 0,
@@ -1105,6 +1291,7 @@ function Char(name, race) {
     this.stats = race.stats;
     this.buffs = {};
     this.debuffs = {};
+    this.row = 1;
     this.equipment = {
         mainHand: allWeapons[0],
         offHand: allWeapons[0],
@@ -1217,12 +1404,19 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #region  DOM */
 
 const DOM = {
+    moveRowButtons: document.querySelector(`.moveRowButtons`),
     equipmentList: document.querySelector(`.equipmentList`),
     endTurnButton: document.querySelector(`.endTurnButton`),
     APCount: document.querySelector(`.APCount`),
     casterSelectionDisplay: document.querySelector(`.casterSelectionDisplay`),
     targetSelectionDisplay: document.querySelector(`.targetSelectionDisplay`),
     PCBar: document.querySelector(`.PCBar`),
+    PCBarRow1: document.querySelector(`.PCBarRow1`),
+    PCBarRow2: document.querySelector(`.PCBarRow2`),
+    PCBarRow3: document.querySelector(`.PCBarRow3`),
+    NPCBarRow1: document.querySelector(`.NPCBarRow1`),
+    NPCBarRow2: document.querySelector(`.NPCBarRow2`),
+    NPCBarRow3: document.querySelector(`.NPCBarRow3`),
     NPCBar: document.querySelector(`.NPCBar`),
     abilityListContainer: document.querySelector(`.abilityListContainer`),
     botBar: document.querySelector(`.botBar`),
@@ -1235,6 +1429,22 @@ const DOM = {
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
             turn.end();
+        })
+    },
+
+    listenForMoveRowButtons: function () {
+        this.moveRowButtons.addEventListener(`click`, (e) => {
+            if(e.target.className === `up` && this.casterSelectionState !== null) {
+                if(this.casterSelectionState.row > 1) {
+                    this.casterSelectionState.row -= 1;
+                }
+            }
+            if(e.target.className === `down` && this.casterSelectionState !== null) {
+                if(this.casterSelectionState.row < 3) {
+                    this.casterSelectionState.row += 1;
+                }
+            }
+            this.update();
         })
     },
 
@@ -1406,8 +1616,12 @@ const DOM = {
     },
 
     update: function () {
-        this.PCBar.innerHTML = ``;
-        this.NPCBar.innerHTML = ``;
+        this.NPCBarRow3.innerHTML = ``;
+        this.NPCBarRow2.innerHTML = ``;
+        this.NPCBarRow1.innerHTML = ``;
+        this.PCBarRow1.innerHTML = ``;
+        this.PCBarRow2.innerHTML = ``;
+        this.PCBarRow3.innerHTML = ``;
         for (let i = (PCs.charList.length - 1); i >= 0; i--) {
             this.createChar(PCs.charList[i], i)
         };
@@ -1457,7 +1671,7 @@ const DOM = {
                     i.style.borderColor = `yellow`;
                     this.targetSelection = i;
                 }
-                this.PCBar.append(i)
+                this.appendPCCharToRow(char, i);
                 break;
 
             case `NPC`:
@@ -1465,7 +1679,7 @@ const DOM = {
                     i.style.borderColor = `red`;
                     this.targetSelection = i;
                 }
-                this.NPCBar.append(i)
+                this.appendNPCCharToRow(char, i);
                 break;
 
             case `Unassigned`:
@@ -1491,6 +1705,32 @@ const DOM = {
             i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
         }
         this.equipmentList.append(i);
+    },
+    appendPCCharToRow: function (char, i) {
+        switch (char.row) {
+            case 1: 
+                this.PCBarRow1.append(i);
+            break;
+            case 2: 
+                this.PCBarRow2.append(i);
+            break;
+            case 3: 
+                this.PCBarRow3.append(i);
+            break;
+        }
+    },
+    appendNPCCharToRow: function (char, i) {
+        switch (char.row) {
+            case 1: 
+                this.NPCBarRow1.append(i);
+            break;
+            case 2: 
+                this.NPCBarRow2.append(i);
+            break;
+            case 3: 
+                this.NPCBarRow3.append(i);
+            break;
+        }
     },
 };
 
@@ -1519,3 +1759,4 @@ DOM.listenForCasterSelection();
 DOM.listenForBotBar();
 DOM.listenForEndTurnButton();
 DOM.listenForTargetSelection();
+DOM.listenForMoveRowButtons();

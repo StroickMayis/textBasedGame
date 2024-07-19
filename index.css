@@ -53,6 +53,7 @@ body {
 .NPCBar {
     border: 1px solid white;
     flex: 1 1 auto;
+    flex-direction: column;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -62,6 +63,7 @@ body {
     border: 1px solid white;
     flex: 1 1 auto;
     display: flex;
+    flex-direction: column;
     justify-content: space-around;
     align-items: center;
 }
@@ -121,4 +123,47 @@ body {
 
 .topBar div {
     flex: 1 1 auto;
+}
+
+.PCBarRow1, 
+.PCBarRow2, 
+.PCBarRow3,
+.NPCBarRow1,
+.NPCBarRow2,
+.NPCBarRow3
+ {
+    align-items: center;
+    justify-content: space-around;
+    display: flex;
+    width: 100%;
+    flex: 1 1 125px;
+    border: 1px solid white;
+}
+
+.divider {
+    padding: 15px;
+}
+
+.chatDivision {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.moveRowButtons {
+    border: 1px solid white;
+    flex: .09 1 auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.moveRowButtons div{
+    border: 1px solid white;
+    flex: 1 1 auto;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
