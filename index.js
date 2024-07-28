@@ -52,7 +52,18 @@ const combatLog = {
         return damageRollDisplay;
     },
     hit: function (caster, target, damage) {
-        let damageDisplayArray = this.damageDisplay(damage);
+        let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
+        targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
+        guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
+        if (target.buffs.guarded) {
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
+        } else {
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
+        }
+
+    },
+    hitBackupCopy: function (caster, target, damage) {
+        let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
 
         targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
         guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
@@ -117,12 +128,41 @@ const combatLog = {
     },
     targetNotInRange: function (target, abilityName) {
         console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
+    },
+    damageResist: {
+        0: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
+        },
+        1: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} piercing damage against ${target.name}'s ${resist} piercing resistance. ${target.name} takes ${damageSum} piercing damage.`);
+        },
+        2: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} ice damage against ${target.name}'s ${resist} ice resistance. ${target.name} takes ${damageSum} ice damage.`);
+        },
+        3: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} fire damage against ${target.name}'s ${resist} fire resistance. ${target.name} takes ${damageSum} fire damage.`);
+        },
+        4: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} corrosive damage against ${target.name}'s ${resist} corrosive resistance. ${target.name} takes ${damageSum} corrosive damage.`);
+        },
+        5: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} poison damage against ${target.name}'s ${resist} poison resistance. ${target.name} takes ${damageSum} poison damage.`);
+        },
+        6: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} spiritual damage against ${target.name}'s ${resist} spiritual resistance. ${target.name} takes ${damageSum} spiritual damage.`);
+        },
+        7: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} lightning damage against ${target.name}'s ${resist} lightning resistance. ${target.name} takes ${damageSum} lightning damage.`);
+        },
+        8: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} arcane damage against ${target.name}'s ${resist} arcane resistance. ${target.name} takes ${damageSum} arcane damage.`);
+        },
     }
 }
 
 /* #endregion Combat Log*/
 
-/* #region  Ability Effects & Logic */
+/* #region  Ability Effects & Logic */ 
 
 const turn = {
     AP: 100,
@@ -146,6 +186,7 @@ const effect = {
     meleeAttack: function (caster, target, mods) {
         const ability = allAbilities[mods.abilityIndex];
         let riposte = false;
+        let damageSum;
 
         /* #region  CASTER ATTACK */
         let attackRollAdvantages = calcTargetAttackAdvatages(caster);
@@ -181,8 +222,8 @@ const effect = {
         /* #endregion */
 
         const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
-
         damageRollArr.push(mods.damageBonus);
+        const totalDamagePerResist = sumOfDamageArray(damageRollArr);
 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
             combatLog.critHit(caster, target, damageRollArr);
@@ -203,7 +244,7 @@ const effect = {
             }
             return;
         }
-
+        console.log(damageRollArr)
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
 
         if (riposte) {
@@ -211,25 +252,22 @@ const effect = {
             target.useAbility(9, caster);
         }
 
-        if (sumOfArray(damageRollArr) < 1) {
-            target.hp -= 1;
-        } else { // * Resistances and buff and debuff checks all go here
-            if (target.buffs.guarded) {
-                const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-                totalDamage = sumOfArray(damageRollArr);
-                targetDamage = Math.floor(totalDamage / 2);
-                guardDamage = Math.ceil(totalDamage / 2);
-                target.hp -= targetDamage;
-                if (attack > guardDefense) {
-                    combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                    target.buffs.guarded.caster.hp -= guardDamage;
-                } else {
-                    combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
-                }
+        if (target.buffs.guarded) {
+            const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
+            targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+            target.hp -= targetDamage;
+            if (attack > guardDefense) {
+                combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
+                guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                target.buffs.guarded.caster.hp -= guardDamage;
             } else {
-                target.hp -= sumOfArray(damageRollArr);
+                combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
             }
+        } else {
+            damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
+            target.hp -= sumOfArray(damageSum); 
         }
+        
         return;
     },
 
@@ -368,6 +406,87 @@ const effect = {
     },
 };
 /* #region  LOGIC */
+function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for the guard.
+    let damageSum = [0,0,0,0,0,0,0,0,0];
+    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+        if(damage[i] > 0) { // * If the damage is more than 0
+            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
+                damageSum[i] += 1;
+            } else if(resists[i] < 0){  // * If the resist is negative
+                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
+                    damageSum[i] += damage[i] * 2;
+                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
+                    damageSum[i] += damage[i] + (resists[i] * -1);
+                }
+            } else { // * If the resist is positive, but is less than the total damage.
+                damageSum[i] += (damage[i] - resists[i])
+            }
+            damageSum[i] = Math.floor(damageSum[i] / 2);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
+            damageSum[i] = Math.floor(damageSum[i] / 2);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            damageSum[i] += 1;
+        } else {
+            damageSum[i] = 0;
+        }
+    }
+    return damageSum;
+}
+
+function calcTargetWithGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for target with guard.
+    let damageSum = [0,0,0,0,0,0,0,0,0];
+    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+        if(damage[i] > 0) { // * If the damage is more than 0
+            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
+                damageSum[i] += 1;
+            } else if(resists[i] < 0){  // * If the resist is negative
+                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
+                    damageSum[i] += damage[i] * 2;
+                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
+                    damageSum[i] += damage[i] + (resists[i] * -1);
+                }
+            } else { // * If the resist is positive, but is less than the total damage.
+                damageSum[i] += (damage[i] - resists[i])
+            }
+            damageSum[i] = Math.ceil(damageSum[i] / 2);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
+            damageSum[i] = Math.ceil(damageSum[i] / 2);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            damageSum[i] += 1;
+        } else {
+            damageSum[i] = 0;
+        }
+    }
+    return damageSum;
+}
+
+function calcTotalDamageAfterResists(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage.
+    let damageSum = [0,0,0,0,0,0,0,0,0];
+    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+        if(damage[i] > 0) { // * If the damage is more than 0
+            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
+                damageSum[i] += 1;
+            } else if(resists[i] < 0){  // * If the resist is negative
+                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
+                    damageSum[i] += damage[i] * 2;
+                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
+                    damageSum[i] += damage[i] + (resists[i] * -1);
+                }
+            } else { // * If the resist is positive, but is less than the total damage.
+                damageSum[i] += (damage[i] - resists[i])
+            }
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            damageSum[i] += 1;
+        } else {
+            damageSum[i] = 0;
+        }
+    }
+    return damageSum;
+}
 
 function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
     let attackRollAdvantages = [];
@@ -469,14 +588,15 @@ function concatRollDice(...args) { // * Takes multiple 2D dice array input like 
     return outputArr;
 }
 
-function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result.
+function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result, now with resistances.
     if (diceArr === null) {
         return null;
     }
     let rollArr = [];
     for (let i = 0; i < diceArr.length; i++) {
-        for (let x = 0; x < diceArr[i][0]; x++) {
-            rollArr.push(dice(diceArr[i][1]));
+        for (let x = 0; x < diceArr[i][1]; x++) {
+
+            rollArr.push([diceArr[i][0],dice(diceArr[i][2])]);
         }
     }
     return rollArr;
@@ -488,6 +608,17 @@ function dice(dMax) { // * Takes an integer number X as input and outputs a rand
 
 function diceMinus1(dMax) { // * Takes an integer number X as input and outputs a random number between 0 and X.
     return Math.floor(Math.random() * dMax + 1) - 1;
+}
+
+function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was sumed.
+    if (arrayOfNumbers === null) {
+        return null;
+    }
+    let sum = [0,0,0,0,0,0,0,0,0];
+    for (let i = 0; i < arrayOfNumbers.length; i++) {
+        sum[arrayOfNumbers[i][0]] += arrayOfNumbers[i][1];
+    }
+    return sum;
 }
 
 function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
@@ -709,7 +840,7 @@ function defineAllAbilities() {
                                 offHandWeapon: caster.equipment.offHand.damage,
                                 ability: null,
                             },
-                            damageBonus: caster.stats.strength,
+                            damageBonus: [0, caster.stats.strength],
                             critThreshold: 100,
                             critMultiplier: 2,
                             defendRollDice: 20,
@@ -1027,7 +1158,7 @@ function defineAllWeapons() {
     allWeapons[0] = {
         name: `Unarmed`,
         type: `melee`,
-        damage: [[1, 4]],
+        damage: [[0, 1, 4]],
         range: 1,
         parry: 0,
         dodge: 0,
@@ -1037,7 +1168,7 @@ function defineAllWeapons() {
     allWeapons[1] = {
         name: `Dagger`,
         type: `melee`,
-        damage: [[2, 4]],
+        damage: [[0, 2, 4]],
         range: 1,
         parry: 1,
         dodge: 0,
@@ -1078,17 +1209,18 @@ function defineAllRaces() {
             intelligence: 4,
             charisma: 0,
         },
-        // resists: {
-        //     flat: 0,
-        //     piercing: 0,
-        //     ice: -5,
-        //     fire: -5,
-        //     corrosive: -5,
-        //     poison: -5,
-        //     spiritual: -5,
-        //     lighting: -5,
-        //     arcane: -5,
-        // },
+        resists: {
+            flat: 0,
+            piercing: 0,
+            ice: -5,
+            fire: -5,
+            corrosive: -5,
+            poison: -5,
+            spiritual: -5,
+            lighting: -5,
+            arcane: -5,
+        },
+        resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
     allRaces[1] = {
         name: `Elf`,
@@ -1102,17 +1234,18 @@ function defineAllRaces() {
             intelligence: 8,
             charisma: 0,
         },
-        // resists: {
-        //     flat: 0,
-        //     piercing: 0,
-        //     ice: -5,
-        //     fire: -5,
-        //     corrosive: -5,
-        //     poison: -5,
-        //     spiritual: -5,
-        //     lighting: -5,
-        //     arcane: -5,
-        // },
+        resists: {
+            flat: 0,
+            piercing: 0,
+            ice: -5,
+            fire: -5,
+            corrosive: -5,
+            poison: -5,
+            spiritual: -5,
+            lighting: -5,
+            arcane: -5,
+        },
+        resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
     allRaces[2] = {
         name: `Dwarf`,
@@ -1126,17 +1259,19 @@ function defineAllRaces() {
             intelligence: 4,
             charisma: 0,
         },
-        // resists: {
-        //     flat: 0,
-        //     piercing: 0,
-        //     ice: -3,
-        //     fire: -3,
-        //     corrosive: -3,
-        //     poison: -3,
-        //     spiritual: -3,
-        //     lighting: -3,
-        //     arcane: -3,
-        // },
+        resists: {
+            flat: 0,
+            piercing: 0,
+            ice: -3,
+            fire: -3,
+            corrosive: -3,
+            poison: -3,
+            spiritual: -3,
+            lighting: -3,
+            arcane: -3,
+        },
+        resistsArray: [0,0,-3,-3,-3,-3,-3,-3,-3],   
+
     };
     allRaces[3] = {
         name: `Saurus`,
@@ -1150,17 +1285,18 @@ function defineAllRaces() {
             intelligence: -14,
             charisma: -18,
         },
-        // resists: {
-        //     flat: 5,
-        //     piercing: 5,
-        //     ice: 0,
-        //     fire: 0,
-        //     corrosive: 0,
-        //     poison: 0,
-        //     spiritual: -5,
-        //     lighting: 0,
-        //     arcane: -5,
-        // },
+        resists: {
+            flat: 5,
+            piercing: 5,
+            ice: 0,
+            fire: 0,
+            corrosive: 0,
+            poison: 0,
+            spiritual: -5,
+            lighting: 0,
+            arcane: -5,
+        },
+        resistsArray: [5,5,0,0,0,0,-5,0,-5],   
     };
 }
 
@@ -1289,6 +1425,8 @@ function Char(name, race) {
     this.hp = 100;
     this.abilities = [0];
     this.stats = race.stats;
+    this.resists = race.resists;
+    this.resistsArray = race.resistsArray; 
     this.buffs = {};
     this.debuffs = {};
     this.row = 1;
@@ -1358,7 +1496,6 @@ function Char(name, race) {
             saddlebag: false,
             properties: false,
         };
-        this.resists = race.resists; 
     */
 
 };
