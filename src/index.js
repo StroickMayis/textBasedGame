@@ -1,9 +1,3 @@
-// Note: You can only use single quotes (') or double quotes (") for import statements 
-import { functionOne } from './functionOne';
-
-functionOne(); // this should work as expected!
-
-
 /* #region Notes*/
 
 // timeToCast converts to the following:
@@ -196,13 +190,13 @@ const effect = {
 
         /* #region  CASTER ATTACK */
         let attackRollAdvantages = calcTargetAttackAdvatages(caster);
-        let attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
+        attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
         const attack = attackRoll + mods.attackBonus;
         /* #endregion */
 
         /* #region  TARGET DEFEND */
         let defendRollAdvantages = calcTargetDefendAdvatages(target);
-        let defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
+        defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
         const defend = defendRoll + mods.getDefendBonus();
         /* #endregion */
 
@@ -534,7 +528,7 @@ function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice si
         isAdvantageCountPos = true;
     }
     advantageCount += 1;
-    for (let i = 0; i < advantageCount; i++) {
+    for (i = 0; i < advantageCount; i++) {
         arrOfRolls.push(dice(diceSize))
     };
     if (isAdvantageCountPos) {
@@ -584,7 +578,7 @@ function doesArrayOfObjectsInclude(array, propertyName, value) {
 }
 
 function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
-    let outputArr = [];
+    outputArr = [];
     args.forEach((el) => {
         if (el) {
             let i = rollDice(el);
