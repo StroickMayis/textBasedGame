@@ -1,3 +1,7 @@
+import "./index.css"; 
+
+"use strict";
+
 /* #region Notes*/
 
 // timeToCast converts to the following:
@@ -53,8 +57,8 @@ const combatLog = {
     },
     hit: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
-        targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
-        guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
+        let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
+        let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
         if (target.buffs.guarded) {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
@@ -64,9 +68,8 @@ const combatLog = {
     },
     hitBackupCopy: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
-
-        targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
-        guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
+        let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
+        let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
         if (target.buffs.guarded) {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
@@ -190,13 +193,13 @@ const effect = {
 
         /* #region  CASTER ATTACK */
         let attackRollAdvantages = calcTargetAttackAdvatages(caster);
-        attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
+        let attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
         const attack = attackRoll + mods.attackBonus;
         /* #endregion */
 
         /* #region  TARGET DEFEND */
         let defendRollAdvantages = calcTargetDefendAdvatages(target);
-        defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
+        let defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
         const defend = defendRoll + mods.getDefendBonus();
         /* #endregion */
 
@@ -408,7 +411,7 @@ const effect = {
 /* #region  LOGIC */
 function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for the guard.
     let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
         if(damage[i] > 0) { // * If the damage is more than 0
             if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
                 damageSum[i] += 1;
@@ -436,7 +439,7 @@ function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 ind
 
 function calcTargetWithGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for target with guard.
     let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
         if(damage[i] > 0) { // * If the damage is more than 0
             if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
                 damageSum[i] += 1;
@@ -464,7 +467,7 @@ function calcTargetWithGuardDamage(damage, resists, caster, target) { // * Takes
 
 function calcTotalDamageAfterResists(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage.
     let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(i = 0; i < 9; i++) { // * cycles 9 times for each resist
+    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
         if(damage[i] > 0) { // * If the damage is more than 0
             if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
                 damageSum[i] += 1;
@@ -528,7 +531,7 @@ function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice si
         isAdvantageCountPos = true;
     }
     advantageCount += 1;
-    for (i = 0; i < advantageCount; i++) {
+    for (let i = 0; i < advantageCount; i++) {
         arrOfRolls.push(dice(diceSize))
     };
     if (isAdvantageCountPos) {
@@ -578,7 +581,7 @@ function doesArrayOfObjectsInclude(array, propertyName, value) {
 }
 
 function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
-    outputArr = [];
+    let outputArr = [];
     args.forEach((el) => {
         if (el) {
             let i = rollDice(el);
@@ -628,12 +631,12 @@ function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds 
 }
 
 function popArrayPopValue(array) {
-    arrayCopy = Object.assign([], array);
+    let arrayCopy = Object.assign([], array);
     return arrayCopy.pop();
 }
 
 function popArrayArrayValue(array) {
-    arrayCopy = Object.assign([], array);
+    let arrayCopy = Object.assign([], array);
     arrayCopy.pop();
     return arrayCopy;
 }
