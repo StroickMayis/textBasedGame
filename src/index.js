@@ -1,6 +1,9 @@
 import "./index.css"; 
+import printMe from './print.js';
 
 "use strict";
+
+printMe();
 
 /* #region Notes*/
 
