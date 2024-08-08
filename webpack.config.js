@@ -2,15 +2,20 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    entry: './src/index.js',
+    entry: {
+        index: './src/index.js',
+        print: './src/print.js',
+    },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist'),
+        clean: true,
     },
     mode: `development`,
     plugins: [
         new HtmlWebpackPlugin({
             template: './src/index.html',
+            title: 'Output Management',
         }),
     ],
     module: {
