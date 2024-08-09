@@ -44,60 +44,112 @@ const combatLog = {
     },
     damageDisplay: function (damage) {
         // TODO: To log the damage rolls organized by resist, I do a for each of the main array, and within the foreach I switch off of the number in the 0 index of the damage roll sub array, within that switch I push the index 1 of the sub array to my resistance sort array. Then I say to console log each index of the resistance sorted array IF it isnt empty. This can be a for loop with a nested if. For 9 times console log if the array aint empty.
-        let resistanceSortArr = [[],[],[],[],[],[],[],[],[]];
+        let damageBonus = damage.pop();
+        let resistanceSortArr = [[null],[null],[null],[null],[null],[null],[null],[null],[null]];
         damage.forEach((ele) => {
             switch(ele[0]) {
                 case 0:
+                    resistanceSortArr[0] = [];
                     resistanceSortArr[0].push(ele[1]);
                     break;
                 case 1:
+                    resistanceSortArr[1] = [];
                     resistanceSortArr[1].push(ele[1]);
                     break;
                 case 2:
+                    resistanceSortArr[2] = [];
                     resistanceSortArr[2].push(ele[1]);
                     break;
                 case 3:
+                    resistanceSortArr[3] = [];
                     resistanceSortArr[3].push(ele[1]);
                     break;
                 case 4:
+                    resistanceSortArr[4] = [];
                     resistanceSortArr[4].push(ele[1]);
                     break;
                 case 5:
+                    resistanceSortArr[5] = [];
                     resistanceSortArr[5].push(ele[1]);
                     break;
                 case 6:
+                    resistanceSortArr[6] = [];
                     resistanceSortArr[6].push(ele[1]);
                     break;
                 case 7:
+                    resistanceSortArr[7] = [];
                     resistanceSortArr[7].push(ele[1]);
                     break;
                 case 8:
+                    resistanceSortArr[8] = [];
                     resistanceSortArr[8].push(ele[1]);
                     break;
             }
-        })
+            for(let i = 0; i < 9; i++) {
+                if(resistanceSortArr[i][0] !== null) {
+                    switch(i) {
+                        case 0:
+                        console.log(`Flat damage rolls: ${resistanceSortArr[0]}.`);
+                        break;
+                        case 1:
+                        console.log(`Piercing damage rolls: ${resistanceSortArr[1]}.`);
+                        break;
+                        case 2:
+                        console.log(`Ice damage rolls: ${resistanceSortArr[2]}.`);
+                        break;
+                        case 3:
+                        console.log(`Fire damage rolls: ${resistanceSortArr[3]}.`);
+                        break;
+                        case 4:
+                        console.log(`Corrosive damage rolls: ${resistanceSortArr[4]}.`);
+                        break;
+                        case 5:
+                        console.log(`Poison damage rolls: ${resistanceSortArr[5]}.`);
+                        break;
+                        case 6:
+                        console.log(`Spiritual damage rolls: ${resistanceSortArr[6]}.`);
+                        break;
+                        case 7:
+                        console.log(`Lightning damage rolls: ${resistanceSortArr[7]}.`);
+                        break;
+                        case 8:
+                        console.log(`Arcane damage rolls: ${resistanceSortArr[8]}.`);
+                        break;
+                    }
+                }
+                switch(damageBonus[0]) {
+                    case 0:
+                    console.log(`with a bonus of ${damageBonus[1]} of flat damage.`);
+                    break;
+                    case 1:
+                    console.log(`with a bonus of ${damageBonus[1]} of piercing damage.`);
+                    break;
+                    case 2:
+                    console.log(`with a bonus of ${damageBonus[1]} of ice damage.`);
+                    break;
+                    case 3:
+                    console.log(`with a bonus of ${damageBonus[1]} of fire damage.`);
+                    break;
+                    case 4:
+                    console.log(`with a bonus of ${damageBonus[1]} of corrosive damage.`);
+                    break;
+                    case 5:
+                    console.log(`with a bonus of ${damageBonus[1]} of poison damage.`);
+                    break;
+                    case 6:
+                    console.log(`with a bonus of ${damageBonus[1]} of spiritual damage.`);
+                    break;
+                    case 7:
+                    console.log(`with a bonus of ${damageBonus[1]} of lightning damage.`);
+                    break;
+                    case 8:
+                    console.log(`with a bonus of ${damageBonus[1]} of arcane damage.`);
+                    break;
+                }
+            }
+        });
 
         // TODO: I need to make sure that the console log takes the actual amounts of damage resisted into account. I need to refer to line 144, because that is where I will do the damage total, I need to delete the damage total here.
-        let damageRollDisplay = [];
-
-        damageRollDisplay[0] = ``;
-
-        if (sumOfArray(damage) < 1) {
-            damageRollDisplay[1] = 1;
-        } else {
-            damageRollDisplay[1] = sumOfArray(damage);
-        }
-
-        let damageBonus = popArrayPopValue(damage);
-        let damageCopy = popArrayArrayValue(damage);
-
-        for (let i = 0; i < damageCopy.length; i++) {
-            damageRollDisplay[0] += `${damageCopy[i]} + `
-        }
-
-        damageRollDisplay[0] += `a ${damageBonus} bonus`;
-
-        return damageRollDisplay;
     },
     hit: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array
@@ -106,7 +158,7 @@ const combatLog = {
         if (target.buffs.guarded) {
             console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
+            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]}`);
         }
 
     },
@@ -658,7 +710,7 @@ function diceMinus1(dMax) { // * Takes an integer number X as input and outputs 
     return Math.floor(Math.random() * dMax + 1) - 1;
 }
 
-function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was sumed.
+function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was summed.
     if (arrayOfNumbers === null) {
         return null;
     }
