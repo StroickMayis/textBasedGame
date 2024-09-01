@@ -6,6 +6,8 @@ import printMe from './print.js';
 
 printMe();
 
+//TODO Create a source map for this so that it is easier to debug.
+
 /* #region Notes*/
 
 // timeToCast converts to the following:
