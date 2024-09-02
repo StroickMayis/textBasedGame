@@ -136,7 +136,7 @@ body {
     justify-content: space-around;
     display: flex;
     width: 100%;
-    flex: 1 1 125px;
+    flex: 1 1 auto;
     border: 1px solid white;
 }
 
