@@ -6,8 +6,6 @@ import printMe from './print.js';
 
 printMe();
 
-//TODO Create a source map for this so that it is easier to debug.
-
 /* #region Notes*/
 
 // timeToCast converts to the following:
@@ -44,123 +42,148 @@ const combatLog = {
             against a defend roll of ${defendRoll} and a defend bonus of ${defendBonus}. 
             Total Attack: ${attack} vs. Total Defend: ${defend}`);
     },
-    damageDisplay: function (damage) {
+    displayDamageRollsByResist: function (damage) {
+        // input looks like: [[0,2][0,3][0,4]] last index is the damage bonus.
         // TODO: To log the damage rolls organized by resist, I do a for each of the main array, and within the foreach I switch off of the number in the 0 index of the damage roll sub array, within that switch I push the index 1 of the sub array to my resistance sort array. Then I say to console log each index of the resistance sorted array IF it isnt empty. This can be a for loop with a nested if. For 9 times console log if the array aint empty.
+        //takes off the damage bonus and stores in this variable.
         let damageBonus = damage.pop();
+        // So the below goes from [[0,2][0,3][0,4][2,6]] to [[2,3,4],[null],[6],[null],... etc] if that makes sense.
         let resistanceSortArr = [[null],[null],[null],[null],[null],[null],[null],[null],[null]];
         damage.forEach((ele) => {
             switch(ele[0]) {
                 case 0:
-                    resistanceSortArr[0] = [];
+                    if(resistanceSortArr[0][0] === null) {
+                        resistanceSortArr[0] = [];
+                    }
                     resistanceSortArr[0].push(ele[1]);
                     break;
                 case 1:
-                    resistanceSortArr[1] = [];
+                    if(resistanceSortArr[1][0] === null) {
+                        resistanceSortArr[1] = [];
+                    }
                     resistanceSortArr[1].push(ele[1]);
                     break;
                 case 2:
-                    resistanceSortArr[2] = [];
+                    if(resistanceSortArr[2][0] === null) {
+                        resistanceSortArr[2] = [];
+                    }
                     resistanceSortArr[2].push(ele[1]);
                     break;
                 case 3:
-                    resistanceSortArr[3] = [];
+                    if(resistanceSortArr[3][0] === null) {
+                        resistanceSortArr[3] = [];
+                    }
                     resistanceSortArr[3].push(ele[1]);
                     break;
                 case 4:
-                    resistanceSortArr[4] = [];
+                    if(resistanceSortArr[4][0] === null) {
+                        resistanceSortArr[4] = [];
+                    }
                     resistanceSortArr[4].push(ele[1]);
                     break;
                 case 5:
-                    resistanceSortArr[5] = [];
+                    if(resistanceSortArr[5][0] === null) {
+                        resistanceSortArr[5] = [];
+                    }
                     resistanceSortArr[5].push(ele[1]);
                     break;
                 case 6:
-                    resistanceSortArr[6] = [];
+                    if(resistanceSortArr[6][0] === null) {
+                        resistanceSortArr[6] = [];
+                    }
                     resistanceSortArr[6].push(ele[1]);
                     break;
                 case 7:
-                    resistanceSortArr[7] = [];
+                    if(resistanceSortArr[7][0] === null) {
+                        resistanceSortArr[7] = [];
+                    }
                     resistanceSortArr[7].push(ele[1]);
                     break;
                 case 8:
-                    resistanceSortArr[8] = [];
+                    if(resistanceSortArr[8][0] === null) {
+                        resistanceSortArr[8] = [];
+                    }
                     resistanceSortArr[8].push(ele[1]);
                     break;
             }
-            for(let i = 0; i < 9; i++) {
-                if(resistanceSortArr[i][0] !== null) {
-                    switch(i) {
-                        case 0:
-                        console.log(`Flat damage rolls: ${resistanceSortArr[0]}.`);
-                        break;
-                        case 1:
-                        console.log(`Piercing damage rolls: ${resistanceSortArr[1]}.`);
-                        break;
-                        case 2:
-                        console.log(`Ice damage rolls: ${resistanceSortArr[2]}.`);
-                        break;
-                        case 3:
-                        console.log(`Fire damage rolls: ${resistanceSortArr[3]}.`);
-                        break;
-                        case 4:
-                        console.log(`Corrosive damage rolls: ${resistanceSortArr[4]}.`);
-                        break;
-                        case 5:
-                        console.log(`Poison damage rolls: ${resistanceSortArr[5]}.`);
-                        break;
-                        case 6:
-                        console.log(`Spiritual damage rolls: ${resistanceSortArr[6]}.`);
-                        break;
-                        case 7:
-                        console.log(`Lightning damage rolls: ${resistanceSortArr[7]}.`);
-                        break;
-                        case 8:
-                        console.log(`Arcane damage rolls: ${resistanceSortArr[8]}.`);
-                        break;
-                    }
-                }
-                switch(damageBonus[0]) {
+        });
+        for(let i = 0; i < 9; i++) {
+            if(resistanceSortArr[i][0] !== null) {
+                switch(i) {
+                    // TODO: I want to make these look nicer, so that they read like: " rolls a 4, 5, 6 & a 7."
                     case 0:
-                    console.log(`with a bonus of ${damageBonus[1]} of flat damage.`);
+                    console.log(`Flat damage rolls: ${resistanceSortArr[0]}.`);
                     break;
                     case 1:
-                    console.log(`with a bonus of ${damageBonus[1]} of piercing damage.`);
+                    console.log(`Piercing damage rolls: ${resistanceSortArr[1]}.`);
                     break;
                     case 2:
-                    console.log(`with a bonus of ${damageBonus[1]} of ice damage.`);
+                    console.log(`Ice damage rolls: ${resistanceSortArr[2]}.`);
                     break;
                     case 3:
-                    console.log(`with a bonus of ${damageBonus[1]} of fire damage.`);
+                    console.log(`Fire damage rolls: ${resistanceSortArr[3]}.`);
                     break;
                     case 4:
-                    console.log(`with a bonus of ${damageBonus[1]} of corrosive damage.`);
+                    console.log(`Corrosive damage rolls: ${resistanceSortArr[4]}.`);
                     break;
                     case 5:
-                    console.log(`with a bonus of ${damageBonus[1]} of poison damage.`);
+                    console.log(`Poison damage rolls: ${resistanceSortArr[5]}.`);
                     break;
                     case 6:
-                    console.log(`with a bonus of ${damageBonus[1]} of spiritual damage.`);
+                    console.log(`Spiritual damage rolls: ${resistanceSortArr[6]}.`);
                     break;
                     case 7:
-                    console.log(`with a bonus of ${damageBonus[1]} of lightning damage.`);
+                    console.log(`Lightning damage rolls: ${resistanceSortArr[7]}.`);
                     break;
                     case 8:
-                    console.log(`with a bonus of ${damageBonus[1]} of arcane damage.`);
+                    console.log(`Arcane damage rolls: ${resistanceSortArr[8]}.`);
                     break;
                 }
             }
-        });
+        };
+        switch(damageBonus[0]) {
+            case 0:
+            console.log(`with a bonus of ${damageBonus[1]} of flat damage.`);
+            break;
+            case 1:
+            console.log(`with a bonus of ${damageBonus[1]} of piercing damage.`);
+            break;
+            case 2:
+            console.log(`with a bonus of ${damageBonus[1]} of ice damage.`);
+            break;
+            case 3:
+            console.log(`with a bonus of ${damageBonus[1]} of fire damage.`);
+            break;
+            case 4:
+            console.log(`with a bonus of ${damageBonus[1]} of corrosive damage.`);
+            break;
+            case 5:
+            console.log(`with a bonus of ${damageBonus[1]} of poison damage.`);
+            break;
+            case 6:
+            console.log(`with a bonus of ${damageBonus[1]} of spiritual damage.`);
+            break;
+            case 7:
+            console.log(`with a bonus of ${damageBonus[1]} of lightning damage.`);
+            break;
+            case 8:
+            console.log(`with a bonus of ${damageBonus[1]} of arcane damage.`);
+            break;
+        };
 
         // TODO: I need to make sure that the console log takes the actual amounts of damage resisted into account. I need to refer to line 144, because that is where I will do the damage total, I need to delete the damage total here.
     },
     hit: function (caster, target, damage) {
-        let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array
-        let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
-        let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
-        if (target.buffs.guarded) {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
+        // TODO: I need to fix all of the guard shit.
+        // let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
+        // let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
+        if (target.buffs.guarded) { // ! Ignoring this currently, will fix guard after I fix regular attacks.
+            // console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
         } else {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]}`);
+            console.log(`${caster.name} hits ${target.name} and rolls the following:`);
+            this.displayDamageRollsByResist(damage);
+            console.log(`Here are the damage totals after resistance:`)
+            // * the calcTotalDamageAfterResists() function then should display the totals.
         }
 
     },
@@ -323,8 +346,8 @@ const effect = {
         /* #endregion */
 
         const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
-        console.log(`Damage Bonus Log: ${mods.damageBonus}`);
         damageRollArr.push(mods.damageBonus);
+        //sum of damage array will return something like this: if input is equal to [[0,3][0,4][4,8]] then output is [7,0,0,0,8,0,0,0,0]
         const totalDamagePerResist = sumOfDamageArray(damageRollArr);
 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
@@ -346,13 +369,7 @@ const effect = {
             }
             return;
         }
-        console.log(damageRollArr)
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
-
-        if (riposte) {
-            combatLog.riposte(target, caster);
-            target.useAbility(9, caster);
-        }
 
         if (target.buffs.guarded) {
             const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
@@ -368,6 +385,11 @@ const effect = {
         } else {
             damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
             target.hp -= sumOfArray(damageSum); 
+        }
+
+        if (riposte) {
+            combatLog.riposte(target, caster);
+            target.useAbility(9, caster);
         }
         
         return;
