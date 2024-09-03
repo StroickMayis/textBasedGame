@@ -4,8 +4,6 @@ import printMe from './print.js';
 
 "use strict";
 
-printMe();
-
 /* #region Notes*/
 
 // timeToCast converts to the following:
@@ -254,8 +252,18 @@ const combatLog = {
         console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
     },
     damageResist: {
-        0: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
+        // TODO: Do the rest of the resistances like this.
+        0: function (damage, resist, damageSum, caster, target, guardState) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            if(guardState === `guarded`) {
+                let targetDamage = Math.ceil(damage / 2);
+                let targetGuardDamage = Math.floor(damage / 2);
+                console.log(`${caster.name} deals out ${damage} flat damage, but ${targetGuardDamage} is split off to ${target.buffs.guarded.caster.name}, so it is the remaining ${targetDamage} against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
+            } else if(guardState === `guarding`){
+                let targetGuardDamage = Math.floor(damage / 2);
+                console.log(`${target.name} takes half of the damage directed towards ${target.buffs.guarding.target.name}. It is ${caster.name}'s ${targetGuardDamage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
+            } else {
+                console.log(`${caster.name} deals out ${damage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
+            }
         },
         1: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
             console.log(`${caster.name} deals out ${damage} piercing damage against ${target.name}'s ${resist} piercing resistance. ${target.name} takes ${damageSum} piercing damage.`);
@@ -373,12 +381,12 @@ const effect = {
 
         if (target.buffs.guarded) {
             const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-            targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
-            target.hp -= targetDamage;
+            const targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+            target.hp -= sumOfArray(targetDamage);
             if (attack > guardDefense) {
                 combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
-                target.buffs.guarded.caster.hp -= guardDamage;
+                const guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
             } else {
                 combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
             }
@@ -556,10 +564,10 @@ function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 ind
                 damageSum[i] += (damage[i] - resists[i])
             }
             damageSum[i] = Math.floor(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarding`);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
             damageSum[i] = Math.floor(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarding`);
             damageSum[i] += 1;
         } else {
             damageSum[i] = 0;
@@ -584,10 +592,10 @@ function calcTargetWithGuardDamage(damage, resists, caster, target) { // * Takes
                 damageSum[i] += (damage[i] - resists[i])
             }
             damageSum[i] = Math.ceil(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarded`);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
             damageSum[i] = Math.ceil(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarded`);
             damageSum[i] += 1;
         } else {
             damageSum[i] = 0;
@@ -611,9 +619,9 @@ function calcTotalDamageAfterResists(damage, resists, caster, target) { // * Tak
             } else { // * If the resist is positive, but is less than the total damage.
                 damageSum[i] += (damage[i] - resists[i])
             }
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, false);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, false);
             damageSum[i] += 1;
         } else {
             damageSum[i] = 0;
@@ -2015,7 +2023,7 @@ defineAllArmors();
 defineAllFeats();
 defineAllBackgrounds();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[0], allTalents[5], PCs);
+characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
 characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs);
 characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
