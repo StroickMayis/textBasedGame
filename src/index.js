@@ -16,6 +16,7 @@ import printMe from './print.js';
 // Magic = 3
 // TODO: Must make ID's for everything, to make them easier to handle.
 // TODO: I am copying data too much, all characters should REFERENCE ability data etc, this will make it easier to code and should improve performance.
+// TODO: Search for TODO's throughout the code and do them.
 
 /* #endregion Notes*/
 
@@ -172,7 +173,7 @@ const combatLog = {
         // TODO: I need to make sure that the console log takes the actual amounts of damage resisted into account. I need to refer to line 144, because that is where I will do the damage total, I need to delete the damage total here.
     },
     hit: function (caster, target, damage) {
-        // TODO: I need to fix all of the guard shit.
+        // TODO: I need to fix all of the guard shit. I think I may have done it in the other locations of the code.
         // let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
         // let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
         if (target.buffs.guarded) { // ! Ignoring this currently, will fix guard after I fix regular attacks.
