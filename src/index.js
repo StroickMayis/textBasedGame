@@ -112,31 +112,31 @@ const combatLog = {
                 switch(i) {
                     // TODO: I want to make these look nicer, so that they read like: " rolls a 4, 5, 6 & a 7."
                     case 0:
-                    console.log(`Flat damage rolls: ${resistanceSortArr[0]}.`);
+                    console.log(`Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])}`);
                     break;
                     case 1:
-                    console.log(`Piercing damage rolls: ${resistanceSortArr[1]}.`);
+                    console.log(`Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])}`);
                     break;
                     case 2:
-                    console.log(`Ice damage rolls: ${resistanceSortArr[2]}.`);
+                    console.log(`Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])}`);
                     break;
                     case 3:
-                    console.log(`Fire damage rolls: ${resistanceSortArr[3]}.`);
+                    console.log(`Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])}`);
                     break;
                     case 4:
-                    console.log(`Corrosive damage rolls: ${resistanceSortArr[4]}.`);
+                    console.log(`Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])}`);
                     break;
                     case 5:
-                    console.log(`Poison damage rolls: ${resistanceSortArr[5]}.`);
+                    console.log(`Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])}`);
                     break;
                     case 6:
-                    console.log(`Spiritual damage rolls: ${resistanceSortArr[6]}.`);
+                    console.log(`Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])}`);
                     break;
                     case 7:
-                    console.log(`Lightning damage rolls: ${resistanceSortArr[7]}.`);
+                    console.log(`Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])}`);
                     break;
                     case 8:
-                    console.log(`Arcane damage rolls: ${resistanceSortArr[8]}.`);
+                    console.log(`Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])}`);
                     break;
                 }
             }
@@ -530,6 +530,16 @@ const effect = {
     },
 };
 /* #region  LOGIC */
+function createRollOutcomeString(rollOutcomeString) {
+    // before the string is implied something along the lines of "rolls :"
+    let output = ``;
+    for(let i = 0; i < rollOutcomeString.length; i++) {
+        output += rollOutcomeString[i];
+        if(i + 1 !== rollOutcomeString.length)
+        output += ` , `;
+    }
+    return output;
+}
 function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for the guard.
     let damageSum = [0,0,0,0,0,0,0,0,0];
     for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
