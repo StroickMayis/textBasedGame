@@ -36,10 +36,12 @@ const combatLog = {
     attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability) {
         const attack = attackRoll + attackBonus;
         const defend = defendRoll + defendBonus;
-        console.log(`${caster.name} attacks ${target.name} with: ${caster.equipment.mainHand.name} using: ${ability.name}, 
-            with an attack roll of: ${attackRoll} and attack bonus of ${attackBonus} 
-            against a defend roll of ${defendRoll} and a defend bonus of ${defendBonus}. 
-            Total Attack: ${attack} vs. Total Defend: ${defend}`);
+        console.log(`${caster.name} attacks --> ${target.name} 
+            - Weapon: ${caster.equipment.mainHand.name} - Ability: ${ability.name} - 
+            - Attack Roll : ${attackRoll} + Bonus : ${attackBonus} -
+            - Defend Roll : ${defendRoll} + Bonus : ${defendBonus} -
+            ▼          - HIT TOTALS: -         ▼
+            - Attack   ${attack}   -->   ${defend}   Defense -`);
     },
     displayDamageRollsByResist: function (damage) {
         // input looks like: [[0,2][0,3][0,4]] last index is the damage bonus.
@@ -111,80 +113,124 @@ const combatLog = {
                 switch(i) {
                     // TODO: I want to make these look nicer, so that they read like: " rolls a 4, 5, 6 & a 7."
                     case 0:
-                    console.log(`Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])}`);
+                        }
                     break;
                     case 1:
-                    console.log(`Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])}`);
+                        }
                     break;
                     case 2:
-                    console.log(`Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])}`);
+                        }
                     break;
                     case 3:
-                    console.log(`Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])}`);
+                        }
                     break;
                     case 4:
-                    console.log(`Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])}`);
+                        }
                     break;
                     case 5:
-                    console.log(`Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])}`);
+                        }
                     break;
                     case 6:
-                    console.log(`Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])}`);
+                        }
                     break;
                     case 7:
-                    console.log(`Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])}`);
+                        }
                     break;
                     case 8:
-                    console.log(`Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])}`);
+                        if(damageBonus[0] === i) {
+                            console.log(`            Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])} + a bonus of ${damageBonus[1]}.`);
+                        } else {
+                            console.log(`            Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])}`);
+                        }
                     break;
                 }
             }
         };
-        switch(damageBonus[0]) {
-            case 0:
-            console.log(`with a bonus of ${damageBonus[1]} of flat damage.`);
-            break;
-            case 1:
-            console.log(`with a bonus of ${damageBonus[1]} of piercing damage.`);
-            break;
-            case 2:
-            console.log(`with a bonus of ${damageBonus[1]} of ice damage.`);
-            break;
-            case 3:
-            console.log(`with a bonus of ${damageBonus[1]} of fire damage.`);
-            break;
-            case 4:
-            console.log(`with a bonus of ${damageBonus[1]} of corrosive damage.`);
-            break;
-            case 5:
-            console.log(`with a bonus of ${damageBonus[1]} of poison damage.`);
-            break;
-            case 6:
-            console.log(`with a bonus of ${damageBonus[1]} of spiritual damage.`);
-            break;
-            case 7:
-            console.log(`with a bonus of ${damageBonus[1]} of lightning damage.`);
-            break;
-            case 8:
-            console.log(`with a bonus of ${damageBonus[1]} of arcane damage.`);
-            break;
-        };
-
         // TODO: I need to make sure that the console log takes the actual amounts of damage resisted into account. I need to refer to line 144, because that is where I will do the damage total, I need to delete the damage total here.
     },
     hit: function (caster, target, damage) {
-        // TODO: I need to fix all of the guard shit. I think I may have done it in the other locations of the code.
-        // let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
-        // let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
-        if (target.buffs.guarded) { // ! Ignoring this currently, will fix guard after I fix regular attacks.
-            // console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
-        } else {
-            console.log(`${caster.name} hits ${target.name} and rolls the following:`);
-            this.displayDamageRollsByResist(damage);
-            console.log(`Here are the damage totals after resistance:`)
-            // * the calcTotalDamageAfterResists() function then should display the totals.
-        }
+        console.log(`            - ${caster.name} --> HITS --> ${target.name} -
+            ▼             - ROLLS -            ▼`);
+        this.displayDamageRollsByResist(damage);
+        console.log(`            ▼         - DAMAGE TOTALS -        ▼`)
+    },
+    damageResist: {
+        // TODO: Do the rest of the resistances like this.
+        0: function (damage, resist, damageSum, caster, target, guardState) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            if(guardState === `guarded`) {
+                let targetDamage = Math.ceil(damage / 2);
+                let targetGuardDamage = Math.floor(damage / 2);
+                console.log(`            ${caster.name}'s' ${damage} Flat is split in half to guard : ${targetGuardDamage} --> ${target.buffs.guarded.caster.name},
+            so the remaining ${targetDamage} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} Flat damage.`);
+            
+            } else if(guardState === `guarding`){
+                let targetGuardDamage = Math.floor(damage / 2);
+                console.log(`            ${target.name} takes half of the damage intended for ${target.buffs.guarding.target.name}, 
+            so ${caster.name}'s ${targetGuardDamage} Flat --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} Flat damage.`);
 
+            } else {
+                console.log(`            ${caster.name}'s ${damage} Flat --> ${target.name}'s ${resist} Resist = ${damageSum} Flat Damage`);
+            }
+        },
+        1: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} piercing damage against ${target.name}'s ${resist} piercing resistance. ${target.name} takes ${damageSum} piercing damage.`);
+        },
+        2: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} ice damage against ${target.name}'s ${resist} ice resistance. ${target.name} takes ${damageSum} ice damage.`);
+        },
+        3: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} fire damage against ${target.name}'s ${resist} fire resistance. ${target.name} takes ${damageSum} fire damage.`);
+        },
+        4: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} corrosive damage against ${target.name}'s ${resist} corrosive resistance. ${target.name} takes ${damageSum} corrosive damage.`);
+        },
+        5: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} poison damage against ${target.name}'s ${resist} poison resistance. ${target.name} takes ${damageSum} poison damage.`);
+        },
+        6: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} spiritual damage against ${target.name}'s ${resist} spiritual resistance. ${target.name} takes ${damageSum} spiritual damage.`);
+        },
+        7: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} lightning damage against ${target.name}'s ${resist} lightning resistance. ${target.name} takes ${damageSum} lightning damage.`);
+        },
+        8: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
+            console.log(`${caster.name} deals out ${damage} arcane damage against ${target.name}'s ${resist} arcane resistance. ${target.name} takes ${damageSum} arcane damage.`);
+        },
+    },
+    totalDamage: function (caster, target, totalDamage) {
+        console.log(`->          ${caster.name} deals a total of ${totalDamage} damage to ${target.name}`);
     },
     hitBackupCopy: function (caster, target, damage) {
         let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
@@ -204,7 +250,7 @@ const combatLog = {
         console.log(`${guard.name} defends the incoming damage from ${caster.name} redirected to him from his guard target ${target}!`)
     },
     guardFailsDefend: function (caster, target, guard) {
-        console.log(`${guard.name} does not defend the incoming damage from ${caster.name} redirected to him from his guard target ${target.name}, ${guard.name} takes the damage.`)
+        console.log(`            ${caster.name}'s SPLIT HITS --> ${guard.name} from guarding --> ${target.name}`);
     },
     critHeal: function (caster, target, healAmountRoll, healBonus, healAmount) {
         console.log(`${caster.name} CRITICALLY HEALS ${target.name} and rolls a ${healAmountRoll} with a ${healBonus} bonus times 2 for a total of ${healAmount} healing!`)
@@ -252,45 +298,7 @@ const combatLog = {
     targetNotInRange: function (target, abilityName) {
         console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
     },
-    damageResist: {
-        // TODO: Do the rest of the resistances like this.
-        0: function (damage, resist, damageSum, caster, target, guardState) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            if(guardState === `guarded`) {
-                let targetDamage = Math.ceil(damage / 2);
-                let targetGuardDamage = Math.floor(damage / 2);
-                console.log(`${caster.name} deals out ${damage} flat damage, but ${targetGuardDamage} is split off to ${target.buffs.guarded.caster.name}, so it is the remaining ${targetDamage} against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
-            } else if(guardState === `guarding`){
-                let targetGuardDamage = Math.floor(damage / 2);
-                console.log(`${target.name} takes half of the damage directed towards ${target.buffs.guarding.target.name}. It is ${caster.name}'s ${targetGuardDamage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
-            } else {
-                console.log(`${caster.name} deals out ${damage} flat damage against ${target.name}'s ${resist} flat resistance. ${target.name} takes ${damageSum} flat damage.`);
-            }
-        },
-        1: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} piercing damage against ${target.name}'s ${resist} piercing resistance. ${target.name} takes ${damageSum} piercing damage.`);
-        },
-        2: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} ice damage against ${target.name}'s ${resist} ice resistance. ${target.name} takes ${damageSum} ice damage.`);
-        },
-        3: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} fire damage against ${target.name}'s ${resist} fire resistance. ${target.name} takes ${damageSum} fire damage.`);
-        },
-        4: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} corrosive damage against ${target.name}'s ${resist} corrosive resistance. ${target.name} takes ${damageSum} corrosive damage.`);
-        },
-        5: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} poison damage against ${target.name}'s ${resist} poison resistance. ${target.name} takes ${damageSum} poison damage.`);
-        },
-        6: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} spiritual damage against ${target.name}'s ${resist} spiritual resistance. ${target.name} takes ${damageSum} spiritual damage.`);
-        },
-        7: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} lightning damage against ${target.name}'s ${resist} lightning resistance. ${target.name} takes ${damageSum} lightning damage.`);
-        },
-        8: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} arcane damage against ${target.name}'s ${resist} arcane resistance. ${target.name} takes ${damageSum} arcane damage.`);
-        },
-    }
+    
 }
 
 /* #endregion Combat Log*/
@@ -383,16 +391,19 @@ const effect = {
         if (target.buffs.guarded) {
             const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
             const targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+            combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
             target.hp -= sumOfArray(targetDamage);
             if (attack > guardDefense) {
                 combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
                 const guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
                 target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
             } else {
                 combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
             }
         } else {
             damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
+            combatLog.totalDamage(caster, target, sumOfArray(damageSum));
             target.hp -= sumOfArray(damageSum); 
         }
 
@@ -538,17 +549,20 @@ const effect = {
         combatLog.debuff(caster, target, targetDebuff);
     },
 };
+
 /* #region  LOGIC */
+
 function createRollOutcomeString(rollOutcomeString) {
     // before the string is implied something along the lines of "rolls :"
     let output = ``;
     for(let i = 0; i < rollOutcomeString.length; i++) {
         output += rollOutcomeString[i];
         if(i + 1 !== rollOutcomeString.length)
-        output += ` , `;
+        output += ` + `;
     }
     return output;
 }
+
 function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for the guard.
     let damageSum = [0,0,0,0,0,0,0,0,0];
     for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
