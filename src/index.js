@@ -367,6 +367,7 @@ const effect = {
         //sum of damage array will return something like this: if input is equal to [[0,3][0,4][4,8]] then output is [7,0,0,0,8,0,0,0,0]
         const totalDamagePerResist = sumOfDamageArray(damageRollArr);
 
+        // TODO: Fix the Crit. 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
             combatLog.critHit(caster, target, damageRollArr);
 
