@@ -24,14 +24,10 @@ import printMe from './print.js';
 
 const combatLog = {
     critHit: function (caster, target, damage) {
-        let damageDisplayArray = this.damageDisplay(damage);
-        let targetDamageSplit = Math.floor((damageDisplayArray[1] * 2) / 2);
-        let guardDamageSplit = Math.ceil((damageDisplayArray[1] * 2) / 2);
-        if (target.buffs.guarded) {
-            console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} takes ${guardDamageSplit}.`);
-        } else {
-            console.log(`${caster.name} CRITICALLY HITS ${target.name} and rolls a ${damageDisplayArray[0]} times 2 for a total of ${damageDisplayArray[1] * 2} damage!`)
-        }
+        console.log(`            - ${caster.name} -->  CRITICALLY HITS!!! --> ${target.name} -
+            ▼             - ROLLS -            ▼`);
+        this.displayDamageRollsByResist(damage);
+        console.log(`            ▼         - DAMAGE TOTALS (2X)-        ▼`)
     },
     attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability) {
         const attack = attackRoll + attackBonus;
@@ -364,29 +360,36 @@ const effect = {
 
         const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
         damageRollArr.push(mods.damageBonus);
-        //sum of damage array will return something like this: if input is equal to [[0,3][0,4][4,8]] then output is [7,0,0,0,8,0,0,0,0]
-        const totalDamagePerResist = sumOfDamageArray(damageRollArr);
+        // sum of damage array will return something like this: if input is equal to [[0,3][0,4][4,8]] then output is [7,0,0,0,8,0,0,0,0]
+        let totalDamagePerResist = sumOfDamageArray(damageRollArr);
 
-        // TODO: Fix the Crit. 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
+            
             combatLog.critHit(caster, target, damageRollArr);
 
-            if (sumOfArray(damageRollArr) < 1) {
-                target.hp -= 2;
-            } else { // * Resistances and buff and debuff checks all go here
+            totalDamagePerResist = resistArrayMultiply(totalDamagePerResist, 2); // ! Crit multiplier, currently just locked at 2. Can make dynamic later.
 
-                if (target.buffs.guarded) {
-                    totalDamage = sumOfArray(damageRollArr) * mods.critMultiplier;
-                    targetDamage = Math.floor(totalDamage / 2);
-                    guardDamage = Math.ceil(totalDamage / 2);
-                    target.hp -= targetDamage;
-                    target.buffs.guarded.caster.hp -= guardDamage
+            if (target.buffs.guarded) {
+                const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
+                const targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+                combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
+                target.hp -= sumOfArray(targetDamage);
+                if (attack > guardDefense) {
+                    combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
+                    const guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                    combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
+                    target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
                 } else {
-                    target.hp -= sumOfArray(damageRollArr) * mods.critMultiplier;
+                    combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
                 }
+            } else {
+                damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
+                combatLog.totalDamage(caster, target, sumOfArray(damageSum));
+                target.hp -= sumOfArray(damageSum); 
             }
             return;
-        }
+        };
+
         combatLog.hit(caster, target, damageRollArr); // * ON HIT
 
         if (target.buffs.guarded) {
@@ -516,7 +519,6 @@ const effect = {
             }
         }
     },
-
     guard: function (caster, target, mods) { // * For every attack made on the target, the caster takes half of that damage.
         const targetBuff = {
             name: mods.buffNameForTarget,
@@ -552,6 +554,17 @@ const effect = {
 };
 
 /* #region  LOGIC */
+
+function resistArrayMultiply(inputResistArray, multiplier) { // * Takes input like so: [7,0,0,0,8,0,0,0,0] and outputs all of those numbers multiplied by the amount specified.
+    let outputResistArray = [0,0,0,0,0,0,0,0,0];
+    for(let i = 0; i < 9; i++) {
+        if (inputResistArray[i] > 0) {
+            outputResistArray[i] = inputResistArray[i] * multiplier;
+        }
+    }
+    return outputResistArray;
+
+}
 
 function createRollOutcomeString(rollOutcomeString) {
     // before the string is implied something along the lines of "rolls :"
