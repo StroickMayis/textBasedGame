@@ -106,7 +106,6 @@ const combatLog = {
         for(let i = 0; i < 9; i++) {
             if(resistanceSortArr[i][0] !== null) {
                 switch(i) {
-                    // TODO: I want to make these look nicer, so that they read like: " rolls a 4, 5, 6 & a 7."
                     case 0:
                         if(damageBonus[0] === i) {
                             console.log(`            Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])} + a bonus of ${damageBonus[1]}.`);
@@ -278,11 +277,18 @@ const turn = {
     end: function () {
         combatLog.startNPCTurn();
         this.AP = 100;
-        while (this.AP > 0) { // TODO: Need to fix this big time.
-            // const attackingNPC = NPCs.charList[dice(NPCs.charList.length - 1)];
-            // attackingNPC.useAbility( attackingNPC.abilities[dice(attackingNPC.abilities.length - 1)] ,PCs.charList[dice(PCs.charList.length - 1)]);
+        while (this.AP > 0) { 
+            let attackablePCs = [];
+            for(let i = 0; i < PCs.charList.length; i++) { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
+                if(PCs.charList[i].hp > 1) {
+                    attackablePCs.push(PCs.charList[i]);
+                }
+            }
+            if(!attackablePCs[0]) {
+                break;
+            }
             const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
-            attackingNPC.useAbility(0, PCs.charList[diceMinus1(PCs.charList.length)]);
+            attackingNPC.useAbility(0, attackablePCs[diceMinus1(attackablePCs.length)]);
         };
         this.AP = 100;
         DOM.update();
@@ -2007,3 +2013,5 @@ DOM.listenForBotBar();
 DOM.listenForEndTurnButton();
 DOM.listenForTargetSelection();
 DOM.listenForMoveRowButtons();
+
+console.log(stroick);
