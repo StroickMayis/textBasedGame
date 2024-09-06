@@ -41,7 +41,6 @@ const combatLog = {
     },
     displayDamageRollsByResist: function (damage) {
         // input looks like: [[0,2][0,3][0,4]] last index is the damage bonus.
-        // TODO: To log the damage rolls organized by resist, I do a for each of the main array, and within the foreach I switch off of the number in the 0 index of the damage roll sub array, within that switch I push the index 1 of the sub array to my resistance sort array. Then I say to console log each index of the resistance sorted array IF it isnt empty. This can be a for loop with a nested if. For 9 times console log if the array aint empty.
         //takes off the damage bonus and stores in this variable.
         let damageBonus = damage.pop();
         // So the below goes from [[0,2][0,3][0,4][2,6]] to [[2,3,4],[null],[6],[null],... etc] if that makes sense.
@@ -174,7 +173,6 @@ const combatLog = {
                 }
             }
         };
-        // TODO: I need to make sure that the console log takes the actual amounts of damage resisted into account. I need to refer to line 144, because that is where I will do the damage total, I need to delete the damage total here.
     },
     hit: function (caster, target, damage) {
         console.log(`            - ${caster.name} --> HITS --> ${target.name} -
@@ -371,19 +369,19 @@ const effect = {
 
             if (target.buffs.guarded) {
                 const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-                const targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+                const targetDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, `guarded`);
                 combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
                 target.hp -= sumOfArray(targetDamage);
                 if (attack > guardDefense) {
                     combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                    const guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                    const guardDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster, `guarding`);
                     combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
                     target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
                 } else {
                     combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
                 }
             } else {
-                damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
+                damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, false); // * also calls combatLog()
                 combatLog.totalDamage(caster, target, sumOfArray(damageSum));
                 target.hp -= sumOfArray(damageSum); 
             }
@@ -394,19 +392,19 @@ const effect = {
 
         if (target.buffs.guarded) {
             const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-            const targetDamage = calcTargetWithGuardDamage(totalDamagePerResist, target.resistsArray, caster, target);
+            const targetDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, `guarded`);
             combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
             target.hp -= sumOfArray(targetDamage);
             if (attack > guardDefense) {
                 combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                const guardDamage = calcGuardDamage(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster);
+                const guardDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster, `guarding`);
                 combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
                 target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
             } else {
                 combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
             }
         } else {
-            damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target); // * also calls combatLog()
+            damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, false); // * also calls combatLog()
             combatLog.totalDamage(caster, target, sumOfArray(damageSum));
             target.hp -= sumOfArray(damageSum); 
         }
@@ -577,7 +575,8 @@ function createRollOutcomeString(rollOutcomeString) {
     return output;
 }
 
-function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for the guard.
+function calcTotalDamageAfterResists(damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
+    // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
     let damageSum = [0,0,0,0,0,0,0,0,0];
     for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
         if(damage[i] > 0) { // * If the damage is more than 0
@@ -592,65 +591,19 @@ function calcGuardDamage(damage, resists, caster, target) { // * Takes two 9 ind
             } else { // * If the resist is positive, but is less than the total damage.
                 damageSum[i] += (damage[i] - resists[i])
             }
-            damageSum[i] = Math.floor(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarding`);
-        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            damageSum[i] = Math.floor(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarding`);
-            damageSum[i] += 1;
-        } else {
-            damageSum[i] = 0;
-        }
-    }
-    return damageSum;
-}
-
-function calcTargetWithGuardDamage(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage divided for target with guard.
-    let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
-        if(damage[i] > 0) { // * If the damage is more than 0
-            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
-                damageSum[i] += 1;
-            } else if(resists[i] < 0){  // * If the resist is negative
-                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
-                    damageSum[i] += damage[i] * 2;
-                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
-                    damageSum[i] += damage[i] + (resists[i] * -1);
-                }
-            } else { // * If the resist is positive, but is less than the total damage.
-                damageSum[i] += (damage[i] - resists[i])
+            if (guardState === `guarded`) { // * checks for any kinds of guard states and divides accordingly.
+                damageSum[i] = Math.ceil(damageSum[i] / 2);
+            } else if(guardState === `guarding`) {
+                damageSum[i] = Math.floor(damageSum[i] / 2);
             }
-            damageSum[i] = Math.ceil(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarded`);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, guardState);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            damageSum[i] = Math.ceil(damageSum[i] / 2);
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, `guarded`);
-            damageSum[i] += 1;
-        } else {
-            damageSum[i] = 0;
-        }
-    }
-    return damageSum;
-}
-
-function calcTotalDamageAfterResists(damage, resists, caster, target) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage.
-    let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
-        if(damage[i] > 0) { // * If the damage is more than 0
-            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
-                damageSum[i] += 1;
-            } else if(resists[i] < 0){  // * If the resist is negative
-                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
-                    damageSum[i] += damage[i] * 2;
-                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
-                    damageSum[i] += damage[i] + (resists[i] * -1);
-                }
-            } else { // * If the resist is positive, but is less than the total damage.
-                damageSum[i] += (damage[i] - resists[i])
+            if (guardState === `guarded`) { // * checks for any kinds of guard states and divides accordingly.
+                damageSum[i] = Math.ceil(damageSum[i] / 2);
+            } else if(guardState === `guarding`) {
+                damageSum[i] = Math.floor(damageSum[i] / 2);
             }
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, false);
-        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, false);
+            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, guardState);
             damageSum[i] += 1;
         } else {
             damageSum[i] = 0;
