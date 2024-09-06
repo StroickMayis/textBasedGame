@@ -567,6 +567,7 @@ function createRollOutcomeString(rollOutcomeString) {
     return output;
 }
 
+// TODO: Need to fix this, took a picture on my phone of a hit where it was 3 flat against 5 resist and only 1 damage was taken. figure out why this happened.
 function calcTotalDamageAfterResists(damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
     // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
     let damageSum = [0,0,0,0,0,0,0,0,0];
@@ -1268,7 +1269,6 @@ function defineAllAbilities() {
         APCost: 0,
     }
 }
-
 const allWeapons = [];
 function defineAllWeapons() {
     allWeapons[0] = {
@@ -1292,7 +1292,6 @@ function defineAllWeapons() {
         block: 0,
     }
 }
-
 const allArmors = [];
 function defineAllArmors() {
     allArmors[0] = {
@@ -1310,7 +1309,6 @@ function defineAllArmors() {
         block: 0,
     }
 }
-
 const allRaces = [];
 function defineAllRaces() {
     allRaces[0] = {
@@ -1415,7 +1413,6 @@ function defineAllRaces() {
         resistsArray: [5,5,0,0,0,0,-5,0,-5],   
     };
 }
-
 const allTalents = [];
 function defineAllTalents() {
     allTalents[0] = {
@@ -1470,7 +1467,6 @@ function defineAllTalents() {
         name: `Sorcerous`,
     };
 }
-
 const allFeats = [];
 function defineAllFeats() {
     allFeats[0] = {
@@ -1488,7 +1484,6 @@ function defineAllFeats() {
         block: 0,
     }
 }
-
 const allBackgrounds = [];
 function defineAllBackgrounds() {
     allBackgrounds[0] = {
@@ -1684,7 +1679,6 @@ const DOM = {
             turn.end();
         })
     },
-
     listenForMoveRowButtons: function () {
         this.moveRowButtons.addEventListener(`click`, (e) => {
             if(e.target.className === `up` && this.casterSelectionState !== null) {
@@ -1700,7 +1694,6 @@ const DOM = {
             this.update();
         })
     },
-
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
         const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
@@ -1712,7 +1705,6 @@ const DOM = {
         this.update();
         this.updateTopBar();
     },
-
     listenForBotBar: function () {
         this.botBar.addEventListener(`click`, (e) => {
             switch (e.target.className) {
@@ -1728,7 +1720,6 @@ const DOM = {
             }
         })
     },
-
     updateTopBar: function () {
         if (this.casterSelectionState) {
             this.casterSelectionDisplay.textContent = `Caster: ${this.casterSelectionState.name}`;
@@ -1743,7 +1734,6 @@ const DOM = {
         }
         this.APCount.textContent = `Action Points: ${turn.AP}`;
     },
-
     updateBotBar: function (selectedPC) {
         if (selectedPC && !this.abilityListContainer.hasChildNodes()) {
             selectedPC.abilities.forEach((element) => this.createAbility(element));
@@ -1751,14 +1741,12 @@ const DOM = {
             this.abilityListContainer.innerHTML = ``;
         }
     },
-
     createAbility: function (abilityIndex) {
         const i = document.createElement(`div`);
         i.className = `ability`;
         i.innerHTML = `<div data-ability-index=${abilityIndex} class="abilityName">${allAbilities[abilityIndex].name}</div>`;
         this.abilityListContainer.append(i);
     },
-
     selectCaster: function (target) {
         if (this.casterSelection !== null && target !== this.casterSelection) {
             this.deselectCaster();
@@ -1774,7 +1762,6 @@ const DOM = {
         this.updateBotBar();
         this.updateEquipmentList();
     },
-
     deselectCaster: function () {
         if (this.casterSelection) {
             if (this.casterSelection === this.targetSelection) {
@@ -1804,7 +1791,6 @@ const DOM = {
         this.updateBotBar();
         this.updateEquipmentList();
     },
-
     listenForCasterSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
             if (e.target.className === `PC`) {
@@ -1816,7 +1802,6 @@ const DOM = {
             this.updateBotBar(this.casterSelectionState);
         })
     },
-
     listenForTargetSelection: function () {
         this.midBar.addEventListener(`contextmenu`, (e) => {
             e.preventDefault();
@@ -1828,7 +1813,6 @@ const DOM = {
             this.updateTopBar();
         })
     },
-
     selectTarget: function (target) {
         if (this.targetSelection !== null && target !== this.targetSelection) {
             this.deselectTarget();
@@ -1845,7 +1829,6 @@ const DOM = {
             target.style.borderColor = `yellow`;
         }
     },
-
     deselectTarget: function () {
         if (this.targetSelection) {
             if (this.targetSelection === this.casterSelection) {
@@ -1867,7 +1850,6 @@ const DOM = {
             }
         }
     },
-
     update: function () {
         this.NPCBarRow3.innerHTML = ``;
         this.NPCBarRow2.innerHTML = ``;
@@ -1882,7 +1864,6 @@ const DOM = {
             this.createChar(NPCs.charList[i], i)
         };
     },
-
     updateEquipmentList: function () {
         this.equipmentList.innerHTML = `Equipment:`;
         if (this.casterSelectionState) {
@@ -1891,7 +1872,6 @@ const DOM = {
             };
         }
     },
-
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
         i.className = `${char.groupName}`;
@@ -1944,7 +1924,6 @@ const DOM = {
                 break;
         }
     },
-
     createEquipmentDisplay: function (char, keyNumberOfItem) {
         const i = document.createElement(`div`);
         const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
@@ -1952,8 +1931,9 @@ const DOM = {
         const item = char.equipment[itemKeyName];
         if (item === null) {
             i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-        } else if (item.damage) {
-            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${item.damage[0][0]}D${item.damage[0][1]}</div>`;
+        } else if (item.damage) { // TODO: Fix this to display the damage in more detail.
+            let damageDiceDisplay = formatDamageDiceToText(item.damage); // ! remember to plug this in below before testing.
+            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${damageDiceDisplay}</div>`; // TODO: This not working need to fix!
         } else {
             i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
         }
@@ -1987,6 +1967,17 @@ const DOM = {
     },
 };
 
+function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
+    let outputText = ``;
+    for(let i = 0; i < damageDice.length; i++) {
+        outputText += `${damageDice[i][1]}d${damageDice[i][2]} ${getResistTypeNameFromIndexNumber(damageDice[i][0])}`;
+        if(i < damageDice.length - 1) {
+            outputText += ` & `;
+        }
+    }
+    
+}
+
 /* #endregion DOM*/
 
 defineAllAbilities();
@@ -2013,5 +2004,3 @@ DOM.listenForBotBar();
 DOM.listenForEndTurnButton();
 DOM.listenForTargetSelection();
 DOM.listenForMoveRowButtons();
-
-console.log(stroick);
