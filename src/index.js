@@ -362,33 +362,11 @@ const effect = {
         let totalDamagePerResist = sumOfDamageArray(damageRollArr);
 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
-            
             combatLog.critHit(caster, target, damageRollArr);
-
             totalDamagePerResist = resistArrayMultiply(totalDamagePerResist, 2); // ! Crit multiplier, currently just locked at 2. Can make dynamic later.
-
-            if (target.buffs.guarded) {
-                const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-                const targetDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, `guarded`);
-                combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
-                target.hp -= sumOfArray(targetDamage);
-                if (attack > guardDefense) {
-                    combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                    const guardDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster, `guarding`);
-                    combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
-                    target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
-                } else {
-                    combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
-                }
-            } else {
-                damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, false); // * also calls combatLog()
-                combatLog.totalDamage(caster, target, sumOfArray(damageSum));
-                target.hp -= sumOfArray(damageSum); 
-            }
-            return;
-        };
-
-        combatLog.hit(caster, target, damageRollArr); // * ON HIT
+        } else { // * ON HIT
+            combatLog.hit(caster, target, damageRollArr)
+        } 
 
         if (target.buffs.guarded) {
             const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
