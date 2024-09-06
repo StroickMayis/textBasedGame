@@ -180,48 +180,22 @@ const combatLog = {
         this.displayDamageRollsByResist(damage);
         console.log(`            ▼         - DAMAGE TOTALS -        ▼`)
     },
-    damageResist: {
-        // TODO: Do the rest of the resistances like this.
-        0: function (damage, resist, damageSum, caster, target, guardState) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            if(guardState === `guarded`) {
-                let targetDamage = Math.ceil(damage / 2);
-                let targetGuardDamage = Math.floor(damage / 2);
-                console.log(`            ${caster.name}'s' ${damage} Flat is split in half to guard : ${targetGuardDamage} --> ${target.buffs.guarded.caster.name},
-            so the remaining ${targetDamage} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} Flat damage.`);
-            
-            } else if(guardState === `guarding`){
-                let targetGuardDamage = Math.floor(damage / 2);
-                console.log(`            ${target.name} takes half of the damage intended for ${target.buffs.guarding.target.name}, 
-            so ${caster.name}'s ${targetGuardDamage} Flat --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} Flat damage.`);
+    damageResist: function (typeNumber, damage, resist, damageSum, caster, target, guardState) {
+        const resistTypeName = getResistTypeNameFromIndexNumber(typeNumber); // * Converts the index-style number of a resist ex. 0 = flat, into its name for console display.
+        if(guardState === `guarded`) {
+            let targetDamage = Math.ceil(damage / 2);
+            let targetGuardDamage = Math.floor(damage / 2);
+            console.log(`            ${caster.name}'s' ${damage} ${resistTypeName} is split in half to guard : ${targetGuardDamage} --> ${target.buffs.guarded.caster.name},
+        so the remaining ${targetDamage} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} ${resistTypeName} damage.`);
+        
+        } else if(guardState === `guarding`){
+            let targetGuardDamage = Math.floor(damage / 2);
+            console.log(`            ${target.name} takes half of the damage intended for ${target.buffs.guarding.target.name}, 
+        so ${caster.name}'s ${targetGuardDamage} ${resistTypeName} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} ${resistTypeName} damage.`);
 
-            } else {
-                console.log(`            ${caster.name}'s ${damage} Flat --> ${target.name}'s ${resist} Resist = ${damageSum} Flat Damage`);
-            }
-        },
-        1: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} piercing damage against ${target.name}'s ${resist} piercing resistance. ${target.name} takes ${damageSum} piercing damage.`);
-        },
-        2: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} ice damage against ${target.name}'s ${resist} ice resistance. ${target.name} takes ${damageSum} ice damage.`);
-        },
-        3: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} fire damage against ${target.name}'s ${resist} fire resistance. ${target.name} takes ${damageSum} fire damage.`);
-        },
-        4: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} corrosive damage against ${target.name}'s ${resist} corrosive resistance. ${target.name} takes ${damageSum} corrosive damage.`);
-        },
-        5: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} poison damage against ${target.name}'s ${resist} poison resistance. ${target.name} takes ${damageSum} poison damage.`);
-        },
-        6: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} spiritual damage against ${target.name}'s ${resist} spiritual resistance. ${target.name} takes ${damageSum} spiritual damage.`);
-        },
-        7: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} lightning damage against ${target.name}'s ${resist} lightning resistance. ${target.name} takes ${damageSum} lightning damage.`);
-        },
-        8: function (damage, resist, damageSum, caster, target) { //* Takes in the damage and resist number for this specific resistance and logs out the aftermath.
-            console.log(`${caster.name} deals out ${damage} arcane damage against ${target.name}'s ${resist} arcane resistance. ${target.name} takes ${damageSum} arcane damage.`);
-        },
+        } else {
+            console.log(`            ${caster.name}'s ${damage} ${resistTypeName} --> ${target.name}'s ${resist} Resist = ${damageSum} ${resistTypeName} Damage`);
+        }
     },
     totalDamage: function (caster, target, totalDamage) {
         console.log(`->          ${caster.name} deals a total of ${totalDamage} damage to ${target.name}`);
@@ -531,6 +505,40 @@ const effect = {
 
 /* #region  LOGIC */
 
+function getResistTypeNameFromIndexNumber(typeNumber) {
+    let resistName;
+        switch(typeNumber) {
+            case 0:
+                resistName = `Flat`;
+            break;
+            case 1:
+                resistName = `Piercing`;
+            break;
+            case 2:
+                resistName = `Ice`;
+            break;
+            case 3:
+                resistName = `Fire`;
+            break;
+            case 4:
+                resistName = `Corrosive`;
+            break;
+            case 5:
+                resistName = `Poison`;
+            break;
+            case 6:
+                resistName = `Spiritual`;
+            break;
+            case 7:
+                resistName = `Lightning`;
+            break;
+            case 8:
+                resistName = `Arcane`;
+            break;
+        }
+        return resistName;
+}
+
 function resistArrayMultiply(inputResistArray, multiplier) { // * Takes input like so: [7,0,0,0,8,0,0,0,0] and outputs all of those numbers multiplied by the amount specified.
     let outputResistArray = [0,0,0,0,0,0,0,0,0];
     for(let i = 0; i < 9; i++) {
@@ -574,14 +582,14 @@ function calcTotalDamageAfterResists(damage, resists, caster, target, guardState
             } else if(guardState === `guarding`) {
                 damageSum[i] = Math.floor(damageSum[i] / 2);
             }
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, guardState);
+            combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
             if (guardState === `guarded`) { // * checks for any kinds of guard states and divides accordingly.
                 damageSum[i] = Math.ceil(damageSum[i] / 2);
             } else if(guardState === `guarding`) {
                 damageSum[i] = Math.floor(damageSum[i] / 2);
             }
-            combatLog.damageResist[i](damage[i], resists[i], damageSum[i], caster, target, guardState);
+            combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
             damageSum[i] += 1;
         } else {
             damageSum[i] = 0;
