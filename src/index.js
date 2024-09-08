@@ -1946,7 +1946,6 @@ const DOM = {
             i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
         } else if (item.damage) { 
             let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-            console.log(damageDiceDisplay);
             i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${damageDiceDisplay}</div>`;
         } else {
             i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
