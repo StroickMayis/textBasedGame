@@ -511,6 +511,17 @@ const effect = {
 
 /* #region  LOGIC */
 
+function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
+    let outputText = ``;
+    for(let i = 0; i < damageDice.length; i++) {
+        outputText += `${damageDice[i][1]}d${damageDice[i][2]} ${getResistTypeNameFromIndexNumber(damageDice[i][0])}`;
+        if(i < damageDice.length - 1) {
+            outputText += ` & `;
+        }
+    }
+    return outputText; 
+}
+
 function getResistTypeNameFromIndexNumber(typeNumber) {
     let resistName;
         switch(typeNumber) {
@@ -567,7 +578,6 @@ function createRollOutcomeString(rollOutcomeString) {
     return output;
 }
 
-// TODO: Need to fix this, took a picture on my phone of a hit where it was 3 flat against 5 resist and only 1 damage was taken. figure out why this happened.
 function calcTotalDamageAfterResists(damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
     // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
     let damageSum = [0,0,0,0,0,0,0,0,0];
@@ -584,18 +594,10 @@ function calcTotalDamageAfterResists(damage, resists, caster, target, guardState
             } else { // * If the resist is positive, but is less than the total damage.
                 damageSum[i] += (damage[i] - resists[i])
             }
-            if (guardState === `guarded`) { // * checks for any kinds of guard states and divides accordingly.
-                damageSum[i] = Math.ceil(damageSum[i] / 2);
-            } else if(guardState === `guarding`) {
-                damageSum[i] = Math.floor(damageSum[i] / 2);
-            }
+            divideGuardDamage(damageSum, i, guardState);
             combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
         } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            if (guardState === `guarded`) { // * checks for any kinds of guard states and divides accordingly.
-                damageSum[i] = Math.ceil(damageSum[i] / 2);
-            } else if(guardState === `guarding`) {
-                damageSum[i] = Math.floor(damageSum[i] / 2);
-            }
+            divideGuardDamage(damageSum, i, guardState);
             combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
             damageSum[i] += 1;
         } else {
@@ -603,6 +605,17 @@ function calcTotalDamageAfterResists(damage, resists, caster, target, guardState
         }
     }
     return damageSum;
+}
+
+function divideGuardDamage(damageSum, i, guardState) { // * checks for any kinds of guard states and divides accordingly. NOTE!: Alters the actual objects via reference.
+    if (guardState === `guarded`) { 
+        damageSum[i] = Math.ceil(damageSum[i] / 2);
+    } else if(guardState === `guarding`) {
+        damageSum[i] = Math.floor(damageSum[i] / 2);
+    } else {
+        return;
+    }
+    return;
 }
 
 function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
@@ -1274,7 +1287,7 @@ function defineAllWeapons() {
     allWeapons[0] = {
         name: `Unarmed`,
         type: `melee`,
-        damage: [[0, 1, 4]],
+        damage: [[0, 1, 4],[6, 2, 6]],
         range: 1,
         parry: 0,
         dodge: 0,
@@ -1931,9 +1944,10 @@ const DOM = {
         const item = char.equipment[itemKeyName];
         if (item === null) {
             i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-        } else if (item.damage) { // TODO: Fix this to display the damage in more detail.
-            let damageDiceDisplay = formatDamageDiceToText(item.damage); // ! remember to plug this in below before testing.
-            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${damageDiceDisplay}</div>`; // TODO: This not working need to fix!
+        } else if (item.damage) { 
+            let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+            console.log(damageDiceDisplay);
+            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${damageDiceDisplay}</div>`;
         } else {
             i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
         }
@@ -1966,17 +1980,6 @@ const DOM = {
         }
     },
 };
-
-function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
-    let outputText = ``;
-    for(let i = 0; i < damageDice.length; i++) {
-        outputText += `${damageDice[i][1]}d${damageDice[i][2]} ${getResistTypeNameFromIndexNumber(damageDice[i][0])}`;
-        if(i < damageDice.length - 1) {
-            outputText += ` & `;
-        }
-    }
-    
-}
 
 /* #endregion DOM*/
 
