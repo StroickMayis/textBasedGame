@@ -1287,7 +1287,7 @@ function defineAllWeapons() {
     allWeapons[0] = {
         name: `Unarmed`,
         type: `melee`,
-        damage: [[0, 1, 4],[6, 2, 6]],
+        damage: [[0, 1, 4]],
         range: 1,
         parry: 0,
         dodge: 0,
@@ -1946,9 +1946,14 @@ const DOM = {
             i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
         } else if (item.damage) { 
             let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} Damage: ${damageDiceDisplay}</div>`;
+            i.innerHTML = `<div>-</div>
+                           <div class="slotName">${itemKeyName}:</div>
+                           <div>${item.name}</div>
+                           <div>Damage: ${damageDiceDisplay}</div>`;
         } else {
-            i.innerHTML = `<div class="slotName">${itemKeyName}: ${item.name} </div>`;
+            i.innerHTML = `<div>-</div>
+                           <div class="slotName">${itemKeyName}:</div>
+                           <div>${item.name}</div>`;
         }
         this.equipmentList.append(i);
     },
