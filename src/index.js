@@ -1665,8 +1665,10 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #region  DOM */
 
 const DOM = {
+    inventoryTab: document.querySelector(`.inventory`),
+    utilDivisionTabs: document.querySelector(`.utilDivisionTabs`),
     moveRowButtons: document.querySelector(`.moveRowButtons`),
-    equipmentList: document.querySelector(`.equipmentList`),
+    utilDivisionDisplay: document.querySelector(`.utilDivisionDisplay`),
     endTurnButton: document.querySelector(`.endTurnButton`),
     APCount: document.querySelector(`.APCount`),
     casterSelectionDisplay: document.querySelector(`.casterSelectionDisplay`),
@@ -1686,6 +1688,8 @@ const DOM = {
     targetSelection: null,
     casterSelectionState: null,
     targetSelectionState: null,
+    selectedUtilDivisionTab: null,
+    selectedUtilDivisionTabState: `inventory`,
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
@@ -1773,7 +1777,7 @@ const DOM = {
             this.casterSelection.style.borderColor = `blue`;
         }
         this.updateBotBar();
-        this.updateEquipmentList();
+        this.updateUtilDivisionDisplay();
     },
     deselectCaster: function () {
         if (this.casterSelection) {
@@ -1802,7 +1806,7 @@ const DOM = {
         //    this.casterSelectionState = null;
         // }
         this.updateBotBar();
-        this.updateEquipmentList();
+        this.updateUtilDivisionDisplay();
     },
     listenForCasterSelection: function () {
         this.PCBar.addEventListener(`click`, (e) => {
@@ -1877,12 +1881,62 @@ const DOM = {
             this.createChar(NPCs.charList[i], i)
         };
     },
-    updateEquipmentList: function () {
-        this.equipmentList.innerHTML = `Equipment:`;
-        if (this.casterSelectionState) {
-            for (let i = 0; i <= (Object.keys(this.casterSelectionState.equipment).length - 1); i++) {
-                this.createEquipmentDisplay(this.casterSelectionState, i)
-            };
+    updateUtilDivisionDisplay: function () {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.utilDivisionDisplay.innerHTML = `Equipment:`;
+                if (this.casterSelectionState) {
+                    for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) {
+                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                    };
+                }
+            break;
+            case `stats`:
+                this.utilDivisionDisplay.innerHTML = `Stats:`;
+                if (this.casterSelectionState) {
+                    for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
+                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                    };
+                }
+            break;
+            case `party`:
+                this.utilDivisionDisplay.innerHTML = `Party:`;
+                if (this.casterSelectionState) {
+                    for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
+                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                    };
+                }
+            break;
+        }
+    },
+    updateTabSelectionDisplay: function () {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            case `stats`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            case `party`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            default:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+        }
+    },
+    clearTabSelectionDisplay: function () {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            case `stats`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            case `party`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            default:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
         }
     },
     createChar: function (char, charListIndex) {
@@ -1937,25 +1991,74 @@ const DOM = {
                 break;
         }
     },
-    createEquipmentDisplay: function (char, keyNumberOfItem) {
+    listenForTabSelection: function () {
+        this.utilDivisionTabs.addEventListener(`click`, (e) => {
+            switch(e.target.className) {
+                case `inventory`:
+                    this.clearTabSelectionDisplay();
+                    this.selectedUtilDivisionTabState = `inventory`;
+                    this.selectedUtilDivisionTab = e.target;
+                    this.updateUtilDivisionDisplay();
+                    this.updateTabSelectionDisplay();
+                break;
+                case `stats`:
+                    this.clearTabSelectionDisplay();
+                    this.selectedUtilDivisionTabState = `stats`;
+                    this.selectedUtilDivisionTab = e.target;
+                    this.updateUtilDivisionDisplay();
+                    this.updateTabSelectionDisplay();
+                break;
+                case `party`:
+                    this.clearTabSelectionDisplay();
+                    this.selectedUtilDivisionTabState = `party`;
+                    this.selectedUtilDivisionTab = e.target;
+                    this.updateUtilDivisionDisplay();
+                    this.updateTabSelectionDisplay();
+                break;
+            }
+        })
+    },
+    createUtilDivisionDisplay: function (char, keyNumberOfDisplayItem) {
         const i = document.createElement(`div`);
-        const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
-        const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfItem];
-        const item = char.equipment[itemKeyName];
-        if (item === null) {
-            i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-        } else if (item.damage) { 
-            let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-            i.innerHTML = `<div>-</div>
-                           <div class="slotName">${itemKeyName}:</div>
-                           <div>${item.name}</div>
-                           <div>Damage: ${damageDiceDisplay}</div>`;
-        } else {
-            i.innerHTML = `<div>-</div>
-                           <div class="slotName">${itemKeyName}:</div>
-                           <div>${item.name}</div>`;
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
+                const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfDisplayItem];
+                const item = char.equipment[itemKeyName];
+                if (item === null) {
+                    i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
+                } else if (item.damage) { 
+                    let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                    i.innerHTML = `<div>-</div>
+                                <div class="slotName">${itemKeyName}:</div>
+                                <div>${item.name}</div>
+                                <div>Damage: ${damageDiceDisplay}</div>`;
+                } else {
+                    i.innerHTML = `<div>-</div>
+                                <div class="slotName">${itemKeyName}:</div>
+                                <div>${item.name}</div>`;
+                }
+                this.utilDivisionDisplay.append(i);
+            break;
+            case `stats`:
+                const arrayOfAllKeysInStats = Object.keys(char.stats);
+                const statKeyName = arrayOfAllKeysInStats[keyNumberOfDisplayItem];
+                const stat = char.stats[statKeyName];
+                i.innerHTML = `<div>-</div>
+                               <div class="statName">${statKeyName}:</div>
+                               <div>${stat}</div>`
+                this.utilDivisionDisplay.append(i);
+            break;
+            case `party`:
+                const arrayOfAllKeysInStats1 = Object.keys(char.stats);
+                const statKeyName1 = arrayOfAllKeysInStats1[keyNumberOfDisplayItem];
+                const stat1 = char.stats[statKeyName1];
+                i.innerHTML = `<div>-</div>
+                               <div class="statName">${statKeyName1}:</div>
+                               <div>${stat1}</div>`
+                this.utilDivisionDisplay.append(i);
+            break;
         }
-        this.equipmentList.append(i);
     },
     appendPCCharToRow: function (char, i) {
         switch (char.row) {
@@ -2011,3 +2114,10 @@ DOM.listenForBotBar();
 DOM.listenForEndTurnButton();
 DOM.listenForTargetSelection();
 DOM.listenForMoveRowButtons();
+DOM.listenForTabSelection();
+
+DOM.selectedUtilDivisionTab = DOM.inventoryTab;
+DOM.updateUtilDivisionDisplay();
+DOM.updateTabSelectionDisplay();
+
+console.log(stroick);
