@@ -1887,15 +1887,19 @@ const DOM = {
                 this.utilDivisionDisplay.innerHTML = `Equipment:`;
                 if (this.casterSelectionState) {
                     for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) {
-                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
                     };
+                    const inventoryContainer = document.createElement(`div`);
+                    inventoryContainer.className = `inventoryContainer`;
+                    this.utilDivisionDisplay.appendChild(inventoryContainer);
+                    this.createUtilDivisionDisplayStatic(this.casterSelectionState, inventoryContainer);
                 }
             break;
             case `stats`:
                 this.utilDivisionDisplay.innerHTML = `Stats:`;
                 if (this.casterSelectionState) {
                     for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
-                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
                     };
                 }
             break;
@@ -1903,7 +1907,7 @@ const DOM = {
                 this.utilDivisionDisplay.innerHTML = `Party:`;
                 if (this.casterSelectionState) {
                     for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
-                        this.createUtilDivisionDisplay(this.casterSelectionState, i)
+                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
                     };
                 }
             break;
@@ -2018,7 +2022,25 @@ const DOM = {
             }
         })
     },
-    createUtilDivisionDisplay: function (char, keyNumberOfDisplayItem) {
+    generateInventory: function (invSize = 16, inventoryContainer) { // TODO: all this shit
+        for (let i = invSize; i > 0; i--) {
+            inventoryContainer.append(document.createElement("div"));
+        }
+    },
+    createUtilDivisionDisplayStatic: function (char, inventoryContainer) {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.generateInventory(16, inventoryContainer); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
+            break;
+            case `stats`:
+                
+            break;
+            case `party`:
+                
+            break;
+        }
+    },
+    createUtilDivisionDisplayDynamic: function (char, keyNumberOfDisplayItem) {
         const i = document.createElement(`div`);
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
@@ -2030,13 +2052,13 @@ const DOM = {
                 } else if (item.damage) { 
                     let damageDiceDisplay = formatDamageDiceToText(item.damage); 
                     i.innerHTML = `<div>-</div>
-                                <div class="slotName">${itemKeyName}:</div>
-                                <div>${item.name}</div>
-                                <div>Damage: ${damageDiceDisplay}</div>`;
+                                   <div class="slotName">${itemKeyName}:</div>
+                                   <div>${item.name}</div>
+                                   <div>Damage: ${damageDiceDisplay}</div>`;
                 } else {
                     i.innerHTML = `<div>-</div>
-                                <div class="slotName">${itemKeyName}:</div>
-                                <div>${item.name}</div>`;
+                                   <div class="slotName">${itemKeyName}:</div>
+                                   <div>${item.name}</div>`;
                 }
                 this.utilDivisionDisplay.append(i);
             break;

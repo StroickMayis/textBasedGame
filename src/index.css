@@ -150,3 +150,19 @@ body {
     flex: 1 1 auto;
     border: 2px solid white;
 }
+.utilDivisionDisplay {
+    height: 100%;
+    padding: 10px;
+}
+.inventoryContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25dvh;
+}
+.inventoryContainer div {
+    border: 1px solid white;
+    height: 2.7dvw;
+    width: 2.7dvw;
+}
