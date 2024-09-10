@@ -1,6 +1,7 @@
 import { forEach } from "lodash";
 import "./index.css"; 
 import "./images/dagger.png";
+import "./images/unarmed.png";
 import printMe from './print.js';
 
 "use strict";
@@ -1699,6 +1700,7 @@ const DOM = {
     targetSelectionState: null,
     selectedUtilDivisionTab: null,
     selectedUtilDivisionTabState: `inventory`,
+    droppableSlots: null,
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
@@ -1722,7 +1724,7 @@ const DOM = {
     },
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => {
-            if(e.target.className === `inventoryItem`) {
+            if(e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) {
                 this.displayItemTooltip(e.target);
             } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
                 let tooltips = document.getElementsByClassName(`tooltip`);
@@ -2003,6 +2005,29 @@ const DOM = {
             }
         })
     },
+    listenForDrag: function () {
+        this.body.addEventListener(`dragstart`, (e) => {
+            console.log(e);
+        });
+    },
+    listenForDragover: function () {
+        this.body.addEventListener(`dragover`, (e) => { // TODO: Need to change this from body, to only the inventory and equipment spots.
+            e.preventDefault();
+        });
+    },
+    updateDroppableSlots: function () {
+        this.droppableSlots = document.getElementsByClassName(`equipmentItem`);
+        this.droppableSlots += document.getElementsByClassName(`inventoryItem`);
+    },
+    listenForDrop: function () {
+        if(this.droppableSlots) {
+            this.droppableSlots.removeEventListener(`drop`)
+        }
+        this.updateDroppableSlots();
+        this.droppableSlots.addEventListener(`drop`, (e) => { // TODO: Working on drag and drop, this will be a key area of a lot of complex logic. Will need to figure out how to change all of the data between items, make a list of all data that will need to be exchanged.
+
+        });
+    },
     updateUtilDivisionDisplay: function () { // * is called when you select a different char or tab.
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
@@ -2035,6 +2060,7 @@ const DOM = {
                 x.style.backgroundImage = char.inventory[i].icon;
                 x.style.backgroundRepeat = `no-repeat`;
                 x.style.backgroundSize = `100%`;
+                x.draggable = true;
             }
             inventoryContainer.append(x);
         }
@@ -2042,27 +2068,45 @@ const DOM = {
     createUtilDivisionDisplay: function (char) {
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
-                for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) {
+                for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) { // * Creates equipment display
                     const x = document.createElement(`div`);
+                    const z = document.createElement(`div`);
                     const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
                     const itemKeyName = arrayOfAllKeysInEquipment[i];
                     const item = char.equipment[itemKeyName];
                     if (item === null) {
                         x.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-                    } else if (item.damage) { 
-                        let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                    } else  { 
                         // TODO : Right here I want to make these actual item boxes instead of text.
                         x.innerHTML = `<div>-</div>
-                                    <div class="slotName">${itemKeyName}:</div>
+                                    <div class="slotName">${itemKeyName}:</div>`;
+                        x.className = `equipmentContainer`;
 
-                                    <div>${item.name}</div>
-                                    <div>Damage: ${damageDiceDisplay}</div>`;
-                    } else {
-                        x.innerHTML = `<div>-</div>
-                                    <div class="slotName">${itemKeyName}:</div>
-                                    <div>${item.name}</div>`;
+                        z.className = `equipmentItem`;
+                        z.dataset.itemType = char.equipment[itemKeyName].itemType;
+                        z.dataset.itemIndex = char.equipment[itemKeyName].index;
+                        z.style.backgroundImage = char.equipment[itemKeyName].icon;
+                        z.style.backgroundRepeat = `no-repeat`;
+                        z.style.backgroundSize = `100%`;
+                        z.draggable = true;
                     }
+                    //!! Backup in case I butcher this.
+                    // if (item === null) {
+                    //     x.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
+                    // } else if (item.damage) { 
+                    //     let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                    //     x.innerHTML = `<div>-</div>
+                    //                 <div class="slotName">${itemKeyName}:</div>
+
+                    //                 <div>${item.name}</div>
+                    //                 <div>Damage: ${damageDiceDisplay}</div>`;
+                    // } else {
+                    //     x.innerHTML = `<div>-</div>
+                    //                 <div class="slotName">${itemKeyName}:</div>
+                    //                 <div>${item.name}</div>`;
+                    // }
                     this.utilDivisionDisplay.append(x);
+                    x.append(z);
                 }
                 const inventoryContainer = document.createElement(`div`);
                 inventoryContainer.className = `inventoryContainer`;
@@ -2183,6 +2227,8 @@ DOM.listenForTargetSelection();
 DOM.listenForMoveRowButtons();
 DOM.listenForTabSelection();
 DOM.listenForMouseOver();
+DOM.listenForDrag();
+DOM.listenForDragover();
 
 DOM.selectedUtilDivisionTab = DOM.inventoryTab;
 DOM.updateUtilDivisionDisplay();

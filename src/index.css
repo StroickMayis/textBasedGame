@@ -187,3 +187,15 @@ div.tooltipContent {
     text-align: center;
     z-index: 1;
 }
+.equipmentItem {
+    border: 1px solid white;
+    flex: 0 1 auto;
+    height: 2.7dvw;
+    width: 2.7dvw;
+}
+.equipmentContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
