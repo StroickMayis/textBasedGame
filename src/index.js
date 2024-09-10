@@ -1,5 +1,6 @@
 import { forEach } from "lodash";
 import "./index.css"; 
+import "./images/dagger.png";
 import printMe from './print.js';
 
 "use strict";
@@ -1282,9 +1283,12 @@ function defineAllAbilities() {
         APCost: 0,
     }
 }
-const allWeapons = [];
+const allWeapons = []; // TODO: Weapons are the most up to date items, will need to fix this
 function defineAllWeapons() {
     allWeapons[0] = {
+        itemType: `weapon`,
+        index: 0,
+        icon: `url("./images/unarmed.png")`,
         name: `Unarmed`,
         type: `melee`,
         damage: [[0, 1, 4]],
@@ -1295,6 +1299,9 @@ function defineAllWeapons() {
         block: 0,
     }
     allWeapons[1] = {
+        itemType: `weapon`,
+        index: 1,
+        icon: `url("./images/dagger.png")`,
         name: `Dagger`,
         type: `melee`,
         damage: [[0, 2, 4]],
@@ -1559,6 +1566,7 @@ function Char(name, race) {
         offHand: allWeapons[0],
         armor: allArmors[0],
     };
+    this.inventory = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
     this.addEquipment = function (slotName, equipment) {
         this.equipment[slotName] = equipment;
         this.parry = sumOfArray([this.equipment.mainHand.parry, this.equipment.offHand.parry, this.equipment.armor.parry]);
@@ -1665,6 +1673,7 @@ function characterCreator(name, race, talent1, talent2, group) {
 /* #region  DOM */
 
 const DOM = {
+    body: document.querySelector(`body`),
     inventoryTab: document.querySelector(`.inventory`),
     utilDivisionTabs: document.querySelector(`.utilDivisionTabs`),
     moveRowButtons: document.querySelector(`.moveRowButtons`),
@@ -1710,6 +1719,40 @@ const DOM = {
             }
             this.update();
         })
+    },
+    listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
+        this.body.addEventListener(`mouseover`, (e) => {
+            if(e.target.className === `inventoryItem`) {
+                this.displayItemTooltip(e.target);
+            } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
+                let tooltips = document.getElementsByClassName(`tooltip`);
+                while(tooltips.length > 0) {
+                tooltips[0].parentNode.removeChild(tooltips[0]);
+                }
+            }
+        });
+    },
+    displayItemTooltip: function (target) {
+        let tooltips = document.getElementsByClassName(`tooltip`);
+        if(tooltips.length > 0) {
+            return;
+        }
+        const x = document.createElement(`div`);
+        if(target.dataset) {
+            switch(target.dataset.itemType) {
+                case `weapon`:
+                        let item = allWeapons[target.dataset.itemIndex];
+                        let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                        x.className = `tooltip`;
+                        x.innerHTML = `
+                                    <div class="tooltipContent">${item.name}:</div>
+                                    <div class="tooltipContent">-</div>
+                                    <div class="tooltipContent">Damage: ${damageDiceDisplay}</div>`;
+                    break;
+            }
+        }
+
+        target.append(x);
     },
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
@@ -1881,68 +1924,6 @@ const DOM = {
             this.createChar(NPCs.charList[i], i)
         };
     },
-    updateUtilDivisionDisplay: function () {
-        switch(this.selectedUtilDivisionTabState) {
-            case `inventory`:
-                this.utilDivisionDisplay.innerHTML = `Equipment:`;
-                if (this.casterSelectionState) {
-                    for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) {
-                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
-                    };
-                    const inventoryContainer = document.createElement(`div`);
-                    inventoryContainer.className = `inventoryContainer`;
-                    this.utilDivisionDisplay.appendChild(inventoryContainer);
-                    this.createUtilDivisionDisplayStatic(this.casterSelectionState, inventoryContainer);
-                }
-            break;
-            case `stats`:
-                this.utilDivisionDisplay.innerHTML = `Stats:`;
-                if (this.casterSelectionState) {
-                    for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
-                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
-                    };
-                }
-            break;
-            case `party`:
-                this.utilDivisionDisplay.innerHTML = `Party:`;
-                if (this.casterSelectionState) {
-                    for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
-                        this.createUtilDivisionDisplayDynamic(this.casterSelectionState, i)
-                    };
-                }
-            break;
-        }
-    },
-    updateTabSelectionDisplay: function () {
-        switch(this.selectedUtilDivisionTabState) {
-            case `inventory`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
-            break;
-            case `stats`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
-            break;
-            case `party`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
-            break;
-            default:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
-        }
-    },
-    clearTabSelectionDisplay: function () {
-        switch(this.selectedUtilDivisionTabState) {
-            case `inventory`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
-            break;
-            case `stats`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
-            break;
-            case `party`:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
-            break;
-            default:
-                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
-        }
-    },
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
         i.className = `${char.groupName}`;
@@ -2022,64 +2003,126 @@ const DOM = {
             }
         })
     },
-    generateInventory: function (invSize = 16, inventoryContainer) { // TODO: all this shit
-        for (let i = invSize; i > 0; i--) {
-            inventoryContainer.append(document.createElement("div"));
-        }
-    },
-    createUtilDivisionDisplayStatic: function (char, inventoryContainer) {
+    updateUtilDivisionDisplay: function () { // * is called when you select a different char or tab.
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
-                this.generateInventory(16, inventoryContainer); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
-            break;
-            case `stats`:
-                
-            break;
-            case `party`:
-                
-            break;
-        }
-    },
-    createUtilDivisionDisplayDynamic: function (char, keyNumberOfDisplayItem) {
-        const i = document.createElement(`div`);
-        switch(this.selectedUtilDivisionTabState) {
-            case `inventory`:
-                const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
-                const itemKeyName = arrayOfAllKeysInEquipment[keyNumberOfDisplayItem];
-                const item = char.equipment[itemKeyName];
-                if (item === null) {
-                    i.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-                } else if (item.damage) { 
-                    let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-                    i.innerHTML = `<div>-</div>
-                                   <div class="slotName">${itemKeyName}:</div>
-                                   <div>${item.name}</div>
-                                   <div>Damage: ${damageDiceDisplay}</div>`;
-                } else {
-                    i.innerHTML = `<div>-</div>
-                                   <div class="slotName">${itemKeyName}:</div>
-                                   <div>${item.name}</div>`;
+                this.utilDivisionDisplay.innerHTML = `Equipment:`;
+                if (this.casterSelectionState) {
+                    this.createUtilDivisionDisplay(this.casterSelectionState);
                 }
-                this.utilDivisionDisplay.append(i);
             break;
             case `stats`:
-                const arrayOfAllKeysInStats = Object.keys(char.stats);
-                const statKeyName = arrayOfAllKeysInStats[keyNumberOfDisplayItem];
-                const stat = char.stats[statKeyName];
-                i.innerHTML = `<div>-</div>
-                               <div class="statName">${statKeyName}:</div>
-                               <div>${stat}</div>`
-                this.utilDivisionDisplay.append(i);
+                this.utilDivisionDisplay.innerHTML = `Stats:`;
+                if (this.casterSelectionState) {
+                    this.createUtilDivisionDisplay(this.casterSelectionState);
+                }
             break;
             case `party`:
-                const arrayOfAllKeysInStats1 = Object.keys(char.stats);
-                const statKeyName1 = arrayOfAllKeysInStats1[keyNumberOfDisplayItem];
-                const stat1 = char.stats[statKeyName1];
-                i.innerHTML = `<div>-</div>
-                               <div class="statName">${statKeyName1}:</div>
-                               <div>${stat1}</div>`
-                this.utilDivisionDisplay.append(i);
+                this.utilDivisionDisplay.innerHTML = `Party:`;
+                if (this.casterSelectionState) {
+                    this.createUtilDivisionDisplay(this.casterSelectionState);
+                }
             break;
+        }
+    },
+    generateInventory: function (inventoryContainer, char) {
+        for (let i = 0; i < char.inventory.length; i++) {
+            const x = document.createElement(`div`);
+            if(char.inventory[i]) {
+                x.className = `inventoryItem`;
+                x.dataset.itemType = char.inventory[i].itemType;
+                x.dataset.itemIndex = char.inventory[i].index;
+                x.style.backgroundImage = char.inventory[i].icon;
+                x.style.backgroundRepeat = `no-repeat`;
+                x.style.backgroundSize = `100%`;
+            }
+            inventoryContainer.append(x);
+        }
+    },
+    createUtilDivisionDisplay: function (char) {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) {
+                    const x = document.createElement(`div`);
+                    const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
+                    const itemKeyName = arrayOfAllKeysInEquipment[i];
+                    const item = char.equipment[itemKeyName];
+                    if (item === null) {
+                        x.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
+                    } else if (item.damage) { 
+                        let damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                        // TODO : Right here I want to make these actual item boxes instead of text.
+                        x.innerHTML = `<div>-</div>
+                                    <div class="slotName">${itemKeyName}:</div>
+
+                                    <div>${item.name}</div>
+                                    <div>Damage: ${damageDiceDisplay}</div>`;
+                    } else {
+                        x.innerHTML = `<div>-</div>
+                                    <div class="slotName">${itemKeyName}:</div>
+                                    <div>${item.name}</div>`;
+                    }
+                    this.utilDivisionDisplay.append(x);
+                }
+                const inventoryContainer = document.createElement(`div`);
+                inventoryContainer.className = `inventoryContainer`;
+                this.utilDivisionDisplay.appendChild(inventoryContainer);
+                this.generateInventory(inventoryContainer, char); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
+            break;
+            case `stats`:
+                for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
+                    const x = document.createElement(`div`);
+                    const arrayOfAllKeysInStats = Object.keys(char.stats);
+                    const statKeyName = arrayOfAllKeysInStats[i];
+                    const stat = char.stats[statKeyName];
+                    x.innerHTML = `<div>-</div>
+                                <div class="statName">${statKeyName}:</div>
+                                <div>${stat}</div>`
+                    this.utilDivisionDisplay.append(x);
+                }
+            break;
+            case `party`:
+                for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
+                    const x = document.createElement(`div`);
+                    const arrayOfAllKeysInStats1 = Object.keys(char.stats);
+                    const statKeyName1 = arrayOfAllKeysInStats1[i];
+                    const stat1 = char.stats[statKeyName1];
+                    x.innerHTML = `<div>-</div>
+                                <div class="statName">${statKeyName1}:</div>
+                                <div>${stat1}</div>`
+                    this.utilDivisionDisplay.append(x);
+                }
+            break;
+        }
+    },
+    updateTabSelectionDisplay: function () {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            case `stats`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            case `party`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
+            break;
+            default:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+        }
+    },
+    clearTabSelectionDisplay: function () {
+        switch(this.selectedUtilDivisionTabState) {
+            case `inventory`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            case `stats`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            case `party`:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
+            break;
+            default:
+                this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
         }
     },
     appendPCCharToRow: function (char, i) {
@@ -2130,6 +2173,8 @@ const evil = NPCs.charList[1];
 const kliftin = PCs.charList[1];
 const hobo = NPCs.charList[0];
 
+stroick.inventory[0] = allWeapons[1];
+
 DOM.update();
 DOM.listenForCasterSelection();
 DOM.listenForBotBar();
@@ -2137,6 +2182,7 @@ DOM.listenForEndTurnButton();
 DOM.listenForTargetSelection();
 DOM.listenForMoveRowButtons();
 DOM.listenForTabSelection();
+DOM.listenForMouseOver();
 
 DOM.selectedUtilDivisionTab = DOM.inventoryTab;
 DOM.updateUtilDivisionDisplay();

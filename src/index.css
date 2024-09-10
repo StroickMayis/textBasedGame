@@ -152,7 +152,7 @@ body {
 }
 .utilDivisionDisplay {
     height: 100%;
-    padding: 10px;
+    padding: 10px 0px;
 }
 .inventoryContainer {
     display: flex;
@@ -161,8 +161,29 @@ body {
     align-items: center;
     margin-top: 25dvh;
 }
-.inventoryContainer div {
+.inventoryContainer div { 
     border: 1px solid white;
+    flex: 0 1 auto;
     height: 2.7dvw;
     width: 2.7dvw;
+}
+div.tooltip {
+    flex-direction: column;
+    background-color: black;
+    width: 20dvw;
+    height: max-content;
+    padding: 10px;
+    border: 1px solid white;
+    position: relative;
+    right: 20dvw;
+    bottom: fit-content;
+    display: flex;
+}
+div.tooltipContent {
+    width: auto;
+    height: auto;
+    border: none;
+    color: white;
+    text-align: center;
+    z-index: 1;
 }
