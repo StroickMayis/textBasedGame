@@ -1,7 +1,8 @@
-import { forEach } from "lodash";
+import { drop, forEach } from "lodash";
 import "./index.css"; 
 import "./images/dagger.png";
 import "./images/unarmed.png";
+import "./images/unarmored.png";
 import printMe from './print.js';
 
 "use strict";
@@ -1287,6 +1288,7 @@ function defineAllAbilities() {
 const allWeapons = []; // TODO: Weapons are the most up to date items, will need to fix this
 function defineAllWeapons() {
     allWeapons[0] = {
+        isDefaultItem: true,
         itemType: `weapon`,
         index: 0,
         icon: `url("./images/unarmed.png")`,
@@ -1300,6 +1302,7 @@ function defineAllWeapons() {
         block: 0,
     }
     allWeapons[1] = {
+        isDefaultItem: false,
         itemType: `weapon`,
         index: 1,
         icon: `url("./images/dagger.png")`,
@@ -1316,11 +1319,18 @@ function defineAllWeapons() {
 const allArmors = [];
 function defineAllArmors() {
     allArmors[0] = {
-        name: `None`,
-        parry: 0,
-        dodge: 0,
-        disrupt: 0,
-        block: 0,
+        isDefaultItem: true,
+        itemType: `armor`,
+        index: 0,
+        icon: `url("./images/unarmored.png")`,
+        name: `Unarmored`,
+        // type: `melee`,
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
     }
     allArmors[1] = {
         name: `Chainmail`,
@@ -1329,6 +1339,36 @@ function defineAllArmors() {
         disrupt: 0,
         block: 0,
     }
+}
+const allItems = [];
+function defineAllItems() {
+    allItems[0] = {
+        isDefaultItem: true,
+        itemType: `item`,
+        index: 0,
+        icon: ``,
+        name: `emptySlot`,
+        type: null,
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    // allItems[1] = {
+    //     itemType: `item`,
+    //     index: 1,
+    //     icon: ``,
+    //     name: `Dagger`,
+    //     type: `melee`,
+    //     damage: [[0, 2, 4]],
+    //     range: 1,
+    //     parry: 1,
+    //     dodge: 0,
+    //     disrupt: 0,
+    //     block: 0,
+    // }
 }
 const allRaces = [];
 function defineAllRaces() {
@@ -1567,7 +1607,7 @@ function Char(name, race) {
         offHand: allWeapons[0],
         armor: allArmors[0],
     };
-    this.inventory = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+    this.inventory = [allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0]];
     this.addEquipment = function (slotName, equipment) {
         this.equipment[slotName] = equipment;
         this.parry = sumOfArray([this.equipment.mainHand.parry, this.equipment.offHand.parry, this.equipment.armor.parry]);
@@ -1700,7 +1740,7 @@ const DOM = {
     targetSelectionState: null,
     selectedUtilDivisionTab: null,
     selectedUtilDivisionTabState: `inventory`,
-    droppableSlots: null,
+    dragTarget: null,
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
@@ -1724,7 +1764,7 @@ const DOM = {
     },
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => {
-            if(e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) {
+            if( (e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
                 this.displayItemTooltip(e.target);
             } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
                 let tooltips = document.getElementsByClassName(`tooltip`);
@@ -2007,26 +2047,89 @@ const DOM = {
     },
     listenForDrag: function () {
         this.body.addEventListener(`dragstart`, (e) => {
-            console.log(e);
+            if(e.target.draggable === false) {
+                e.preventDefault();
+            }
+            this.dragTarget = e.target;
+
+            let tooltips = document.getElementsByClassName(`tooltip`);
+                while(tooltips.length > 0) {
+                    tooltips[0].parentNode.removeChild(tooltips[0]);
+                }
         });
     },
     listenForDragover: function () {
-        this.body.addEventListener(`dragover`, (e) => { // TODO: Need to change this from body, to only the inventory and equipment spots.
-            e.preventDefault();
-        });
-    },
-    updateDroppableSlots: function () {
-        this.droppableSlots = document.getElementsByClassName(`equipmentItem`);
-        this.droppableSlots += document.getElementsByClassName(`inventoryItem`);
+        this.body.addEventListener(`dragover`, (e) => {
+            if(e.target.className === `equipmentItem` || e.target.className === `inventoryItem`) {
+                e.preventDefault();
+            }
+        })
     },
     listenForDrop: function () {
-        if(this.droppableSlots) {
-            this.droppableSlots.removeEventListener(`drop`)
-        }
-        this.updateDroppableSlots();
-        this.droppableSlots.addEventListener(`drop`, (e) => { // TODO: Working on drag and drop, this will be a key area of a lot of complex logic. Will need to figure out how to change all of the data between items, make a list of all data that will need to be exchanged.
+        this.body.addEventListener(`drop`, (e) => {
+            let dropTarget = e.target; // * dragTarget is the other variable, it represents the item being dragged.
+            let dragTargetCharData;
+            let dropTargetCharData;
+            let tempStorage;
+            switch(this.dragTarget.className) { // * links dom element properties to the char data.
+                case `equipmentItem` :
+                dragTargetCharData = this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName];
+                break;
+                case `inventoryItem` :
+                dragTargetCharData = this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex];
+                break;
+            }
+            switch(dropTarget.className) {
+                case `equipmentItem` :
+                dropTargetCharData = this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName];
+                break;
+                case `inventoryItem` :
+                dropTargetCharData = this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex];
+                break;
+            }
+            if(dropTarget.className === `equipmentItem` && dropTargetCharData.itemType !== dragTargetCharData.itemType) {
+                console.log(`! Cannot place an item with type: ${dragTargetCharData.itemType} into an equipment slot with item type: ${dropTargetCharData.itemType}.`)
+                return;
+            }
+            tempStorage = dragTargetCharData;
 
-        });
+            if(dropTargetCharData.isDefaultItem) {
+                switch(this.dragTarget.className) {
+                    case `equipmentItem` :
+                        switch(dragTargetCharData.itemType) {
+                            case `weapon`:
+                                this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[0];
+                            break;
+                            case `armor`:
+                                this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[0];
+                            break;
+                        }
+                    break;
+                    case `inventoryItem` :
+                    this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
+                    break;
+                }
+            } else {
+                switch(this.dragTarget.className) {
+                    case `equipmentItem` :
+                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
+                    break;
+                    case `inventoryItem` :
+                    this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = dropTargetCharData;
+                    break;
+                }
+            }
+            switch(dropTarget.className) {
+                case `equipmentItem` :
+                this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
+                break;
+                case `inventoryItem` :
+                this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
+                break;
+            }
+            this.updateUtilDivisionDisplay();
+            this.dragTarget = null;
+        }) 
     },
     updateUtilDivisionDisplay: function () { // * is called when you select a different char or tab.
         switch(this.selectedUtilDivisionTabState) {
@@ -2057,10 +2160,15 @@ const DOM = {
                 x.className = `inventoryItem`;
                 x.dataset.itemType = char.inventory[i].itemType;
                 x.dataset.itemIndex = char.inventory[i].index;
+                x.dataset.inventoryIndex = i;
                 x.style.backgroundImage = char.inventory[i].icon;
                 x.style.backgroundRepeat = `no-repeat`;
                 x.style.backgroundSize = `100%`;
-                x.draggable = true;
+                if(!char.inventory[i].isDefaultItem) {
+                    x.draggable = true;
+                } else {
+                    x.draggable = false;
+                }
             }
             inventoryContainer.append(x);
         }
@@ -2085,10 +2193,15 @@ const DOM = {
                         z.className = `equipmentItem`;
                         z.dataset.itemType = char.equipment[itemKeyName].itemType;
                         z.dataset.itemIndex = char.equipment[itemKeyName].index;
+                        z.dataset.equipmentSlotName = itemKeyName;
                         z.style.backgroundImage = char.equipment[itemKeyName].icon;
                         z.style.backgroundRepeat = `no-repeat`;
                         z.style.backgroundSize = `100%`;
-                        z.draggable = true;
+                        if(!item.isDefaultItem) {
+                            z.draggable = true;
+                        } else {
+                            z.draggable = false;
+                        }
                     }
                     //!! Backup in case I butcher this.
                     // if (item === null) {
@@ -2206,6 +2319,7 @@ defineAllTalents();
 defineAllArmors();
 defineAllFeats();
 defineAllBackgrounds();
+defineAllItems();
 
 characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
@@ -2229,6 +2343,7 @@ DOM.listenForTabSelection();
 DOM.listenForMouseOver();
 DOM.listenForDrag();
 DOM.listenForDragover();
+DOM.listenForDrop();
 
 DOM.selectedUtilDivisionTab = DOM.inventoryTab;
 DOM.updateUtilDivisionDisplay();
