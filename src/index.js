@@ -513,6 +513,17 @@ const effect = {
 };
 
 /* #region  LOGIC */
+function formatResistArrayToText (resistArray) { // * input will look like the following:       resists: [0,0,-5,-5,-5,-5,-5,-5,-5], output will exclude resists that are 0.
+    let resistNames = [`Flat`, `Piercing`, `Ice`,`Fire`,`Corrosive`,`Poison`,`Spiritual`,`Lightning`,`Arcane`];
+    let outputText = ``;
+    for(let i = 0; i < 9; i++) {
+        if(resistArray[i] !== 0) {
+            resistNames[i] += ` : ${resistArray[i]}`;
+            outputText += `${resistNames[i]}<br>`
+        }    
+    }
+    return outputText;
+}
 
 function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
     let outputText = ``;
@@ -1325,6 +1336,7 @@ function defineAllArmors() {
         icon: `url("./images/unarmored.png")`,
         name: `Unarmored`,
         // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
         damage: null,
         range: null,
         parry: null,
@@ -1741,6 +1753,8 @@ const DOM = {
     selectedUtilDivisionTab: null,
     selectedUtilDivisionTabState: `inventory`,
     dragTarget: null,
+    timeout: null,
+
 
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
@@ -1765,8 +1779,9 @@ const DOM = {
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => {
             if( (e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
-                this.displayItemTooltip(e.target);
+                this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 500);
             } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
+                clearTimeout(this.timeout);
                 let tooltips = document.getElementsByClassName(`tooltip`);
                 while(tooltips.length > 0) {
                 tooltips[0].parentNode.removeChild(tooltips[0]);
@@ -1780,21 +1795,37 @@ const DOM = {
             return;
         }
         const x = document.createElement(`div`);
+        let item;
+        let damageDiceDisplay;
+        let resistsDisplay;
         if(target.dataset) {
             switch(target.dataset.itemType) {
                 case `weapon`:
-                        let item = allWeapons[target.dataset.itemIndex];
-                        let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-                        x.className = `tooltip`;
-                        x.innerHTML = `
-                                    <div class="tooltipContent">${item.name}:</div>
-                                    <div class="tooltipContent">-</div>
-                                    <div class="tooltipContent">Damage: ${damageDiceDisplay}</div>`;
-                    break;
+                    item = allWeapons[target.dataset.itemIndex];
+                    damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                    x.className = `tooltip`;
+                    x.innerHTML = `
+                                <div class="tooltipContent">${item.name}:</div>
+                                <div class="tooltipContent">-</div>
+                                <div class="tooltipContent">Damage: ${damageDiceDisplay}</div>`;
+                break;
+                case `armor`:
+                    item = allArmors[target.dataset.itemIndex];
+                    resistsDisplay = formatResistArrayToText(item.resists); 
+                    if(!resistsDisplay) {
+                        resistsDisplay = `None`;
+                    }
+                    x.className = `tooltip`;
+                    x.innerHTML = `
+                                <div class="tooltipContent">${item.name}:</div>
+                                <div class="tooltipContent">-</div>
+                                <div class="tooltipContent">Resists:<br>${resistsDisplay}</div>`;
+                break;
             }
         }
 
         target.append(x);
+        this.timeout = null;
     },
     attemptAbilityCast: function (target) {
         const abilityNameSubDiv = target.querySelector(`.abilityName`);
