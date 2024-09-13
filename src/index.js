@@ -1776,16 +1776,21 @@ const DOM = {
             this.update();
         })
     },
+    clearTooltips: function () {
+        clearTimeout(this.timeout);
+        let tooltips = document.getElementsByClassName(`tooltip`);
+        while(tooltips.length > 0) {
+        tooltips[0].parentNode.removeChild(tooltips[0]);
+        }
+        return;
+    },
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => {
             if( (e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
-                this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 500);
+                this.clearTooltips();
+                this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 600);
             } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
-                clearTimeout(this.timeout);
-                let tooltips = document.getElementsByClassName(`tooltip`);
-                while(tooltips.length > 0) {
-                tooltips[0].parentNode.removeChild(tooltips[0]);
-                }
+                this.clearTooltips();
             }
         });
     },
@@ -2082,15 +2087,12 @@ const DOM = {
                 e.preventDefault();
             }
             this.dragTarget = e.target;
-
-            let tooltips = document.getElementsByClassName(`tooltip`);
-                while(tooltips.length > 0) {
-                    tooltips[0].parentNode.removeChild(tooltips[0]);
-                }
+            this.clearTooltips();
         });
     },
     listenForDragover: function () {
         this.body.addEventListener(`dragover`, (e) => {
+            this.clearTooltips();
             if(e.target.className === `equipmentItem` || e.target.className === `inventoryItem`) {
                 e.preventDefault();
             }
