@@ -1617,7 +1617,14 @@ function Char(name, race) {
     this.equipment = {
         mainHand: allWeapons[0],
         offHand: allWeapons[0],
-        armor: allArmors[0],
+        head: allArmors[0],
+        torso: allArmors[0],
+        arms: allArmors[0],
+        legs: allArmors[0],
+        amulet1: allArmors[0],
+        amulet2: allArmors[0],
+        quickAccess1: allArmors[0],
+        quickAccess2: allArmors[0],
     };
     this.inventory = [allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0]];
     this.addEquipment = function (slotName, equipment) {
@@ -2206,54 +2213,99 @@ const DOM = {
             inventoryContainer.append(x);
         }
     },
+    createEquipmentSlot: function (ele, char, slotName) {
+        ele.className = `equipmentItem`;
+        const item = char.equipment[slotName];
+        ele.dataset.itemType = item.itemType;
+        ele.dataset.itemIndex = item.index;
+        ele.dataset.equipmentSlotName = slotName;
+        ele.style.backgroundImage = char.equipment[slotName].icon;
+        ele.style.backgroundRepeat = `no-repeat`;
+        ele.style.backgroundSize = `100%`;
+        if(!item.isDefaultItem) {
+            ele.draggable = true;
+        } else {
+            ele.draggable = false;
+        }
+    },
     createUtilDivisionDisplay: function (char) {
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
-                for (let i = 0; i < (Object.keys(this.casterSelectionState.equipment).length); i++) { // * Creates equipment display
-                    const x = document.createElement(`div`);
-                    const z = document.createElement(`div`);
-                    const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
-                    const itemKeyName = arrayOfAllKeysInEquipment[i];
-                    const item = char.equipment[itemKeyName];
-                    if (item === null) {
-                        x.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-                    } else  { 
-                        // TODO : Right here I want to make these actual item boxes instead of text.
-                        x.innerHTML = `<div>-</div>
-                                    <div class="slotName">${itemKeyName}:</div>`;
-                        x.className = `equipmentContainer`;
+                const equipDisplay = document.createElement(`div`);
+                equipDisplay.className = `equipDisplay`;
+                // * Main Container
+                this.utilDivisionDisplay.append(equipDisplay);
 
-                        z.className = `equipmentItem`;
-                        z.dataset.itemType = char.equipment[itemKeyName].itemType;
-                        z.dataset.itemIndex = char.equipment[itemKeyName].index;
-                        z.dataset.equipmentSlotName = itemKeyName;
-                        z.style.backgroundImage = char.equipment[itemKeyName].icon;
-                        z.style.backgroundRepeat = `no-repeat`;
-                        z.style.backgroundSize = `100%`;
-                        if(!item.isDefaultItem) {
-                            z.draggable = true;
-                        } else {
-                            z.draggable = false;
-                        }
-                    }
-                    //!! Backup in case I butcher this.
-                    // if (item === null) {
-                    //     x.innerHTML = `<div class="slotName">${itemKeyName}: None</div>`;
-                    // } else if (item.damage) { 
-                    //     let damageDiceDisplay = formatDamageDiceToText(item.damage); 
-                    //     x.innerHTML = `<div>-</div>
-                    //                 <div class="slotName">${itemKeyName}:</div>
+                // * Subcontainers
+                const equipLeft = document.createElement(`div`);
+                equipLeft.className = `equipLeft`;
+                const equipCenter = document.createElement(`div`);
+                equipCenter.className = `equipCenter`;
+                const equipRight = document.createElement(`div`);
+                equipRight.className = `equipRight`;
+                equipDisplay.append(equipLeft, equipCenter, equipRight);
 
-                    //                 <div>${item.name}</div>
-                    //                 <div>Damage: ${damageDiceDisplay}</div>`;
-                    // } else {
-                    //     x.innerHTML = `<div>-</div>
-                    //                 <div class="slotName">${itemKeyName}:</div>
-                    //                 <div>${item.name}</div>`;
-                    // }
-                    this.utilDivisionDisplay.append(x);
-                    x.append(z);
-                }
+                // * Main Armor Slots on the left
+                const headSlot = document.createElement(`div`);
+                    this.createEquipmentSlot(headSlot, char, `head`);
+                const torsoSlot = document.createElement(`div`);
+                    this.createEquipmentSlot(torsoSlot, char, `torso`);
+                const armsSlot = document.createElement(`div`);
+                    this.createEquipmentSlot(armsSlot, char, `arms`);
+                const legsSlot = document.createElement(`div`);
+                    this.createEquipmentSlot(legsSlot, char, `legs`);
+                equipLeft.append(headSlot, torsoSlot, armsSlot, legsSlot);
+
+                // * Middle Subcontainers
+                const statsDisplay = document.createElement(`div`);
+                statsDisplay.className = `statsDisplay`;
+                const weaponsDisplay = document.createElement(`div`);
+                weaponsDisplay.className = `weaponsDisplay`;
+
+                    const mainHandWeaponSlot = document.createElement(`div`);
+                        this.createEquipmentSlot(mainHandWeaponSlot, char, `mainHand`);
+                    const offHandWeaponSlot = document.createElement(`div`);
+                        this.createEquipmentSlot(offHandWeaponSlot, char, `offHand`);
+                    weaponsDisplay.append(mainHandWeaponSlot, offHandWeaponSlot);
+
+                equipCenter.append(statsDisplay, weaponsDisplay);
+
+                // * Amulet & Quick Access Slots on the right.
+                const amulet1Slot = document.createElement(`div`);
+                    this.createEquipmentSlot(amulet1Slot, char, `amulet1`);
+                const amulet2Slot = document.createElement(`div`);
+                    this.createEquipmentSlot(amulet2Slot, char, `amulet2`);
+                const quickAccess1Slot = document.createElement(`div`);
+                    this.createEquipmentSlot(quickAccess1Slot, char, `quickAccess1`);
+                const quickAccess2Slot = document.createElement(`div`);
+                    this.createEquipmentSlot(quickAccess2Slot, char, `quickAccess2`);
+                equipRight.append(amulet1Slot, amulet2Slot, quickAccess1Slot, quickAccess2Slot);
+
+
+                // const x = document.createElement(`div`);
+                // const z = document.createElement(`div`);
+                // const arrayOfAllKeysInEquipment = Object.keys(char.equipment);
+                // const itemKeyName = arrayOfAllKeysInEquipment[i];
+                // const item = char.equipment[itemKeyName];
+                // x.innerHTML = `<div>-</div>
+                //             <div class="slotName">${itemKeyName}:</div>`;
+                // x.className = `equipmentContainer`;
+
+                // z.className = `equipmentItem`;
+                // z.dataset.itemType = char.equipment[itemKeyName].itemType;
+                // z.dataset.itemIndex = char.equipment[itemKeyName].index;
+                // z.dataset.equipmentSlotName = itemKeyName;
+                // z.style.backgroundImage = char.equipment[itemKeyName].icon;
+                // z.style.backgroundRepeat = `no-repeat`;
+                // z.style.backgroundSize = `100%`;
+                // if(!item.isDefaultItem) {
+                //     z.draggable = true;
+                // } else {
+                //     z.draggable = false;
+                // }
+                // this.utilDivisionDisplay.append(x);
+                // x.append(z);
+            
                 const inventoryContainer = document.createElement(`div`);
                 inventoryContainer.className = `inventoryContainer`;
                 this.utilDivisionDisplay.appendChild(inventoryContainer);
