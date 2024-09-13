@@ -1334,7 +1334,7 @@ function defineAllWeapons() {
         block: 0,
     }
 }
-const allArmors = []; // TODO: Need to fix all equipment icons.
+const allArmors = []; // TODO: Need to fix all equipment icons. 
 function defineAllArmors() {
     allArmors[0] = {
         isDefaultItem: true,
@@ -1799,8 +1799,9 @@ const DOM = {
         return;
     },
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
-        this.body.addEventListener(`mouseover`, (e) => {
-            if( (e.target.className === `inventoryItem` || e.target.className === `equipmentItem`) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
+        this.body.addEventListener(`mouseover`, (e) => { // TODO: Need to fix tooltip to not disappear when clicking on it, maybe.. look at ROR.
+            // console.log(e.target.className)
+            if( (e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`)) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
                 this.clearTooltips();
                 this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 600);
             } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
@@ -2107,7 +2108,7 @@ const DOM = {
     listenForDragover: function () {
         this.body.addEventListener(`dragover`, (e) => {
             this.clearTooltips();
-            if(e.target.className === `equipmentItem` || e.target.className === `inventoryItem`) {
+            if(e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`)) {
                 e.preventDefault();
             }
         })
@@ -2118,30 +2119,30 @@ const DOM = {
             let dragTargetCharData;
             let dropTargetCharData;
             let tempStorage;
-            switch(this.dragTarget.className) { // * links dom element properties to the char data.
+            switch(this.dragTarget.classList[0]) { // * links dom element properties to the char data.
                 case `equipmentItem` :
-                dragTargetCharData = this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName];
+                    dragTargetCharData = this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName];
                 break;
                 case `inventoryItem` :
-                dragTargetCharData = this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex];
+                    dragTargetCharData = this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex];
                 break;
             }
-            switch(dropTarget.className) {
+            switch(dropTarget.classList[0]) {
                 case `equipmentItem` :
-                dropTargetCharData = this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName];
+                    dropTargetCharData = this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName];
                 break;
                 case `inventoryItem` :
-                dropTargetCharData = this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex];
+                    dropTargetCharData = this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex];
                 break;
             }
-            if(dropTarget.className === `equipmentItem` && dropTargetCharData.itemType !== dragTargetCharData.itemType) {
+            if(dropTarget.classList.contains(`equipmentItem`)  && dropTargetCharData.itemType !== dragTargetCharData.itemType) {
                 console.log(`! Cannot place an item with type: ${dragTargetCharData.itemType} into an equipment slot with item type: ${dropTargetCharData.itemType}.`)
                 return;
             }
             tempStorage = dragTargetCharData;
 
             if(dropTargetCharData.isDefaultItem) {
-                switch(this.dragTarget.className) {
+                switch(this.dragTarget.classList[0]) {
                     case `equipmentItem` :
                         switch(dragTargetCharData.itemType) {
                             case `weapon`:
@@ -2157,7 +2158,7 @@ const DOM = {
                     break;
                 }
             } else {
-                switch(this.dragTarget.className) {
+                switch(this.dragTarget.classList[0]) {
                     case `equipmentItem` :
                     this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
                     break;
@@ -2166,7 +2167,7 @@ const DOM = {
                     break;
                 }
             }
-            switch(dropTarget.className) {
+            switch(dropTarget.classList[0]) {
                 case `equipmentItem` :
                 this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
                 break;
