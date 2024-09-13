@@ -1,8 +1,15 @@
 import { drop, forEach } from "lodash";
 import "./index.css"; 
 import "./images/dagger.png";
-import "./images/unarmed.png";
-import "./images/unarmored.png";
+import "./images/amulet.png";
+import "./images/arms.png";
+import "./images/head.png";
+import "./images/inventory.png";
+import "./images/legs.png";
+import "./images/mainHand.png";
+import "./images/offHand.png";
+import "./images/torso.png";
+import "./images/quickAccess.png";
 import printMe from './print.js';
 
 "use strict";
@@ -1302,7 +1309,7 @@ function defineAllWeapons() {
         isDefaultItem: true,
         itemType: `weapon`,
         index: 0,
-        icon: `url("./images/unarmed.png")`,
+        icon: `url("./images/mainHand.png")`,
         name: `Unarmed`,
         type: `melee`,
         damage: [[0, 1, 4]],
@@ -1327,13 +1334,13 @@ function defineAllWeapons() {
         block: 0,
     }
 }
-const allArmors = [];
+const allArmors = []; // TODO: Need to fix all equipment icons.
 function defineAllArmors() {
     allArmors[0] = {
         isDefaultItem: true,
         itemType: `armor`,
         index: 0,
-        icon: `url("./images/unarmored.png")`,
+        icon: `url("./images/torso.png")`,
         name: `Unarmored`,
         // type: `melee`,
         resists: [0,0,0,0,0,0,0,0,0],
@@ -1358,7 +1365,7 @@ function defineAllItems() {
         isDefaultItem: true,
         itemType: `item`,
         index: 0,
-        icon: ``,
+        icon: `url("./images/inventory.png")`,
         name: `emptySlot`,
         type: null,
         damage: null,
@@ -2214,7 +2221,7 @@ const DOM = {
         }
     },
     createEquipmentSlot: function (ele, char, slotName) {
-        ele.className = `equipmentItem`;
+        ele.className = `equipmentItem ${slotName}`;
         const item = char.equipment[slotName];
         ele.dataset.itemType = item.itemType;
         ele.dataset.itemIndex = item.index;

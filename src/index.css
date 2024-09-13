@@ -194,6 +194,15 @@ div.tooltipContent {
     width: 2.7dvw;
     margin: 4px;
 }
+.equipmentItem.mainHand {
+    margin-left: 0px;
+}
+.equipmentItem.offHand {
+    margin-right: 0px;
+}
+.inventoryItem {
+    margin: 2px;
+}
 .equipmentContainer {
     display: flex;
     flex-direction: column;
@@ -212,7 +221,8 @@ div.tooltipContent {
     flex: auto;
 }
 .weaponsDisplay {
-    margin-top: 13.6dvh;
+    /* Need to fix this, need mainHand and offHand to line up with bottom armors consistently as the screen changes */
+    margin-top: 14.35dvh;
     display: flex;
     justify-content: space-between;
 }
