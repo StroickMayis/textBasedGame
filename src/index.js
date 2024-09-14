@@ -521,6 +521,31 @@ const effect = {
 };
 
 /* #region  LOGIC */
+
+function updateCharStats(char) { // TODO: this is only adding resist, but not taking it away when item is removed. Must Fix.
+    for(let key in char.equipment) { // * adds equipment resists to char resists.
+        if(char.equipment[key].resists) {
+            for(let i = 0; i < 9; i++) {
+                char.resistsArray[i] += char.equipment[key].resists[i];
+            }
+        }
+    };
+    for(let key in char.equipment) { // * adds equipment defenses to char defenses.
+        if(char.equipment[key].parry) {
+            char.parry += char.equipment[key].parry;
+        }
+        if(char.equipment[key].dodge) {
+            char.dodge += char.equipment[key].dodge;
+        }
+        if(char.equipment[key].disrupt) {
+            char.disrupt += char.equipment[key].disrupt;
+        }
+        if(char.equipment[key].block) {
+            char.block += char.equipment[key].block;
+        }
+    };
+    console.log(char.resistsArray)
+}
 function formatResistArrayToText (resistArray) { // * input will look like the following:       resists: [0,0,-5,-5,-5,-5,-5,-5,-5], output will exclude resists that are 0.
     let resistNames = [`Flat`, `Piercing`, `Ice`,`Fire`,`Corrosive`,`Poison`,`Spiritual`,`Lightning`,`Arcane`];
     let outputText = ``;
@@ -532,7 +557,6 @@ function formatResistArrayToText (resistArray) { // * input will look like the f
     }
     return outputText;
 }
-
 function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
     let outputText = ``;
     for(let i = 0; i < damageDice.length; i++) {
@@ -543,7 +567,6 @@ function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0,
     }
     return outputText; 
 }
-
 function getResistTypeNameFromIndexNumber(typeNumber) {
     let resistName;
         switch(typeNumber) {
@@ -577,7 +600,6 @@ function getResistTypeNameFromIndexNumber(typeNumber) {
         }
         return resistName;
 }
-
 function resistArrayMultiply(inputResistArray, multiplier) { // * Takes input like so: [7,0,0,0,8,0,0,0,0] and outputs all of those numbers multiplied by the amount specified.
     let outputResistArray = [0,0,0,0,0,0,0,0,0];
     for(let i = 0; i < 9; i++) {
@@ -588,7 +610,6 @@ function resistArrayMultiply(inputResistArray, multiplier) { // * Takes input li
     return outputResistArray;
 
 }
-
 function createRollOutcomeString(rollOutcomeString) {
     // before the string is implied something along the lines of "rolls :"
     let output = ``;
@@ -599,7 +620,6 @@ function createRollOutcomeString(rollOutcomeString) {
     }
     return output;
 }
-
 function calcTotalDamageAfterResists(damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
     // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
     let damageSum = [0,0,0,0,0,0,0,0,0];
@@ -628,7 +648,6 @@ function calcTotalDamageAfterResists(damage, resists, caster, target, guardState
     }
     return damageSum;
 }
-
 function divideGuardDamage(damageSum, i, guardState) { // * checks for any kinds of guard states and divides accordingly. NOTE!: Alters the actual objects via reference.
     if (guardState === `guarded`) { 
         damageSum[i] = Math.ceil(damageSum[i] / 2);
@@ -639,7 +658,6 @@ function divideGuardDamage(damageSum, i, guardState) { // * checks for any kinds
     }
     return;
 }
-
 function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
     let attackRollAdvantages = [];
     Object.keys(caster.buffs).forEach((buffKey) => {
@@ -654,7 +672,6 @@ function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns
     });
     return sumOfArray(attackRollAdvantages);
 }
-
 function calcTargetDefendAdvatages(target) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
     let defendRollAdvantages = [];
     Object.keys(target.buffs).forEach((buffKey) => {
@@ -669,7 +686,6 @@ function calcTargetDefendAdvatages(target) { // * Takes target as input, returns
     });
     return sumOfArray(defendRollAdvantages);
 }
-
 function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice size input, and a advantage or disadvantage count input (pos 1 will be a regular roll, lower will be disadvantage and higher will be advantage) returns the highest or lowest number respectiveley.
     let arrOfRolls = [];
     let isAdvantageCountPos;
@@ -689,7 +705,6 @@ function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice si
         return Math.min(...arrOfRolls);
     }
 }
-
 function getGuardDefense(attackType, guarder) {
     const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
     let returnValue;
@@ -709,7 +724,6 @@ function getGuardDefense(attackType, guarder) {
     }
     return returnValue;
 }
-
 function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
     array.forEach((ele) => {
         if (ele[propertyName] === value) {
@@ -719,7 +733,6 @@ function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
         return false;
     });
 }
-
 function doesArrayOfObjectsInclude(array, propertyName, value) {
     array.forEach((ele) => {
         if (ele[propertyName] === value) {
@@ -728,7 +741,6 @@ function doesArrayOfObjectsInclude(array, propertyName, value) {
         return false;
     });
 }
-
 function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
     let outputArr = [];
     args.forEach((el) => {
@@ -739,7 +751,6 @@ function concatRollDice(...args) { // * Takes multiple 2D dice array input like 
     });
     return outputArr;
 }
-
 function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result, now with resistances.
     if (diceArr === null) {
         return null;
@@ -753,15 +764,12 @@ function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] ,
     }
     return rollArr;
 }
-
 function dice(dMax) { // * Takes an integer number X as input and outputs a random number between 1 and X like a single dice roll.
     return Math.floor(Math.random() * dMax + 1);
 }
-
 function diceMinus1(dMax) { // * Takes an integer number X as input and outputs a random number between 0 and X.
     return Math.floor(Math.random() * dMax + 1) - 1;
 }
-
 function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was summed.
     if (arrayOfNumbers === null) {
         return null;
@@ -772,31 +780,26 @@ function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and
     }
     return sum;
 }
-
 function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
     let sum = 0;
     arrayOfNumbers.forEach((el) => { if (el === null) { el = 0 } sum += el });
     return sum;
 }
-
 function popArrayPopValue(array) {
     let arrayCopy = Object.assign([], array);
     return arrayCopy.pop();
 }
-
 function popArrayArrayValue(array) {
     let arrayCopy = Object.assign([], array);
     arrayCopy.pop();
     return arrayCopy;
 }
-
 function isTargetDead(target) {
     if (target.hp < 1) {
         console.log(`Target is dead.`)
         return true
     }
 }
-
 function isAttackingAllies(caster, target) {
     if (caster.groupName === `PC` && target.groupName === `PC`) {
         console.log(`Don't attack your allies!`);
@@ -807,7 +810,6 @@ function isAttackingAllies(caster, target) {
     }
     return false;
 };
-
 function isHealingEnemies(caster, target) {
     if (caster.groupName === `PC` && target.groupName === `NPC`) {
         console.log(`Don't heal the enemy!`);
@@ -818,7 +820,6 @@ function isHealingEnemies(caster, target) {
     }
     return false;
 };
-
 function isBuffingEnemies(caster, target) {
     if (caster.groupName === `PC` && target.groupName === `NPC`) {
         console.log(`Don't buff the enemy!`);
@@ -829,20 +830,17 @@ function isBuffingEnemies(caster, target) {
     }
     return false;
 };
-
 function isHealingDeadTarget(target, abilityName) {
     if (target.hp < 1) {
         console.log(`${abilityName} is not powerful enough to ressurect ${target.name}.`)
         return true
     }
 };
-
 function forceHPtoZero(char) {
     if (char.hp < 0) {
         char.hp = 0;
     }
 };
-
 function isTargetInRangeOfCaster(caster, target, abilityRange) {
     let casterRowConverted;
     let targetRowConverted;
@@ -1543,17 +1541,6 @@ function defineAllRaces() {
             intelligence: 4,
             charisma: 0,
         },
-        resists: {
-            flat: 0,
-            piercing: 0,
-            ice: -5,
-            fire: -5,
-            corrosive: -5,
-            poison: -5,
-            spiritual: -5,
-            lighting: -5,
-            arcane: -5,
-        },
         resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
     allRaces[1] = {
@@ -1567,17 +1554,6 @@ function defineAllRaces() {
             initiative: 0,
             intelligence: 8,
             charisma: 0,
-        },
-        resists: {
-            flat: 0,
-            piercing: 0,
-            ice: -5,
-            fire: -5,
-            corrosive: -5,
-            poison: -5,
-            spiritual: -5,
-            lighting: -5,
-            arcane: -5,
         },
         resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
@@ -1593,17 +1569,6 @@ function defineAllRaces() {
             intelligence: 4,
             charisma: 0,
         },
-        resists: {
-            flat: 0,
-            piercing: 0,
-            ice: -3,
-            fire: -3,
-            corrosive: -3,
-            poison: -3,
-            spiritual: -3,
-            lighting: -3,
-            arcane: -3,
-        },
         resistsArray: [0,0,-3,-3,-3,-3,-3,-3,-3],   
 
     };
@@ -1618,17 +1583,6 @@ function defineAllRaces() {
             initiative: 4,
             intelligence: -14,
             charisma: -18,
-        },
-        resists: {
-            flat: 5,
-            piercing: 5,
-            ice: 0,
-            fire: 0,
-            corrosive: 0,
-            poison: 0,
-            spiritual: -5,
-            lighting: 0,
-            arcane: -5,
         },
         resistsArray: [5,5,0,0,0,0,-5,0,-5],   
     };
@@ -1756,7 +1710,6 @@ function Char(name, race) {
     this.hp = 100;
     this.abilities = [0];
     this.stats = race.stats;
-    this.resists = race.resists;
     this.resistsArray = race.resistsArray; 
     this.buffs = {};
     this.debuffs = {};
@@ -2358,6 +2311,7 @@ const DOM = {
                 this.utilDivisionDisplay.innerHTML = `Equipment:`;
                 if (this.casterSelectionState) {
                     this.createUtilDivisionDisplay(this.casterSelectionState);
+                    updateCharStats(this.casterSelectionState);
                 }
             break;
             case `stats`:
