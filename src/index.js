@@ -1309,7 +1309,7 @@ function defineAllWeapons() {
     allWeapons[0] = {
         isDefaultItem: true,
         itemType: `weapon`,
-        itemEquipSlot: [`mainHand`, `offHand`],
+        itemEquipType: [`mainHand`, `offHand`],
         index: 0,
         icon: `url("./images/mainHand.png")`,
         name: `Main Hand Unarmed`,
@@ -1324,7 +1324,7 @@ function defineAllWeapons() {
     allWeapons[1] = {
         isDefaultItem: true,
         itemType: `weapon`,
-        itemEquipSlot: [`mainHand`, `offHand`],
+        itemEquipType: [`mainHand`, `offHand`],
         index: 1,
         icon: `url("./images/offHand.png")`,
         name: `Off-Hand Unarmed`,
@@ -1339,7 +1339,7 @@ function defineAllWeapons() {
     allWeapons[2] = {
         isDefaultItem: false,
         itemType: `weapon`,
-        itemEquipSlot: [`mainHand`, `offHand`],
+        itemEquipType: [`mainHand`, `offHand`],
         index: 2,
         icon: `url("./images/dagger.png")`,
         name: `Dagger`,
@@ -1357,7 +1357,7 @@ function defineAllArmors() {
     allArmors[0] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`head`],
+        itemEquipType: [`head`],
         index: 0,
         icon: `url("./images/head.png")`,
         name: `Head`,
@@ -1373,7 +1373,7 @@ function defineAllArmors() {
     allArmors[1] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`torso`],
+        itemEquipType: [`torso`],
         index: 1,
         icon: `url("./images/torso.png")`,
         name: `Torso`,
@@ -1389,7 +1389,7 @@ function defineAllArmors() {
     allArmors[2] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`arms`],
+        itemEquipType: [`arms`],
         index: 2,
         icon: `url("./images/arms.png")`,
         name: `Arms`,
@@ -1405,7 +1405,7 @@ function defineAllArmors() {
     allArmors[3] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`legs`],
+        itemEquipType: [`legs`],
         index: 3,
         icon: `url("./images/legs.png")`,
         name: `Legs`,
@@ -1421,7 +1421,7 @@ function defineAllArmors() {
     allArmors[4] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`amulet1`],
+        itemEquipType: [`amulet1`],
         index: 4,
         icon: `url("./images/amulet.png")`,
         name: `Amulet 1`,
@@ -1437,7 +1437,7 @@ function defineAllArmors() {
     allArmors[5] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`amulet2`],
+        itemEquipType: [`amulet2`],
         index: 5,
         icon: `url("./images/amulet.png")`,
         name: `Amulet 2`,
@@ -1453,7 +1453,7 @@ function defineAllArmors() {
     allArmors[6] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`quickAccess1`],
+        itemEquipType: [`quickAccess1`],
         index: 6,
         icon: `url("./images/quickAccess.png")`,
         name: `Quick Access 1`,
@@ -1469,7 +1469,7 @@ function defineAllArmors() {
     allArmors[7] = {
         isDefaultItem: true,
         itemType: `armor`,
-        itemEquipSlot: [`quickAccess2`],
+        itemEquipType: [`quickAccess2`],
         index: 7,
         icon: `url("./images/quickAccess.png")`,
         name: `Quick Access 2`,
@@ -1485,7 +1485,7 @@ function defineAllArmors() {
     allArmors[8] = {
         isDefaultItem: false,
         itemType: `armor`,
-        itemEquipSlot: [`head`, `torso`, `arms`, `legs`],
+        itemEquipType: [`head`, `torso`, `arms`, `legs`],
         index: 8,
         icon: `url("./images/oldShirt.png")`,
         name: `Old Shirt`,
@@ -2275,22 +2275,19 @@ const DOM = {
                     dropTargetCharData = this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex];
                 break;
             }
-            if(dropTarget.classList.contains(`equipmentItem`)  && dropTargetCharData.itemType !== dragTargetCharData.itemType) {
+
+            if(dropTarget.classList.contains(`equipmentItem`) && dropTargetCharData.itemType !== dragTargetCharData.itemType) {
                 console.log(`! Cannot place an item with type: ${dragTargetCharData.itemType} into an equipment slot with item type: ${dropTargetCharData.itemType}.`)
+                return;
+            } else if (dropTarget.classList.contains(`equipmentItem`) && !dragTargetCharData.itemEquipType.includes(dropTargetCharData.itemEquipType[0])) {
+                console.log(`! Cannot place an item with equip type: ${dragTargetCharData.itemEquipType} into an equipment slot with item type: ${dropTargetCharData.itemEquipType}.`)
                 return;
             }
             tempStorage = dragTargetCharData;
 
-            // function getDefaultWeaponSlot(itemEquipSlot) {
-            //     switch(itemEquipSlot) {
-            //         case 
-            //     }
-            // }
-
-            if(dropTargetCharData.isDefaultItem) { // TODO: FIX THIS NEXT
+            if(dropTargetCharData.isDefaultItem) { 
                 switch(this.dragTarget.classList[0]) {
                     case `equipmentItem` :
-                        console.log(`1`)
                         switch(dragTargetCharData.itemType) {
                             case `weapon`:
                                 if(this.dragTarget.classList.contains(`mainHand`)) {
@@ -2330,9 +2327,7 @@ const DOM = {
                         }
                     break;
                     case `inventoryItem` :
-                        console.log(`2`)
-
-                    this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
+                        this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
                     break;
                 }
             } else {
