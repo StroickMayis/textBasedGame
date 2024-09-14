@@ -10,6 +10,7 @@ import "./images/mainHand.png";
 import "./images/offHand.png";
 import "./images/torso.png";
 import "./images/quickAccess.png";
+import "./images/oldShirt.png";
 import printMe from './print.js';
 
 "use strict";
@@ -1308,9 +1309,10 @@ function defineAllWeapons() {
     allWeapons[0] = {
         isDefaultItem: true,
         itemType: `weapon`,
+        itemEquipSlot: [`mainHand`, `offHand`],
         index: 0,
         icon: `url("./images/mainHand.png")`,
-        name: `Unarmed`,
+        name: `Main Hand Unarmed`,
         type: `melee`,
         damage: [[0, 1, 4]],
         range: 1,
@@ -1320,9 +1322,25 @@ function defineAllWeapons() {
         block: 0,
     }
     allWeapons[1] = {
+        isDefaultItem: true,
+        itemType: `weapon`,
+        itemEquipSlot: [`mainHand`, `offHand`],
+        index: 1,
+        icon: `url("./images/offHand.png")`,
+        name: `Off-Hand Unarmed`,
+        type: `melee`,
+        damage: [[0, 1, 4]],
+        range: 1,
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+    allWeapons[2] = {
         isDefaultItem: false,
         itemType: `weapon`,
-        index: 1,
+        itemEquipSlot: [`mainHand`, `offHand`],
+        index: 2,
         icon: `url("./images/dagger.png")`,
         name: `Dagger`,
         type: `melee`,
@@ -1339,9 +1357,10 @@ function defineAllArmors() {
     allArmors[0] = {
         isDefaultItem: true,
         itemType: `armor`,
+        itemEquipSlot: [`head`],
         index: 0,
-        icon: `url("./images/torso.png")`,
-        name: `Unarmored`,
+        icon: `url("./images/head.png")`,
+        name: `Head`,
         // type: `melee`,
         resists: [0,0,0,0,0,0,0,0,0],
         damage: null,
@@ -1352,11 +1371,132 @@ function defineAllArmors() {
         block: null,
     }
     allArmors[1] = {
-        name: `Chainmail`,
-        parry: 1,
-        dodge: 0,
-        disrupt: 0,
-        block: 0,
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`torso`],
+        index: 1,
+        icon: `url("./images/torso.png")`,
+        name: `Torso`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[2] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`arms`],
+        index: 2,
+        icon: `url("./images/arms.png")`,
+        name: `Arms`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[3] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`legs`],
+        index: 3,
+        icon: `url("./images/legs.png")`,
+        name: `Legs`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[4] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`amulet1`],
+        index: 4,
+        icon: `url("./images/amulet.png")`,
+        name: `Amulet 1`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[5] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`amulet2`],
+        index: 5,
+        icon: `url("./images/amulet.png")`,
+        name: `Amulet 2`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[6] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`quickAccess1`],
+        index: 6,
+        icon: `url("./images/quickAccess.png")`,
+        name: `Quick Access 1`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[7] = {
+        isDefaultItem: true,
+        itemType: `armor`,
+        itemEquipSlot: [`quickAccess2`],
+        index: 7,
+        icon: `url("./images/quickAccess.png")`,
+        name: `Quick Access 2`,
+        // type: `melee`,
+        resists: [0,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
+    }
+    allArmors[8] = {
+        isDefaultItem: false,
+        itemType: `armor`,
+        itemEquipSlot: [`head`, `torso`, `arms`, `legs`],
+        index: 8,
+        icon: `url("./images/oldShirt.png")`,
+        name: `Old Shirt`,
+        // type: `melee`,
+        resists: [1,0,0,0,0,0,0,0,0],
+        damage: null,
+        range: null,
+        parry: null,
+        dodge: null,
+        disrupt: null,
+        block: null,
     }
 }
 const allItems = [];
@@ -1623,15 +1763,15 @@ function Char(name, race) {
     this.row = 1;
     this.equipment = {
         mainHand: allWeapons[0],
-        offHand: allWeapons[0],
+        offHand: allWeapons[1],
         head: allArmors[0],
-        torso: allArmors[0],
-        arms: allArmors[0],
-        legs: allArmors[0],
-        amulet1: allArmors[0],
-        amulet2: allArmors[0],
-        quickAccess1: allArmors[0],
-        quickAccess2: allArmors[0],
+        torso: allArmors[1],
+        arms: allArmors[2],
+        legs: allArmors[3],
+        amulet1: allArmors[4],
+        amulet2: allArmors[5],
+        quickAccess1: allArmors[6],
+        quickAccess2: allArmors[7],
     };
     this.inventory = [allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0]];
     this.addEquipment = function (slotName, equipment) {
@@ -2141,19 +2281,57 @@ const DOM = {
             }
             tempStorage = dragTargetCharData;
 
-            if(dropTargetCharData.isDefaultItem) {
+            // function getDefaultWeaponSlot(itemEquipSlot) {
+            //     switch(itemEquipSlot) {
+            //         case 
+            //     }
+            // }
+
+            if(dropTargetCharData.isDefaultItem) { // TODO: FIX THIS NEXT
                 switch(this.dragTarget.classList[0]) {
                     case `equipmentItem` :
+                        console.log(`1`)
                         switch(dragTargetCharData.itemType) {
                             case `weapon`:
-                                this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[0];
+                                if(this.dragTarget.classList.contains(`mainHand`)) {
+                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[0];
+                                } else {
+                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[1];
+                                }
                             break;
                             case `armor`:
-                                this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[0];
+                                switch(this.dragTarget.classList[1]) {
+                                    case `head`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[0];
+                                    break;
+                                    case `torso`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[1];
+                                    break;
+                                    case `arms`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[2];
+                                    break;
+                                    case `legs`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[3];
+                                    break;
+                                    case `amulet1`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[4];
+                                    break;
+                                    case `amulet2`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[5];
+                                    break;
+                                    case `quickAccess1`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[6];
+                                    break;
+                                    case `quickAccess2`:
+                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[7];
+                                    break;
+                                }
                             break;
                         }
                     break;
                     case `inventoryItem` :
+                        console.log(`2`)
+
                     this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
                     break;
                 }
@@ -2424,7 +2602,8 @@ const evil = NPCs.charList[1];
 const kliftin = PCs.charList[1];
 const hobo = NPCs.charList[0];
 
-stroick.inventory[0] = allWeapons[1];
+stroick.inventory[0] = allWeapons[2];
+stroick.inventory[1] = allArmors[8];
 
 DOM.update();
 DOM.listenForCasterSelection();
