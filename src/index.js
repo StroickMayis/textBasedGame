@@ -28,6 +28,7 @@ import printMe from './print.js';
 // TODO: Must make ID's for everything, to make them easier to handle.
 // TODO: I am copying data too much, all characters should REFERENCE ability data etc, this will make it easier to code and should improve performance.
 // TODO: Search for TODO's throughout the code and do them.
+// TODO: Should merge the branches in git at this point.
 
 /* #endregion Notes*/
 
