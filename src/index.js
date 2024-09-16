@@ -524,6 +524,14 @@ const effect = {
 
 /* #region  LOGIC */
 
+function getFirstEmptyInventorySlot(char) { // * returns a number representing the first empty inventory index.
+    for(let i = 0; i < char.inventory.length; i++) {
+        if(char.inventory[i].isDefaultItem) {
+            return i;
+        }
+    }
+    return false;
+}
 function putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget) {
     switch(dragTargetCharData.itemType) {
         case `weapon`:
@@ -2234,7 +2242,7 @@ const DOM = {
                 break;
         }
     },
-    listenForTabSelection: function () {
+    listenForTabSelection: function () { // * Listens to the tab buttons at the top-right of the screen.
         this.utilDivisionTabs.addEventListener(`click`, (e) => {
             switch(e.target.className) {
                 case `inventory`:
@@ -2261,7 +2269,7 @@ const DOM = {
             }
         })
     },
-    listenForDrag: function () {
+    listenForDrag: function () { // * Using this to make sure things are not draggable if they aren't supposed to be, also sets DOM.dragTarget and clears tooltips.
         this.body.addEventListener(`dragstart`, (e) => {
             if(e.target.draggable === false) {
                 e.preventDefault();
@@ -2270,7 +2278,7 @@ const DOM = {
             this.clearTooltips();
         });
     },
-    listenForDragover: function () {
+    listenForDragover: function () { // * Only for changing the symbol that indicates dropability when hovering over things.
         this.body.addEventListener(`dragover`, (e) => {
             this.clearTooltips();
             if(e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`)) {
@@ -2278,7 +2286,7 @@ const DOM = {
             }
         })
     },
-    listenForDrop: function () {
+    listenForDrop: function () { // * Where most of the drag & drop item swapping logic is.
         this.body.addEventListener(`drop`, (e) => {
             let dropTarget = e.target; // * dragTarget is the other variable, it represents the item being dragged.
             let dragTargetCharData;
@@ -2381,6 +2389,55 @@ const DOM = {
             this.dragTarget = null;
         }) 
     },
+    listenForRightClickEquip: function () { // * Where the right click swapping logic is.
+        this.utilDivisionDisplay.addEventListener(`contextmenu`, (e) => {
+            e.preventDefault();
+            if ( ( e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`) )  &&  e.target.draggable === true) {
+                let dragTarget = e.target; // * dragTarget is the other variable, it represents the item being dragged.
+                let dragTargetCharData;
+                let dropTargetCharData;
+                let tempStorage;
+                let char = this.casterSelectionState;
+                switch(dragTarget.classList[0]) { // * links dom element properties to the char data for DRAGTARGET
+                    case `equipmentItem` :
+                        dragTargetCharData = char.equipment[dragTarget.dataset.equipmentSlotName];
+                        dropTargetCharData = char.inventory[getFirstEmptyInventorySlot(char)];
+                    break;
+                    case `inventoryItem` :
+                        dragTargetCharData = char.inventory[dragTarget.dataset.inventoryIndex];
+                        dropTargetCharData = char.equipment[dragTargetCharData.itemEquipType[0]];
+                    break;
+                }
+                
+                tempStorage = dragTargetCharData;
+
+                switch(dragTarget.classList[0]) {
+                    case `inventoryItem` : // ***** If drag is from inventory
+                        if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
+                            char.inventory[dragTarget.dataset.inventoryIndex] = allItems[0];
+                            char.equipment[dragTargetCharData.itemEquipType[0]] = tempStorage;
+                            updateCharStats(char, `add`, dragTargetCharData);
+                            // do the swap and add stats
+                        } else { // ! If drop contains item
+                            char.inventory[dragTarget.dataset.inventoryIndex] = dropTargetCharData;
+                            char.equipment[dragTargetCharData.itemEquipType[0]] = tempStorage;
+                            updateCharStats(char, `add`, dragTargetCharData);
+                            updateCharStats(char, `remove`, dropTargetCharData);
+                            // do the swap and add drag stats, subtract drop stats
+                        }
+                    break;
+                    case `equipmentItem` : // ***** If drag is from equipment
+                        putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget)
+                        console.log(getFirstEmptyInventorySlot(char))
+                        char.inventory[getFirstEmptyInventorySlot(char)] = dragTargetCharData;
+                        updateCharStats(char, `remove`, dragTargetCharData);
+                        // do the swap and remove drag stats
+                    break;
+                }
+            }
+            this.updateUtilDivisionDisplay();
+        })
+    },
     updateUtilDivisionDisplay: function () { // * is called when you select a different char or tab.
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
@@ -2403,7 +2460,7 @@ const DOM = {
             break;
         }
     },
-    generateInventory: function (inventoryContainer, char) {
+    generateInventory: function (inventoryContainer, char) { 
         for (let i = 0; i < char.inventory.length; i++) {
             const x = document.createElement(`div`);
             if(char.inventory[i]) {
@@ -2641,6 +2698,7 @@ DOM.listenForMouseOver();
 DOM.listenForDrag();
 DOM.listenForDragover();
 DOM.listenForDrop();
+DOM.listenForRightClickEquip();
 
 DOM.selectedUtilDivisionTab = DOM.inventoryTab;
 DOM.updateUtilDivisionDisplay();
