@@ -609,7 +609,6 @@ function updateCharStats(char, addOrRemove, item) { // TODO: this is only adding
             char.block -= item.block;
         }
     }
-    console.log(char.resistsArray)
 }
 function formatResistArrayToText (resistArray) { // * input will look like the following:       resists: [0,0,-5,-5,-5,-5,-5,-5,-5], output will exclude resists that are 0.
     let resistNames = [`Flat`, `Piercing`, `Ice`,`Fire`,`Corrosive`,`Poison`,`Spiritual`,`Lightning`,`Arcane`];
@@ -2428,7 +2427,6 @@ const DOM = {
                     break;
                     case `equipmentItem` : // ***** If drag is from equipment
                         putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget)
-                        console.log(getFirstEmptyInventorySlot(char))
                         char.inventory[getFirstEmptyInventorySlot(char)] = dragTargetCharData;
                         updateCharStats(char, `remove`, dragTargetCharData);
                         // do the swap and remove drag stats
@@ -2495,7 +2493,7 @@ const DOM = {
             ele.draggable = false;
         }
     },
-    createUtilDivisionDisplay: function (char) {
+    createUtilDivisionDisplay: function (char) { // * Holds most of the logic for the DOM structure of the UtilDivisionDisplay
         switch(this.selectedUtilDivisionTabState) {
             case `inventory`:
                 const equipDisplay = document.createElement(`div`);
@@ -2526,6 +2524,94 @@ const DOM = {
                 // * Middle Subcontainers
                 const statsDisplay = document.createElement(`div`);
                 statsDisplay.className = `statsDisplay`;
+
+                    const statsDisplayLeft = document.createElement(`div`);
+                    statsDisplayLeft.className = `statsDisplayLeft`;
+
+                        const strengthDisplay = document.createElement(`div`);
+                        strengthDisplay.textContent = `STR: ${char.stats.strength}`;
+
+                        const dexterityDisplay = document.createElement(`div`);
+                        dexterityDisplay.textContent = `DEX: ${char.stats.dexterity}`;
+
+                        const willpowerDisplay = document.createElement(`div`);
+                        willpowerDisplay.textContent = `WIL: ${char.stats.willpower}`;
+
+                        const vitalityDisplay = document.createElement(`div`);
+                        vitalityDisplay.textContent = `VIT: ${char.stats.vitality}`;
+
+                        const divider1 = document.createElement(`div`);
+                        divider1.textContent = `-`;
+
+                        const parryDisplay = document.createElement(`div`);
+                        parryDisplay.textContent = `PARRY: ${char.parry}`;
+
+                        const dodgeDisplay = document.createElement(`div`);
+                        dodgeDisplay.textContent = `DODGE: ${char.dodge}`;
+
+                        const divider3 = document.createElement(`div`);
+                        divider3.textContent = `-`;
+
+                        const flatResistDisplay = document.createElement(`div`);
+                        flatResistDisplay.textContent = `FLAT R: ${char.resistsArray[0]}`;
+
+                        const iceResistDisplay = document.createElement(`div`);
+                        iceResistDisplay.textContent = `ICE R: ${char.resistsArray[2]}`;
+
+                        const corrosiveResistDisplay = document.createElement(`div`);
+                        corrosiveResistDisplay.textContent = `CORRO. R: ${char.resistsArray[4]}`;
+
+                        const spiritualResistDisplay = document.createElement(`div`);
+                        spiritualResistDisplay.textContent = `SPIRIT R: ${char.resistsArray[6]}`;
+
+                        const arcaneResistDisplay = document.createElement(`div`);
+                        arcaneResistDisplay.textContent = `ARCANE R: ${char.resistsArray[8]}`;
+                        
+                        statsDisplayLeft.append(strengthDisplay, dexterityDisplay, willpowerDisplay, vitalityDisplay, divider1, parryDisplay, dodgeDisplay, divider3, flatResistDisplay, iceResistDisplay, corrosiveResistDisplay, spiritualResistDisplay, arcaneResistDisplay);
+
+                    const statsDisplayRight = document.createElement(`div`);
+                    statsDisplayRight.className = `statsDisplayRight`;
+
+                        const agilityDisplay = document.createElement(`div`);
+                        agilityDisplay.textContent = `AGI: ${char.stats.agility}`;
+
+                        const initiativeDisplay = document.createElement(`div`);
+                        initiativeDisplay.textContent = `INI: ${char.stats.initiative}`;
+
+                        const intelligenceDisplay = document.createElement(`div`);
+                        intelligenceDisplay.textContent = `INT: ${char.stats.intelligence}`;
+
+                        const charismaDisplay = document.createElement(`div`);
+                        charismaDisplay.textContent = `CHA: ${char.stats.charisma}`;
+
+                        const divider2 = document.createElement(`div`);
+                        divider2.textContent = `-`;
+
+                        const disruptDisplay = document.createElement(`div`);
+                        disruptDisplay.textContent = `DISRUPT: ${char.disrupt}`;
+
+                        const blockDisplay = document.createElement(`div`);
+                        blockDisplay.textContent = `BLOCK: ${char.block}`;
+
+                        const divider4 = document.createElement(`div`);
+                        divider4.textContent = `-`;
+
+                        const piercingResistDisplay = document.createElement(`div`);
+                        piercingResistDisplay.textContent = `PIERCE R: ${char.resistsArray[1]}`;
+
+                        const fireResistDisplay = document.createElement(`div`);
+                        fireResistDisplay.textContent = `FIRE R: ${char.resistsArray[3]}`;
+
+                        const poisonResistDisplay = document.createElement(`div`);
+                        poisonResistDisplay.textContent = `POISON R: ${char.resistsArray[5]}`;
+
+                        const lightningResistDisplay = document.createElement(`div`);
+                        lightningResistDisplay.textContent = `LIGHTN. R: ${char.resistsArray[7]}`;
+                        
+                        statsDisplayRight.append( agilityDisplay, initiativeDisplay, intelligenceDisplay, charismaDisplay, divider2, disruptDisplay, blockDisplay, divider4, piercingResistDisplay, fireResistDisplay, poisonResistDisplay, lightningResistDisplay);
+
+                statsDisplay.append(statsDisplayLeft, statsDisplayRight);
+
                 const weaponsDisplay = document.createElement(`div`);
                 weaponsDisplay.className = `weaponsDisplay`;
 

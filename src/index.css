@@ -222,7 +222,12 @@ div.tooltipContent {
 }
 .weaponsDisplay {
     /* Need to fix this, need mainHand and offHand to line up with bottom armors consistently as the screen changes */
-    margin-top: 14.35dvh;
+    margin-top: 6.35dvh;
     display: flex;
     justify-content: space-between;
+}
+.statsDisplay {
+    display: flex;
+    justify-content: space-around;
+    font-size: 12px;
 }
