@@ -2315,7 +2315,6 @@ const DOM = {
                 case `inventoryItem` : // ***** If drag is from inventory
                     switch(dropTarget.classList[0]) {
                         case `inventoryItem`: // *** If drop is to inventory
-                            // TODO : Do all of these
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
                                 char.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
                                 char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
@@ -2328,7 +2327,6 @@ const DOM = {
 
                         break;
                         case `equipmentItem`: // *** If drop is to equipment
-                            // TODO : Do all of these
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
                                 char.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
                                 char.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
