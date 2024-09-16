@@ -524,6 +524,45 @@ const effect = {
 
 /* #region  LOGIC */
 
+function putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget) {
+    switch(dragTargetCharData.itemType) {
+        case `weapon`:
+            if(dragTarget.classList.contains(`mainHand`)) {
+                char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[0];
+            } else {
+                char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[1];
+            }
+        break;
+        case `armor`:
+            switch(dragTarget.classList[1]) {
+                case `head`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[0];
+                break;
+                case `torso`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[1];
+                break;
+                case `arms`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[2];
+                break;
+                case `legs`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[3];
+                break;
+                case `amulet1`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[4];
+                break;
+                case `amulet2`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[5];
+                break;
+                case `quickAccess1`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[6];
+                break;
+                case `quickAccess2`:
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[7];
+                break;
+            }
+        break;
+    }
+}
 function updateCharStats(char, addOrRemove, item) { // TODO: this is only adding resist, but not taking it away when item is removed. Must Fix.
     if(addOrRemove === `add`) {
         if(item.resists) {
@@ -1501,7 +1540,7 @@ function defineAllArmors() {
     allArmors[8] = {
         isDefaultItem: false,
         itemType: `armor`,
-        itemEquipType: [`torso`, `legs`],
+        itemEquipType: [`torso`],
         index: 8,
         icon: `url("./images/oldShirt.png")`,
         name: `Old Shirt`,
@@ -1517,7 +1556,7 @@ function defineAllArmors() {
     allArmors[9] = {
         isDefaultItem: false,
         itemType: `armor`,
-        itemEquipType: [`legs`, `torso`],
+        itemEquipType: [`legs`],
         index: 9,
         icon: `url("./images/trustyBelt.png")`,
         name: `Trusty Belt`,
@@ -1896,7 +1935,6 @@ const DOM = {
     dragTarget: null,
     timeout: null,
 
-
     listenForEndTurnButton: function () {
         this.endTurnButton.addEventListener(`click`, (e) => {
             turn.end();
@@ -2266,6 +2304,9 @@ const DOM = {
             if (dropTarget.classList.contains(`equipmentItem`) && !dragTargetCharData.itemEquipType.includes(dropTargetCharData.itemEquipType[0])) { // * Disallows items with non-matching equip types to be swapped.
                 console.log(`! Cannot place an item with equip type: ${dragTargetCharData.itemEquipType} into an equipment slot with item type: ${dropTargetCharData.itemEquipType}.`)
                 return;
+            } else if (this.dragTarget.classList[0] === `equipmentItem` && dropTarget.classList[0] === `inventoryItem` && !dropTargetCharData.isDefaultItem) {
+                console.log(`! Cannot place an item with equip type: ${dragTargetCharData.itemEquipType} into an equipment slot with item type: ${dropTargetCharData.itemEquipType}.`)
+                return;
             }
 
             tempStorage = dragTargetCharData;
@@ -2274,19 +2315,30 @@ const DOM = {
                 case `inventoryItem` : // ***** If drag is from inventory
                     switch(dropTarget.classList[0]) {
                         case `inventoryItem`: // *** If drop is to inventory
-
+                            // TODO : Do all of these
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
+                                char.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
+                                char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
                                 // do the swap
                             } else { // ! If drop contains item
+                                char.inventory[this.dragTarget.dataset.inventoryIndex] = dropTargetCharData;
+                                char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
                                 // do the swap
                             }
 
                         break;
                         case `equipmentItem`: // *** If drop is to equipment
-
+                            // TODO : Do all of these
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
+                                char.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
+                                char.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
+                                updateCharStats(char, `add`, dragTargetCharData);
                                 // do the swap and add stats
                             } else { // ! If drop contains item
+                                char.inventory[this.dragTarget.dataset.inventoryIndex] = dropTargetCharData;
+                                char.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
+                                updateCharStats(char, `add`, dragTargetCharData);
+                                updateCharStats(char, `remove`, dropTargetCharData);
                                 // do the swap and add drag stats, subtract drop stats
                             }
 
@@ -2298,130 +2350,33 @@ const DOM = {
                         case `inventoryItem`: // *** If drop is to inventory
 
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
+                                putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
+                                char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
+                                updateCharStats(char, `remove`, dragTargetCharData);
                                 // do the swap and remove drag stats
                             } else { // ! If drop contains item
+                                char.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
+                                char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
+                                updateCharStats(char, `remove`, dragTargetCharData);
+                                updateCharStats(char, `add`, dropTargetCharData);
                                 // do the swap and remove drag stats, add drop stats
                             }
 
-                        break; // TODO CONTINUE FIXING THIS UP, is aids
+                        break; 
                         case `equipmentItem`: // *** If drop is to equipment
 
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
-                                // do the swap and add stats
+                                putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
+                                char.equipment[this.dragTarget.dataset.equipmentSlotName] = tempStorage;
+                                // do the swap
                             } else { // ! If drop contains item
-                                // do the swap and add drag stats, subtract drop stats
+                                char.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
+                                char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
+                                // do the swap
                             }
 
                         break;
                     }
-                    switch(dragTargetCharData.itemType) {
-                        case `weapon`:
-                            updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                            if(this.dragTarget.classList.contains(`mainHand`)) {
-                                char.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[0];
-                            } else {
-                                char.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[1];
-                            }
-                        break;
-                        case `armor`:
-                            updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                            switch(this.dragTarget.classList[1]) {
-                                case `head`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[0];
-                                break;
-                                case `torso`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[1];
-                                break;
-                                case `arms`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[2];
-                                break;
-                                case `legs`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[3];
-                                break;
-                                case `amulet1`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[4];
-                                break;
-                                case `amulet2`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[5];
-                                break;
-                                case `quickAccess1`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[6];
-                                break;
-                                case `quickAccess2`:
-                                    this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[7];
-                                break;
-                            }
-                        break;
-                    }
-                break;
-            }
-
-            if(dropTargetCharData.isDefaultItem) { // * if drop target is empty
-                switch(this.dragTarget.classList[0]) {
-                    case `equipmentItem` :              // * if drag target is equip item
-                        switch(dragTargetCharData.itemType) { 
-                            case `weapon`:                      // * if drag target is weapon
-                                updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                                if(this.dragTarget.classList.contains(`mainHand`)) {
-                                    char.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[0];
-                                } else {
-                                    char.equipment[this.dragTarget.dataset.equipmentSlotName] = allWeapons[1];
-                                }
-                            break;
-                            case `armor`:                       // * if drag target is armor
-                                updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                                switch(this.dragTarget.classList[1]) {
-                                    case `head`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[0];
-                                    break;
-                                    case `torso`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[1];
-                                    break;
-                                    case `arms`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[2];
-                                    break;
-                                    case `legs`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[3];
-                                    break;
-                                    case `amulet1`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[4];
-                                    break;
-                                    case `amulet2`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[5];
-                                    break;
-                                    case `quickAccess1`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[6];
-                                    break;
-                                    case `quickAccess2`:
-                                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = allArmors[7];
-                                    break;
-                                }
-                            break;
-                        }
-                    break;
-                    case `inventoryItem` :                      // * if drag target is inv item
-                        this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
-                    break;
-                }
-            } else {
-                switch(this.dragTarget.classList[0]) {
-                    case `equipmentItem` :
-                        updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                        this.casterSelectionState.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
-                    break;
-                    case `inventoryItem` :
-                        this.casterSelectionState.inventory[this.dragTarget.dataset.inventoryIndex] = dropTargetCharData;
-                    break;
-                }
-            }
-            switch(dropTarget.classList[0]) {
-                case `equipmentItem` :
-                        updateCharStats(this.casterSelectionState, `add`, dragTargetCharData);
-                        this.casterSelectionState.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
-                break;
-                case `inventoryItem` :
-                        updateCharStats(this.casterSelectionState, `remove`, dragTargetCharData);
-                        this.casterSelectionState.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
                 break;
             }
             this.updateUtilDivisionDisplay();
