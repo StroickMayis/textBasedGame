@@ -22,6 +22,7 @@ import "./images/reflexiveFocus.png";
 import "./images/revealWeakness.png";
 import "./images/fleshEating.png";
 import "./images/riposte.png";
+import "./images/taunt.png";
 
 import printMe from './print.js';
 
@@ -1093,6 +1094,10 @@ function defineAllAbilities() {
         },
         APCost: 0,
         icon: `url("./images/quickAccess.png")`,
+        index: 0,
+        targetDesc: `N/A`,
+        typeDesc: `N/A`,
+        desc: `N/A`,
     }
     allAbilities[1] = {
         name: `Attack`,
@@ -1135,6 +1140,10 @@ function defineAllAbilities() {
         },
         APCost: 20,
         icon: `url("./images/attack.png")`,
+        index: 1,
+        targetDesc: `1 Foe`,
+        typeDesc: `Attack`,
+        desc: `Attack a foe with all of the default bonues.`,
     }
     allAbilities[2] = {
         name: `Powerful Strike`,
@@ -1177,6 +1186,10 @@ function defineAllAbilities() {
         },
         APCost: 25,
         icon: `url("./images/powerfulStrike.png")`,
+        index: 2,
+        targetDesc: `1 Foe`,
+        typeDesc: `Attack`,
+        desc: `Use strength as your attack bonus for this attack, and strength damage bonus is increased by 50%.`,
     }
     allAbilities[3] = {
         name: `Precision Strike`,
@@ -1219,6 +1232,10 @@ function defineAllAbilities() {
         },
         APCost: 25,
         icon: `url("./images/precisionStrike.png")`,
+        index: 3,
+        targetDesc: `1 Foe`,
+        typeDesc: `Attack`,
+        desc: `Double Dexterity for your attack bonus for this attack, and dexterity damage bonus is increased by 50%.`,
     }
     allAbilities[4] = {
         name: `Healing Word`,
@@ -1261,6 +1278,10 @@ function defineAllAbilities() {
         },
         APCost: 10,
         icon: `url("./images/healingWord.png")`,
+        index: 4,
+        targetDesc: `1 Ally`,
+        typeDesc: `Healing`,
+        desc: `Heal you or an ally for 1d4 + 1/4 Willpower in Health.`,
     }
     allAbilities[5] = {
         name: `Guard`,
@@ -1291,6 +1312,10 @@ function defineAllAbilities() {
         },
         APCost: 50,
         icon: `url("./images/guard.png")`,
+        index: 5,
+        targetDesc: `1 Ally`,
+        typeDesc: `Guard`,
+        desc: `An ally of your choice will split off half of the damage they take and you will then take it instead. You can have a chance to defend this damage.`,
     }
     allAbilities[6] = {
         name: `Leaping Strike`,
@@ -1333,6 +1358,10 @@ function defineAllAbilities() {
         },
         APCost: 20,
         icon: `url("./images/leapingStrike.png")`,
+        index: 6,
+        targetDesc: `1 Foe`,
+        typeDesc: `Attack`,
+        desc: `Make a leaping regular attack with an added 1 row of range.`,
     }
     allAbilities[7] = {
         name: `Reflexive Focus`, // TODO: Make this ability drain 5 ap every turn that it is active, also need a way to see that it is active and a way to disable it.
@@ -1355,6 +1384,10 @@ function defineAllAbilities() {
         },
         APCost: 5,
         icon: `url("./images/reflexiveFocus.png")`,
+        index: 7,
+        targetDesc: `Self`,
+        typeDesc: `Buff`,
+        desc: `Focus on your defenses, giving advantage on defense rolls while this is active.`,
     }
     allAbilities[8] = {
         name: `Reveal Weakness`,
@@ -1382,9 +1415,13 @@ function defineAllAbilities() {
         },
         APCost: 75,
         icon: `url("./images/revealWeakness.png")`,
+        index: 8,
+        targetDesc: `1 Foe`,
+        typeDesc: `Debuff`,
+        desc: `Foe has disadvantage on defense, and takes 1 extra damage every time they take damage.`,
     }
     allAbilities[9] = {
-        name: `Flesh Eating`,
+        name: `Taunt`,
         effect: function (caster, target) {
             return;
             if (!isAttackingAllies(caster, target)) {
@@ -1395,8 +1432,12 @@ function defineAllAbilities() {
                 }
             }
         },
-        APCost: 0,
-        icon: `url("./images/fleshEating.png")`,
+        APCost: 50,
+        icon: `url("./images/taunt.png")`,
+        index: 9,
+        targetDesc: `1 Foe`,
+        typeDesc: `Debuff`,
+        desc: `Taunt 1 foe ( with less willpower than you have Charisma ) at a time for 3 turns, making them deal half damage to anyone but you, if they hit you for any amount of damage this ability ends.`,
     }
     allAbilities[10] = {
         name: `Riposte`,
@@ -1431,6 +1472,10 @@ function defineAllAbilities() {
         },
         APCost: 0,
         icon: `url("./images/riposte.png")`,
+        index: 10,
+        targetDesc: `1 Foe`,
+        typeDesc: `Attack`,
+        desc: `Make a counter attack on a foe if your defense roll is at least 50% of their attack roll.`,
     }
 }
 const allWeapons = []; // TODO: Weapons are the most up to date items, will need to fix this
@@ -2041,10 +2086,10 @@ const DOM = {
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => { // TODO: Need to fix tooltip to not disappear when clicking on it, maybe.. look at ROR.
             // console.log(e.target.className)
-            if( (e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`)) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
+            if( (e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`) || e.target.classList.contains(`ability`) || e.target.classList.contains(`utilDivisionAbility`)) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
                 this.clearTooltips();
-                this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 600);
-            } else if (e.target.className !== `tooltip` && e.target.className !== `tooltipContent` ) {
+                this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 500);
+            } else if (!e.target.classList.contains(`tooltip`) && !e.target.classList.contains(`tooltipContent`)) {
                 this.clearTooltips();
             }
         });
@@ -2056,8 +2101,35 @@ const DOM = {
         }
         const x = document.createElement(`div`);
         let item;
+        let ability;
         let damageDiceDisplay;
         let resistsDisplay;
+
+        if(target.classList.contains(`utilDivisionAbility`)) { //  * If hover is over an ability
+            ability = allAbilities[target.dataset.abilityIndex];
+            // damageDiceDisplay = formatDamageDiceToText(item.damage); 
+            x.className = `tooltip`;
+            x.innerHTML = `
+                        <div class="tooltipContent">${ability.name}:</div>
+                        <div class="tooltipContent">-</div>
+                        <div class="tooltipContent">AP: ${ability.APCost}</div>
+                        <div class="tooltipContent">Type: ${ability.typeDesc}</div>
+                        <div class="tooltipContent">Target: ${ability.targetDesc}</div>
+                        <div class="tooltipContent">${ability.desc}</div>`;
+        }
+        if(target.classList.contains(`ability`)) { //  * If hover is over an ability
+            ability = allAbilities[target.dataset.abilityIndex];
+            // damageDiceDisplay = formatDamageDiceToText(item.damage); 
+            x.className = `tooltip hotBarTooltip`;
+            x.innerHTML = `
+                        <div class="tooltipContent hotBarTooltipContent">${ability.name}:</div>
+                        <div class="tooltipContent hotBarTooltipContent">-</div>
+                        <div class="tooltipContent hotBarTooltipContent">AP: ${ability.APCost}</div>
+                        <div class="tooltipContent hotBarTooltipContent">Type: ${ability.typeDesc}</div>
+                        <div class="tooltipContent hotBarTooltipContent">Target: ${ability.targetDesc}</div>
+                        <div class="tooltipContent hotBarTooltipContent">${ability.desc}</div>`;
+        }
+
         if(target.dataset) {
             switch(target.dataset.itemType) {
                 case `weapon`:
@@ -2155,6 +2227,9 @@ const DOM = {
                 x.style.backgroundImage = allAbilities[char.hotBar[i]].icon;
                 x.style.backgroundRepeat = `no-repeat`;
                 x.style.backgroundSize = `100%`;
+                if(char.hotBar[i] !== 0) {
+                    x.draggable = true;
+                }
                 this.abilityListContainer.append(x);
             } 
         }
@@ -2357,7 +2432,10 @@ const DOM = {
     listenForDragover: function () { // * Only for changing the symbol that indicates dropability when hovering over things.
         this.body.addEventListener(`dragover`, (e) => {
             this.clearTooltips();
-            if(e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`)) {
+            if(e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`) || e.target.classList.contains(`ability`)) {
+                e.preventDefault();
+            }
+            if(this.dragTarget.classList.contains(`ability`)) {
                 e.preventDefault();
             }
         })
@@ -2396,6 +2474,29 @@ const DOM = {
             tempStorage = dragTargetCharData;
 
             switch(this.dragTarget.classList[0]) {
+
+
+                // ! The block of code below is for abilities to and around the hotBar, not for items.
+                case `utilDivisionAbility`: // ***** If drag is from utilDivision Ability list
+                    switch(dropTarget.classList[0]) {
+                        case `ability`: // *** If drop is to hotBar
+                            char.hotBar[dropTarget.dataset.hotBarIndex] = +this.dragTarget.dataset.abilityIndex;
+                        break;
+                    }
+                break;
+                case `ability`: // ***** If drag is from the hotbar
+                    switch(dropTarget.classList[0]) {
+                        case `ability`: // *** If drop is to hotBar
+                            char.hotBar[dropTarget.dataset.hotBarIndex] = +this.dragTarget.dataset.abilityIndex;
+                            char.hotBar[this.dragTarget.dataset.hotBarIndex] = 0;
+                        break;
+                            default:
+                            char.hotBar[this.dragTarget.dataset.hotBarIndex] = 0;
+                    }
+                break;
+
+
+
                 case `inventoryItem` : // ***** If drag is from inventory
                     switch(dropTarget.classList[0]) {
                         case `inventoryItem`: // *** If drop is to inventory
@@ -2461,6 +2562,7 @@ const DOM = {
                     }
                 break;
             }
+            this.updateBotBar();
             this.updateUtilDivisionDisplay();
             this.dragTarget = null;
         }) 
@@ -2742,14 +2844,14 @@ const DOM = {
                 this.generateInventory(inventoryContainer, char); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
             break;
             case `stats`:
-                for (let i = 0; i < (Object.keys(this.casterSelectionState.stats).length); i++) {
+                for (let i = 0; i < (Object.keys(this.casterSelectionState.abilities).length); i++) {
                     const x = document.createElement(`div`);
-                    const arrayOfAllKeysInStats = Object.keys(char.stats);
-                    const statKeyName = arrayOfAllKeysInStats[i];
-                    const stat = char.stats[statKeyName];
-                    x.innerHTML = `<div>-</div>
-                                <div class="statName">${statKeyName}:</div>
-                                <div>${stat}</div>`
+                    x.className = `utilDivisionAbility`;
+                    x.style.backgroundImage = allAbilities[char.abilities[i]].icon;
+                    x.dataset.abilityIndex = allAbilities[char.abilities[i]].index;
+                    x.style.backgroundRepeat = `no-repeat`;
+                    x.style.backgroundSize = `100%`;
+                    x.draggable = true;
                     this.utilDivisionDisplay.append(x);
                 }
             break;
@@ -2849,7 +2951,6 @@ const hobo = NPCs.charList[0];
 stroick.inventory[0] = allWeapons[2];
 stroick.inventory[1] = allArmors[8];
 stroick.inventory[2] = allArmors[9];
-stroick.hotBar[30] = 1;
 
 DOM.update();
 DOM.listenForCasterSelection();

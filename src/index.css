@@ -73,6 +73,12 @@ body {
     height: 3dvw;
     width: 3dvw;
 }
+.utilDivisionAbility {
+    border: 1px solid white;
+    /* flex: 1 1 auto; */
+    height: 3dvw;
+    width: 3dvw;
+}
 .abilityListContainer {
     display: flex;
     flex-wrap: wrap;
@@ -188,6 +194,9 @@ div.tooltipContent {
     color: white;
     text-align: center;
     z-index: 1;
+}
+div.tooltip.hotBarTooltip{
+    bottom: 7dvw;
 }
 .equipmentItem {
     border: 1px solid white;
