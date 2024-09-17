@@ -43,8 +43,6 @@ import printMe from './print.js';
 // TODO: Search for TODO's throughout the code and do them.
 // TODO: Should merge the branches in git at this point.
 
-// TODO: Need to make the stats bar in top right into a skills or abilities bar, where I can drag my abilities like ROR onto my hot bar. Need to do all of the drag logic for that, shouldn't be as hard as inv. though...
-
 /* #endregion Notes*/
 
 /* #region  Combat Log */
@@ -585,7 +583,7 @@ function putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget) {
         break;
     }
 }
-function updateCharStats(char, addOrRemove, item) { // TODO: this is only adding resist, but not taking it away when item is removed. Must Fix.
+function updateCharStats(char, addOrRemove, item) { 
     if(addOrRemove === `add`) {
         if(item.resists) {
             for(let i = 0; i < 9; i++) {
@@ -1420,7 +1418,7 @@ function defineAllAbilities() {
         typeDesc: `Debuff`,
         desc: `Foe has disadvantage on defense, and takes 1 extra damage every time they take damage.`,
     }
-    allAbilities[9] = {
+    allAbilities[9] = { // TODO: Need to flush this ability out.
         name: `Taunt`,
         effect: function (caster, target) {
             return;
@@ -1478,7 +1476,7 @@ function defineAllAbilities() {
         desc: `Make a counter attack on a foe if your defense roll is at least 50% of their attack roll.`,
     }
 }
-const allWeapons = []; // TODO: Weapons are the most up to date items, will need to fix this
+const allWeapons = [];
 function defineAllWeapons() {
     allWeapons[0] = {
         isDefaultItem: true,
@@ -1526,7 +1524,7 @@ function defineAllWeapons() {
         block: 0,
     }
 }
-const allArmors = []; // TODO: Need to fix all equipment icons. 
+const allArmors = []; 
 function defineAllArmors() {
     allArmors[0] = {
         isDefaultItem: true,
