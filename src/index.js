@@ -12,6 +12,17 @@ import "./images/torso.png";
 import "./images/quickAccess.png";
 import "./images/oldShirt.png";
 import "./images/trustyBelt.png";
+import "./images/attack.png";
+import "./images/powerfulStrike.png";
+import "./images/precisionStrike.png";
+import "./images/healingWord.png";
+import "./images/guard.png";
+import "./images/leapingStrike.png";
+import "./images/reflexiveFocus.png";
+import "./images/revealWeakness.png";
+import "./images/fleshEating.png";
+import "./images/riposte.png";
+
 import printMe from './print.js';
 
 "use strict";
@@ -30,6 +41,8 @@ import printMe from './print.js';
 // TODO: I am copying data too much, all characters should REFERENCE ability data etc, this will make it easier to code and should improve performance.
 // TODO: Search for TODO's throughout the code and do them.
 // TODO: Should merge the branches in git at this point.
+
+// TODO: Need to make the stats bar in top right into a skills or abilities bar, where I can drag my abilities like ROR onto my hot bar. Need to do all of the drag logic for that, shouldn't be as hard as inv. though...
 
 /* #endregion Notes*/
 
@@ -301,7 +314,7 @@ const turn = {
                 break;
             }
             const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
-            attackingNPC.useAbility(0, attackablePCs[diceMinus1(attackablePCs.length)]);
+            attackingNPC.useAbility(1, attackablePCs[diceMinus1(attackablePCs.length)]);
         };
         this.AP = 100;
         DOM.update();
@@ -1039,6 +1052,49 @@ function isTargetInRangeOfCaster(caster, target, abilityRange) {
 const allAbilities = [];
 function defineAllAbilities() {
     allAbilities[0] = {
+        name: `empty`,
+        effect: function (caster, target) {
+            return;
+            if (!isAttackingAllies(caster, target)) {
+                if (!isTargetDead(target)) {
+                    if (turn.AP >= this.APCost) {
+                        const mods = {
+                            abilityIndex: 0,
+                            abilityRange: caster.equipment.mainHand.range,
+                            attackRollDice: 100,
+                            attackBonus: caster.stats.dexterity,
+                            damageRollDice: {
+                                mainHandWeapon: caster.equipment.mainHand.damage,
+                                offHandWeapon: caster.equipment.offHand.damage,
+                                ability: null,
+                            },
+                            damageBonus: [0, caster.stats.strength],
+                            critThreshold: 100,
+                            critMultiplier: 2,
+                            defendRollDice: 20,
+                            targetParry: Math.floor((target.stats.initiative / 2) + (target.stats.dexterity / 4) + target.parry),
+                            targetDodge: Math.floor((target.stats.initiative / 2) + (target.stats.agility / 4) + target.dodge),
+                            targetDisrupt: Math.floor((target.stats.initiative / 2) + (target.stats.willpower / 4) + target.disrupt),
+                            targetBlock: Math.floor((target.stats.initiative / 2) + target.block),
+                            getDefendBonus: function () {
+                                return Math.max(this.targetParry, this.targetBlock)
+                            },
+                        };
+                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
+                        } else {
+                            combatLog.targetNotInRange(target, this.name);
+                        }
+                    } else {
+                        combatLog.noAP(this.name, this.APCost);
+                    }
+                }
+            }
+        },
+        APCost: 0,
+        icon: `url("./images/quickAccess.png")`,
+    }
+    allAbilities[1] = {
         name: `Attack`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1078,8 +1134,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 20,
+        icon: `url("./images/attack.png")`,
     }
-    allAbilities[1] = {
+    allAbilities[2] = {
         name: `Powerful Strike`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1119,8 +1176,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 25,
+        icon: `url("./images/powerfulStrike.png")`,
     }
-    allAbilities[2] = {
+    allAbilities[3] = {
         name: `Precision Strike`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1160,8 +1218,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 25,
+        icon: `url("./images/precisionStrike.png")`,
     }
-    allAbilities[3] = {
+    allAbilities[4] = {
         name: `Healing Word`,
         effect: function (caster, target) {
             if (!isHealingEnemies(caster, target)) {
@@ -1201,8 +1260,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 10,
+        icon: `url("./images/healingWord.png")`,
     }
-    allAbilities[4] = {
+    allAbilities[5] = {
         name: `Guard`,
         effect: function (caster, target) {
             if (!isBuffingEnemies(caster, target)) {
@@ -1230,8 +1290,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 50,
+        icon: `url("./images/guard.png")`,
     }
-    allAbilities[5] = {
+    allAbilities[6] = {
         name: `Leaping Strike`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1271,8 +1332,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 20,
+        icon: `url("./images/leapingStrike.png")`,
     }
-    allAbilities[6] = {
+    allAbilities[7] = {
         name: `Reflexive Focus`, // TODO: Make this ability drain 5 ap every turn that it is active, also need a way to see that it is active and a way to disable it.
         effect: function (caster, target) {
             if (!caster.buffs.reflexiveFocus) {
@@ -1292,8 +1354,9 @@ function defineAllAbilities() {
             }
         },
         APCost: 5,
+        icon: `url("./images/reflexiveFocus.png")`,
     }
-    allAbilities[7] = {
+    allAbilities[8] = {
         name: `Reveal Weakness`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1318,10 +1381,12 @@ function defineAllAbilities() {
             }
         },
         APCost: 75,
+        icon: `url("./images/revealWeakness.png")`,
     }
-    allAbilities[8] = {
+    allAbilities[9] = {
         name: `Flesh Eating`,
         effect: function (caster, target) {
+            return;
             if (!isAttackingAllies(caster, target)) {
                 if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
@@ -1330,9 +1395,10 @@ function defineAllAbilities() {
                 }
             }
         },
-        APCost: 25,
+        APCost: 0,
+        icon: `url("./images/fleshEating.png")`,
     }
-    allAbilities[9] = {
+    allAbilities[10] = {
         name: `Riposte`,
         effect: function (caster, target) {
             if (!isAttackingAllies(caster, target)) {
@@ -1364,6 +1430,7 @@ function defineAllAbilities() {
             }
         },
         APCost: 0,
+        icon: `url("./images/riposte.png")`,
     }
 }
 const allWeapons = []; // TODO: Weapons are the most up to date items, will need to fix this
@@ -1673,49 +1740,49 @@ function defineAllTalents() {
         name: `Strong`,
         statBonusName: `strength`,
         statBonusAmount: 4,
-        ability: 1,
+        ability: 2,
     };
     allTalents[1] = {
         name: `Dexterous`,
         statBonusName: `dexterity`,
         statBonusAmount: 4,
-        ability: 2,
+        ability: 3,
     };
     allTalents[2] = {
         name: `Soulful`,
         statBonusName: `willpower`,
         statBonusAmount: 4,
-        ability: 3,
+        ability: 4,
     };
     allTalents[3] = {
         name: `Resilient`,
         statBonusName: `vitality`,
         statBonusAmount: 4,
-        ability: 4,
+        ability: 5,
     };
     allTalents[4] = {
         name: `Agile`,
         statBonusName: `agility`,
         statBonusAmount: 4,
-        ability: 5,
+        ability: 6,
     };
     allTalents[5] = {
         name: `Responsive`,
         statBonusName: `initiative`,
         statBonusAmount: 4,
-        ability: 6,
+        ability: 7,
     };
     allTalents[6] = {
         name: `Genius`,
         statBonusName: `intelligence`,
         statBonusAmount: 4,
-        ability: 7,
+        ability: 8,
     };
     allTalents[7] = {
         name: `Charismatic`,
         statBonusName: `charisma`,
         statBonusAmount: 4,
-        ability: 8,
+        ability: 9,
     };
     allTalents[8] = {
         name: `Sorcerous`,
@@ -1788,7 +1855,8 @@ function Char(name, race) {
     this.talent1Name = ``;
     this.talent2Name = ``;
     this.hp = 100;
-    this.abilities = [0];
+    this.abilities = [1];
+    this.hotBar = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     this.stats = race.stats;
     this.resistsArray = race.resistsArray; 
     this.buffs = {};
@@ -2020,8 +2088,7 @@ const DOM = {
         this.timeout = null;
     },
     attemptAbilityCast: function (target) {
-        const abilityNameSubDiv = target.querySelector(`.abilityName`);
-        const abilityDatasetIndex = abilityNameSubDiv.dataset.abilityIndex;
+        const abilityDatasetIndex = target.dataset.abilityIndex;
         if ((this.casterSelectionState && this.targetSelectionState) !== null) {
             this.casterSelectionState.useAbility(abilityDatasetIndex, this.targetSelectionState)
         } else {
@@ -2061,16 +2128,36 @@ const DOM = {
     },
     updateBotBar: function (selectedPC) {
         if (selectedPC && !this.abilityListContainer.hasChildNodes()) {
-            selectedPC.abilities.forEach((element) => this.createAbility(element));
+            this.createHotBar(this.casterSelectionState);
         } else if (!selectedPC) {
             this.abilityListContainer.innerHTML = ``;
+            this.createHotBar(this.casterSelectionState);
         }
     },
-    createAbility: function (abilityIndex) {
-        const i = document.createElement(`div`);
-        i.className = `ability`;
-        i.innerHTML = `<div data-ability-index=${abilityIndex} class="abilityName">${allAbilities[abilityIndex].name}</div>`;
-        this.abilityListContainer.append(i);
+    createHotBar: function (char) {
+        if(!char) { // * sets hotbar/botbar back to a bunch of blanks.
+            for (let i = 0; i < 36; i++) {
+                const x = document.createElement(`div`);
+                x.className = `ability`;
+                x.dataset.hotBarIndex = i;
+                x.style.backgroundImage = allAbilities[0].icon;
+                x.style.backgroundRepeat = `no-repeat`;
+                x.style.backgroundSize = `100%`;
+                this.abilityListContainer.append(x); 
+            }
+            return;
+        } else { // * Generates the hotbar when a character is selected.
+            for (let i = 0; i < char.hotBar.length; i++) {
+                const x = document.createElement(`div`);
+                x.className = `ability`;
+                x.dataset.hotBarIndex = i; 
+                x.dataset.abilityIndex = char.hotBar[i];
+                x.style.backgroundImage = allAbilities[char.hotBar[i]].icon;
+                x.style.backgroundRepeat = `no-repeat`;
+                x.style.backgroundSize = `100%`;
+                this.abilityListContainer.append(x);
+            } 
+        }
     },
     selectCaster: function (target) {
         if (this.casterSelection !== null && target !== this.casterSelection) {
@@ -2103,16 +2190,6 @@ const DOM = {
                 this.casterSelectionState = null;
             }
         }
-
-        // if(this.casterSelection) {
-        //    if(this.casterSelectionState.hp === 0) {
-        //         this.casterSelection.style.borderColor = `rgb(50,50,50)`;
-        //    } else {
-        //         this.casterSelection.style.borderColor = `white`;
-        //    }
-        //    this.casterSelection = null;
-        //    this.casterSelectionState = null;
-        // }
         this.updateBotBar();
         this.updateUtilDivisionDisplay();
     },
@@ -2772,6 +2849,7 @@ const hobo = NPCs.charList[0];
 stroick.inventory[0] = allWeapons[2];
 stroick.inventory[1] = allArmors[8];
 stroick.inventory[2] = allArmors[9];
+stroick.hotBar[30] = 1;
 
 DOM.update();
 DOM.listenForCasterSelection();
@@ -2789,5 +2867,6 @@ DOM.listenForRightClickEquip();
 DOM.selectedUtilDivisionTab = DOM.inventoryTab;
 DOM.updateUtilDivisionDisplay();
 DOM.updateTabSelectionDisplay();
+DOM.updateBotBar();
 
 console.log(stroick);

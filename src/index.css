@@ -21,7 +21,7 @@ body {
     flex: 1 1 10dvw;
 }
 .gameDivision {
-    flex: 2.5 2.5 auto;
+    flex: 0 2.5 55dvw;
     display: flex;
     flex-direction: column;
 }
@@ -38,9 +38,9 @@ body {
     display: flex;
     flex-direction: column;
 }
-.gameDivision .botBar{
+/* .gameDivision .botBar{
     flex: 10 1 auto;
-}
+} */
 .NPCBar {
     border: 1px solid white;
     flex: 1 1 auto;
@@ -69,7 +69,14 @@ body {
 }
 .ability {
     border: 1px solid white;
-    flex: 1 1 auto;
+    /* flex: 1 1 auto; */
+    height: 3dvw;
+    width: 3dvw;
+}
+.abilityListContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 .slideLeft,
 .slideRight {
@@ -79,10 +86,6 @@ body {
 .botBar {
     display: flex;
     justify-content: space-evenly;
-}
-.abilityListContainer {
-    display: flex;
-    flex: 1 1 auto;
 }
 .utilDivision {
     display: flex;
@@ -159,7 +162,6 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    margin-top: 25dvh;
 }
 .inventoryContainer div { 
     border: 1px solid white;
@@ -222,12 +224,12 @@ div.tooltipContent {
 }
 .weaponsDisplay {
     /* Need to fix this, need mainHand and offHand to line up with bottom armors consistently as the screen changes */
-    margin-top: 6.35dvh;
+    margin-top: 1.35dvh;
     display: flex;
     justify-content: space-between;
 }
 .statsDisplay {
     display: flex;
     justify-content: space-around;
-    font-size: 12px;
+    font-size: .8dvw;
 }
