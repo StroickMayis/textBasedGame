@@ -13,6 +13,9 @@ module.exports = {
         assetModuleFilename: 'images/[name][ext][query]'
     },
     devtool: "eval-source-map",
+    devServer: {
+        watchFiles: ["./src/index.html"],
+    },
     mode: `development`,
     plugins: [
         new HtmlWebpackPlugin({
