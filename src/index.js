@@ -23,6 +23,10 @@ import "./images/revealWeakness.png";
 import "./images/fleshEating.png";
 import "./images/riposte.png";
 import "./images/taunt.png";
+import "./images/dahmerHobo.jpg";
+import "./images/stroick.jpg";
+import "./images/kliftin.jpg";
+import "./images/evil.jpg";
 
 import printMe from './print.js';
 
@@ -1905,6 +1909,9 @@ function Char(name, race) {
     this.buffs = {};
     this.debuffs = {};
     this.row = 1;
+    this.level = 0;
+    this.background = ``;
+    this.icon;
     this.equipment = {
         mainHand: allWeapons[0],
         offHand: allWeapons[1],
@@ -1983,7 +1990,7 @@ function Char(name, race) {
 
 };
 
-function characterCreator(name, race, talent1, talent2, group) {
+function characterCreator(name, race, talent1, talent2, group, icon) {
     function createChar(name, race) {
         unassignedGroup.charList.push(new Char(name, race));
     }
@@ -2007,6 +2014,10 @@ function characterCreator(name, race, talent1, talent2, group) {
         const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
         targetChar.addEquipment(`armor`, allArmors[0]);
     }
+    function addIcon(icon) {
+        const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
+        targetChar.icon = icon;
+    }
     function assignGroup(group) {
         const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
         targetChar.groupName = group.name;
@@ -2016,6 +2027,7 @@ function characterCreator(name, race, talent1, talent2, group) {
     createChar(name, race);
     addTalents(talent1, talent2);
     addEquipment();
+    addIcon(icon);
     assignGroup(group);
 };
 
@@ -2344,18 +2356,22 @@ const DOM = {
         i.className = `${char.groupName}`;
         i.id = `index${charListIndex}`;
         i.dataset.groupIndex = charListIndex;
+        i.style.backgroundImage = char.icon;
+        i.style.backgroundRepeat = `no-repeat`;
+        i.style.backgroundSize = `100%`;
+        i.style.textShadow = `1px 1px 10px black, 1px 1px 10px black, 1px 1px 10px black, 1px 1px 10px black`;
+        i.style.fontSize = `17px`;
+        i.style.display = `flex`;
+        i.style.flexDirection = `column`;
+        i.style.justifyContent = `space-between`;
         forceHPtoZero(char);
         if (char.hp === 0) {
             i.style.borderColor = `rgb(50,50,50)`;
             i.innerHTML = `<div class="name">${char.name}</div>
-                           <div class="HP">HP: ${char.hp} (Dead)</div>
-                           <div class="race">Race: ${char.raceName}</div>
-                           <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`;
+                           <div class="HP">HP: ${char.hp} (Dead)</div>`;
         } else {
             i.innerHTML = `<div class="name">${char.name}</div>
-                           <div class="HP">HP: ${char.hp}</div>
-                           <div class="race">Race: ${char.raceName}</div>
-                           <div class="talents">Talents: ${char.talent1Name} & ${char.talent2Name}</div>`;
+                           <div class="HP">HP: ${char.hp}</div>`;
         }
 
         switch (char.groupName) {
@@ -2401,9 +2417,9 @@ const DOM = {
                     this.updateUtilDivisionDisplay();
                     this.updateTabSelectionDisplay();
                 break;
-                case `stats`:
+                case `charInfo`:
                     this.clearTabSelectionDisplay();
-                    this.selectedUtilDivisionTabState = `stats`;
+                    this.selectedUtilDivisionTabState = `charInfo`;
                     this.selectedUtilDivisionTab = e.target;
                     this.updateUtilDivisionDisplay();
                     this.updateTabSelectionDisplay();
@@ -2621,8 +2637,8 @@ const DOM = {
                     this.createUtilDivisionDisplay(this.casterSelectionState);
                 }
             break;
-            case `stats`:
-                this.utilDivisionDisplay.innerHTML = `Stats:`;
+            case `charInfo`:
+                this.utilDivisionDisplay.innerHTML = `Character Info:`;
                 if (this.casterSelectionState) {
                     this.createUtilDivisionDisplay(this.casterSelectionState);
                 }
@@ -2841,7 +2857,32 @@ const DOM = {
                 this.utilDivisionDisplay.appendChild(inventoryContainer);
                 this.generateInventory(inventoryContainer, char); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
             break;
-            case `stats`:
+            case `charInfo`:
+                const charInfoLevelDisplay = document.createElement(`div`);
+                charInfoLevelDisplay.className = `charInfoLevelDisplay`;
+                charInfoLevelDisplay.textContent = `Level: ${char.level}`;
+                this.utilDivisionDisplay.append(charInfoLevelDisplay);
+
+                const charInfoRaceDisplay = document.createElement(`div`);
+                charInfoRaceDisplay.className = `charInfoRaceDisplay`;
+                charInfoRaceDisplay.textContent = `Race: ${char.raceName}`;
+                this.utilDivisionDisplay.append(charInfoRaceDisplay);
+
+                const charInfoBackgroundDisplay = document.createElement(`div`);
+                charInfoBackgroundDisplay.className = `charInfoBackgroundDisplay`;
+                charInfoBackgroundDisplay.textContent = `Background: -placeholder-`;
+                this.utilDivisionDisplay.append(charInfoBackgroundDisplay);
+
+                const charInfoTalent1Display = document.createElement(`div`);
+                charInfoTalent1Display.className = `charInfoTalent1Display`;
+                charInfoTalent1Display.textContent = `Talent 1: ${char.talent1Name}`;
+                this.utilDivisionDisplay.append(charInfoTalent1Display);
+
+                const charInfoTalent2Display = document.createElement(`div`);
+                charInfoTalent2Display.className = `charInfoTalent2Display`;
+                charInfoTalent2Display.textContent = `Talent 2: ${char.talent2Name}`;
+                this.utilDivisionDisplay.append(charInfoTalent2Display);
+
                 for (let i = 0; i < (Object.keys(this.casterSelectionState.abilities).length); i++) {
                     const x = document.createElement(`div`);
                     x.className = `utilDivisionAbility`;
@@ -2872,7 +2913,7 @@ const DOM = {
             case `inventory`:
                 this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
             break;
-            case `stats`:
+            case `charInfo`:
                 this.selectedUtilDivisionTab.style.borderColor = `rgb(100,100,200)`;  
             break;
             case `party`:
@@ -2887,7 +2928,7 @@ const DOM = {
             case `inventory`:
                 this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
             break;
-            case `stats`:
+            case `charInfo`:
                 this.selectedUtilDivisionTab.style.borderColor = `rgb(255,255,255)`;  
             break;
             case `party`:
@@ -2936,10 +2977,10 @@ defineAllFeats();
 defineAllBackgrounds();
 defineAllItems();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs);
-characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs);
-characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs);
-characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs);
+characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs, `url("./images/stroick.jpg")`);
+characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs, `url("./images/kliftin.jpg")`);
+characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs, `url("./images/dahmerHobo.jpg")`);
+characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs, `url("./images/evil.jpg")`);
 
 const stroick = PCs.charList[0];
 const evil = NPCs.charList[1];
