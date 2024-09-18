@@ -2095,7 +2095,6 @@ const DOM = {
     },
     listenForMouseOver: function () { // * Listens for mouseover on the whole page body.
         this.body.addEventListener(`mouseover`, (e) => { // TODO: Need to fix tooltip to not disappear when clicking on it, maybe.. look at ROR.
-            // console.log(e.target.className)
             if( (e.target.classList.contains(`inventoryItem`) || e.target.classList.contains(`equipmentItem`) || e.target.classList.contains(`ability`) || e.target.classList.contains(`utilDivisionAbility`)) && !(e.target.dataset.itemType === `item` && e.target.dataset.itemIndex === `0`) ) {
                 this.clearTooltips();
                 this.timeout = setTimeout( function() {DOM.displayItemTooltip(e.target)} , 500);
