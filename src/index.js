@@ -51,7 +51,7 @@ const combatLog = {
     critHit: function (caster, target, damage) {
         console.log(`            - ${caster.name} -->  CRITICALLY HITS!!! --> ${target.name} -
             ▼             - ROLLS -            ▼`);
-        this.displayDamageRollsByResist(damage);
+        combatLog.displayDamageRollsByResist(damage);
         console.log(`            ▼         - DAMAGE TOTALS (2X)-        ▼`)
     },
     attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability) {
@@ -201,7 +201,7 @@ const combatLog = {
     hit: function (caster, target, damage) {
         console.log(`            - ${caster.name} --> HITS --> ${target.name} -
             ▼             - ROLLS -            ▼`);
-        this.displayDamageRollsByResist(damage);
+        combatLog.displayDamageRollsByResist(damage);
         console.log(`            ▼         - DAMAGE TOTALS -        ▼`)
     },
     damageResist: function (typeNumber, damage, resist, damageSum, caster, target, guardState) {
@@ -225,7 +225,7 @@ const combatLog = {
         console.log(`->          ${caster.name} deals a total of ${totalDamage} damage to ${target.name}`);
     },
     hitBackupCopy: function (caster, target, damage) {
-        let damageDisplayArray = this.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
+        let damageDisplayArray = combatLog.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
         let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
         let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
         if (target.buffs.guarded) {
@@ -301,8 +301,8 @@ const turn = {
     AP: 100,
     end: function () {
         combatLog.startNPCTurn();
-        this.AP = 100;
-        while (this.AP > 0) { 
+        turn.AP = 100;
+        while (turn.AP > 0) { 
             let attackablePCs = [];
             for(let i = 0; i < PCs.charList.length; i++) { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
                 if(PCs.charList[i].hp > 1) {
@@ -315,7 +315,7 @@ const turn = {
             const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
             attackingNPC.useAbility(1, attackablePCs[diceMinus1(attackablePCs.length)]);
         };
-        this.AP = 100;
+        turn.AP = 100;
         DOM.update();
         DOM.updateTopBar();
         combatLog.startPCTurn();

@@ -196,7 +196,7 @@ div.tooltipContent {
     z-index: 1;
 }
 div.tooltip.hotBarTooltip{
-    bottom: 7dvw;
+    bottom: 10dvw;
 }
 .equipmentItem {
     border: 1px solid white;
@@ -233,7 +233,7 @@ div.tooltip.hotBarTooltip{
 }
 .weaponsDisplay {
     /* Need to fix this, need mainHand and offHand to line up with bottom armors consistently as the screen changes */
-    margin-top: 1.35dvh;
+    margin-top: 1.45dvh;
     display: flex;
     justify-content: space-between;
 }
