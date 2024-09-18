@@ -2369,6 +2369,7 @@ const DOM = {
             i.style.borderColor = `rgb(50,50,50)`;
             i.innerHTML = `<div class="name">${char.name}</div>
                            <div class="HP">HP: ${char.hp} (Dead)</div>`;
+            i.style.opacity = `65%`;
         } else {
             i.innerHTML = `<div class="name">${char.name}</div>
                            <div class="HP">HP: ${char.hp}</div>`;
