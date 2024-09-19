@@ -1,4 +1,5 @@
 import { drop, forEach } from "lodash";
+import printMe from './print.js';
 import "./index.css"; 
 import "./images/dagger.png";
 import "./images/amulet.png";
@@ -28,24 +29,12 @@ import "./images/stroick.jpg";
 import "./images/kliftin.jpg";
 import "./images/evil.jpg";
 
-import printMe from './print.js';
-
 "use strict";
 
 /* #region Notes*/
 
-// timeToCast converts to the following:
-// Reaction = 1
-// Bonus Action = 2
-// Action = 3
-// Type of Weapons:
-// Melee = 1
-// Ranged = 2
-// Magic = 3
 // TODO: Must make ID's for everything, to make them easier to handle.
 // TODO: I am copying data too much, all characters should REFERENCE ability data etc, this will make it easier to code and should improve performance.
-// TODO: Search for TODO's throughout the code and do them.
-// TODO: Should merge the branches in git at this point.
 
 /* #endregion Notes*/
 
@@ -293,8 +282,7 @@ const combatLog = {
     },
     targetNotInRange: function (target, abilityName) {
         console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
-    },
-    
+    }, 
 }
 
 /* #endregion Combat Log*/
@@ -308,22 +296,32 @@ const turn = {
         turn.AP = 100;
         while (turn.AP > 0) { 
             let attackablePCs = [];
-            for(let i = 0; i < PCs.charList.length; i++) { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
-                if(PCs.charList[i].hp > 1) {
-                    attackablePCs.push(PCs.charList[i]);
-                }
-            }
+            turn.getAttackablePCs(attackablePCs);
             if(!attackablePCs[0]) {
                 break;
             }
-            const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
-            attackingNPC.useAbility(1, attackablePCs[diceMinus1(attackablePCs.length)]);
+            const attackingNPC = turn.getAttackingNPC();
+            turn.NPCMakeAttack(attackingNPC, attackablePCs);
         };
         turn.AP = 100;
         DOM.update();
         DOM.updateTopBar();
         combatLog.startPCTurn();
     },
+    getAttackablePCs: function (attackablePCs) { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
+        for(let i = 0; i < PCs.charList.length; i++) { 
+            if(PCs.charList[i].hp > 1) {
+                attackablePCs.push(PCs.charList[i]);
+            }
+        }
+    },
+    getAttackingNPC: function () { // *
+        const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
+        return attackingNPC
+    },
+    NPCMakeAttack: function (attackingNPC, attackablePCs) {
+        attackingNPC.useAbility(1, attackablePCs[diceMinus1(attackablePCs.length)]);
+    }
 }
 
 const effect = {
