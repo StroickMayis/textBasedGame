@@ -52,11 +52,17 @@ const combatLog = {
         const defend = defendRoll + defendBonus;
         let logModForAttackAdvantage = [``,``];
         let logModForDefendAdvantage = [``,``];
-        if(attackRollAdvantages) {
-            logModForAttackAdvantage = [`${attackRollAdvantages + 1} `, `'s`];
+        if(attackRollAdvantages > 0) {
+            logModForAttackAdvantage = [`${attackRollAdvantages} Advantage `, `'s`];
         }
-        if(defendRollAdvantages) {
-            logModForDefendAdvantage = [`${defendRollAdvantages + 1} `, `'s`];
+        if(defendRollAdvantages > 0) {
+            logModForDefendAdvantage = [`${defendRollAdvantages} Advantage `, `'s`];
+        }
+        if(attackRollAdvantages < 0) {
+            logModForAttackAdvantage = [`${attackRollAdvantages * -1} Disadvantage `, `'s`];
+        }
+        if(defendRollAdvantages < 0) {
+            logModForDefendAdvantage = [`${defendRollAdvantages * -1} Disadvantage `, `'s`];
         }
         console.log(`${caster.name} attacks --> ${target.name} 
             - Weapon: ${caster.equipment.mainHand.name} - Ability: ${ability.name} - 
@@ -365,7 +371,7 @@ const effect = {
             combatLog.defend(caster, target);
             if (riposte) {
                 combatLog.riposte(target, caster);
-                target.useAbility(9, caster);
+                target.useAbility(10, caster);
             }
             return;
         }
@@ -404,7 +410,7 @@ const effect = {
 
         if (riposte) {
             combatLog.riposte(target, caster);
-            target.useAbility(9, caster);
+            target.useAbility(10, caster);
         }
         
         return;
@@ -752,8 +758,8 @@ function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns
         }
     });
     Object.keys(caster.debuffs).forEach((buffKey) => {
-        if (caster.buffs[buffKey].attackRollAdvantage) {
-            attackRollAdvantages.push(caster.buffs[buffKey].attackRollAdvantage);
+        if (caster.debuffs[buffKey].attackRollAdvantage) {
+            attackRollAdvantages.push(caster.debuffs[buffKey].attackRollAdvantage);
         }
     });
     return sumOfArray(attackRollAdvantages);
@@ -766,8 +772,8 @@ function calcTargetDefendAdvatages(target) { // * Takes target as input, returns
         }
     });
     Object.keys(target.debuffs).forEach((buffKey) => {
-        if (target.buffs[buffKey].defendRollAdvantage) {
-            defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
+        if (target.debuffs[buffKey].defendRollAdvantage) {
+            defendRollAdvantages.push(target.debuffs[buffKey].defendRollAdvantage);
         }
     });
     return sumOfArray(defendRollAdvantages);
@@ -1088,7 +1094,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
-                            abilityIndex: 0,
+                            abilityIndex: 1,
                             abilityRange: caster.equipment.mainHand.range,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity,
@@ -1134,7 +1140,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
-                            abilityIndex: 1,
+                            abilityIndex: 2,
                             abilityRange: 1,
                             attackRollDice: 100,
                             attackBonus: caster.stats.strength,
@@ -1180,7 +1186,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
-                            abilityIndex: 1,
+                            abilityIndex: 3,
                             abilityRange: caster.equipment.mainHand.range,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity * 2,
@@ -1226,7 +1232,7 @@ function defineAllAbilities() {
                 if (!isHealingDeadTarget(target, this.name)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
-                            abilityIndex: 1,
+                            abilityIndex: 4,
                             abilityRange: 1,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity * 2,
@@ -1273,7 +1279,7 @@ function defineAllAbilities() {
                     if (!target.buffs.guarded) {
                         if (turn.AP >= this.APCost) {
                             const mods = {
-                                abilityIndex: 1,
+                                abilityIndex: 5,
                                 abilityRange: 1,
                                 buffNameForTarget: `Guarded`,
                                 buffNameForCaster: `Guarding`,
@@ -1306,7 +1312,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
-                            abilityIndex: 0,
+                            abilityIndex: 6,
                             abilityRange: 2,
                             attackRollDice: 100,
                             attackBonus: caster.stats.dexterity,
@@ -1351,6 +1357,7 @@ function defineAllAbilities() {
             if (!caster.buffs.reflexiveFocus) {
                 if (turn.AP >= this.APCost) {
                     const mods = {
+                        abilityIndex: 7,
                         name: `Reflexive Focus`,
                         desc: `${caster.name} is focused on his defenses, giving advantage on defense rolls. `,
                         buffNameForBuffObj: `reflexiveFocus`,
@@ -1378,6 +1385,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
+                            abilityIndex: 8,
                             name: `Reveal Weakness`,
                             desc: `${caster.name} has revealed ${target.name}'s weakness, giving him disadvantage on defense, and he takes 1 extra damage from all attacks. `,
                             debuffNameForBuffObj: `revealWeakness`,
@@ -1428,7 +1436,7 @@ function defineAllAbilities() {
                 if (!isTargetDead(target)) {
                     const mods = {
                         isRiposte: true,
-                        abilityIndex: 9,
+                        abilityIndex: 10,
                         attackRollDice: 100,
                         attackBonus: caster.stats.dexterity,
                         damageRollDice: {
@@ -1952,7 +1960,7 @@ function Char(name, race) {
     };
     this.useAbility = function (abilityIndex, target) {
         if (this.hp > 0) {
-            if (this.abilities.includes(+abilityIndex) || +abilityIndex === 9) {
+            if (this.abilities.includes(+abilityIndex) || +abilityIndex === 10) {
                 allAbilities[abilityIndex].effect(this, target);
             } else {
                 console.log(`Err: Char does not have this ability`);
