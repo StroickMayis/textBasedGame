@@ -1843,6 +1843,16 @@ function defineAllBackgrounds() {
         block: 0,
     }
 }
+function defineAllLists() { // * Defines all of the above lists.
+    defineAllAbilities();
+    defineAllWeapons();
+    defineAllRaces();
+    defineAllTalents();
+    defineAllArmors();
+    defineAllFeats();
+    defineAllBackgrounds();
+    defineAllItems();
+}
 
 /* #endregion All Lists*/
 
@@ -2938,18 +2948,29 @@ const DOM = {
             break;
         }
     },
+    startDOM: function () { // Runs all of the nessesary DOM functions.
+        DOM.update();
+        DOM.listenForCasterSelection();
+        DOM.listenForBotBar();
+        DOM.listenForEndTurnButton();
+        DOM.listenForTargetSelection();
+        DOM.listenForMoveRowButtons();
+        DOM.listenForTabSelection();
+        DOM.listenForMouseOver();
+        DOM.listenForDrag();
+        DOM.listenForDragover();
+        DOM.listenForDrop();
+        DOM.listenForRightClickEquip();
+        DOM.selectedUtilDivisionTab = DOM.inventoryTab;
+        DOM.updateUtilDivisionDisplay();
+        DOM.updateTabSelectionDisplay();
+        DOM.updateBotBar();
+    },
 };
 
 /* #endregion DOM*/
 
-defineAllAbilities();
-defineAllWeapons();
-defineAllRaces();
-defineAllTalents();
-defineAllArmors();
-defineAllFeats();
-defineAllBackgrounds();
-defineAllItems();
+defineAllLists();
 
 characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs, `url("./images/stroick.jpg")`);
 characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs, `url("./images/kliftin.jpg")`);
@@ -2965,22 +2986,6 @@ stroick.inventory[0] = allWeapons[2];
 stroick.inventory[1] = allArmors[8];
 stroick.inventory[2] = allArmors[9];
 
-DOM.update();
-DOM.listenForCasterSelection();
-DOM.listenForBotBar();
-DOM.listenForEndTurnButton();
-DOM.listenForTargetSelection();
-DOM.listenForMoveRowButtons();
-DOM.listenForTabSelection();
-DOM.listenForMouseOver();
-DOM.listenForDrag();
-DOM.listenForDragover();
-DOM.listenForDrop();
-DOM.listenForRightClickEquip();
-
-DOM.selectedUtilDivisionTab = DOM.inventoryTab;
-DOM.updateUtilDivisionDisplay();
-DOM.updateTabSelectionDisplay();
-DOM.updateBotBar();
+DOM.startDOM();
 
 console.log(stroick);
