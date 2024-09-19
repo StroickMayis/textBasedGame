@@ -804,23 +804,6 @@ function getGuardDefense(attackType, guarder) {
     }
     return returnValue;
 }
-function doesArrayOfObjectsIncludeIndexOf(array, propertyName, value) {
-    array.forEach((ele) => {
-        if (ele[propertyName] === value) {
-            let index = array.indexOf(ele);
-            return index;
-        }
-        return false;
-    });
-}
-function doesArrayOfObjectsInclude(array, propertyName, value) {
-    array.forEach((ele) => {
-        if (ele[propertyName] === value) {
-            return true;
-        }
-        return false;
-    });
-}
 function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
     let outputArr = [];
     args.forEach((el) => {
@@ -864,15 +847,6 @@ function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds 
     let sum = 0;
     arrayOfNumbers.forEach((el) => { if (el === null) { el = 0 } sum += el });
     return sum;
-}
-function popArrayPopValue(array) {
-    let arrayCopy = Object.assign([], array);
-    return arrayCopy.pop();
-}
-function popArrayArrayValue(array) {
-    let arrayCopy = Object.assign([], array);
-    arrayCopy.pop();
-    return arrayCopy;
 }
 function isTargetDead(target) {
     if (target.hp < 1) {
