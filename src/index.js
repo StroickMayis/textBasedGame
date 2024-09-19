@@ -47,13 +47,21 @@ const combatLog = {
         combatLog.displayDamageRollsByResist(damage);
         console.log(`            ▼         - DAMAGE TOTALS (2X)-        ▼`)
     },
-    attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability) {
+    attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability, attackRollAdvantages, defendRollAdvantages) {
         const attack = attackRoll + attackBonus;
         const defend = defendRoll + defendBonus;
+        let logModForAttackAdvantage = [``,``];
+        let logModForDefendAdvantage = [``,``];
+        if(attackRollAdvantages) {
+            logModForAttackAdvantage = [`${attackRollAdvantages + 1} `, `'s`];
+        }
+        if(defendRollAdvantages) {
+            logModForDefendAdvantage = [`${defendRollAdvantages + 1} `, `'s`];
+        }
         console.log(`${caster.name} attacks --> ${target.name} 
             - Weapon: ${caster.equipment.mainHand.name} - Ability: ${ability.name} - 
-            - Attack Roll : ${attackRoll} + Bonus : ${attackBonus} -
-            - Defend Roll : ${defendRoll} + Bonus : ${defendBonus} -
+            - ${logModForAttackAdvantage[0]}Attack Roll${logModForAttackAdvantage[1]} : ${attackRoll} + Bonus : ${attackBonus} -
+            - ${logModForDefendAdvantage[0]}Defend Roll${logModForDefendAdvantage[1]} : ${defendRoll} + Bonus : ${defendBonus} -
             ▼          - HIT TOTALS: -         ▼
             - Attack   ${attack}   -->   ${defend}   Defense -`);
     },
@@ -342,7 +350,7 @@ const effect = {
         const defend = defendRoll + mods.getDefendBonus();
         /* #endregion */
 
-        combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability);
+        combatLog.attackAttempt(caster, target, attackRoll, defendRoll, mods.attackBonus, mods.getDefendBonus(), ability, attackRollAdvantages, defendRollAdvantages);
 
         /* #region  CHECK & SET RIPOSTE */
         if (!mods.isRiposte) {
