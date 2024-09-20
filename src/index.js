@@ -28,6 +28,9 @@ import "./images/dahmerHobo.jpg";
 import "./images/stroick.jpg";
 import "./images/kliftin.jpg";
 import "./images/evil.jpg";
+import "./images/logo.png";
+import "./images/logoTrans.png";
+
 
 "use strict";
 
@@ -415,7 +418,6 @@ const effect = {
         
         return;
     },
-
     // rangedAttack: function (caster, target) {
     //     const mods = {
     //         attackRollDice: 100,
@@ -2035,6 +2037,11 @@ function characterCreator(name, race, talent1, talent2, group, icon) {
 
 const DOM = {
     body: document.querySelector(`body`),
+    mainMenu: document.querySelector(`.mainMenu`),
+    mainMenuButton: document.querySelectorAll(`.mainMenuButton`),
+    newGameButton: document.querySelector(`.newGameButton`),
+    loadGameButton: document.querySelector(`.loadGameButton`),
+    settingsGameButton: document.querySelector(`.settingsGameButton`),
     inventoryTab: document.querySelector(`.inventory`),
     utilDivisionTabs: document.querySelector(`.utilDivisionTabs`),
     moveRowButtons: document.querySelector(`.moveRowButtons`),
@@ -2063,24 +2070,71 @@ const DOM = {
     dragTarget: null,
     timeout: null,
 
-    listenForEndTurnButton: function () {
-        this.endTurnButton.addEventListener(`click`, (e) => {
-            turn.end();
-        })
-    },
-    listenForMoveRowButtons: function () {
-        this.moveRowButtons.addEventListener(`click`, (e) => {
+    // TODO: Combine all listeners of same type into one big body listener that calls diferent functions for different targets. This will save performance big time later on.
+    // ! On this commit say that I added main menu listeners and combined many listeners to save performance.
+
+    listenForClicks: function () {
+        DOM.body.addEventListener(`click`, (e) => {
+            // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
+            if(e.target.classList.contains(`newGameButton`)) {
+                DOM.mainMenu.style.display = `none`;
+            }
+            if(e.target.classList.contains(`loadGameButton`)) {
+                console.log(`2`)
+
+            }
+            if(e.target.classList.contains(`settingsGameButton`)) {
+                console.log(`3`)
+
+            }
+            if(e.target.classList.contains(`endTurnButton`)) {
+                turn.end();
+            }
             if(e.target.className === `up` && this.casterSelectionState !== null) {
                 if(this.casterSelectionState.row > 1) {
                     this.casterSelectionState.row -= 1;
                 }
+                this.update();
             }
             if(e.target.className === `down` && this.casterSelectionState !== null) {
                 if(this.casterSelectionState.row < 3) {
                     this.casterSelectionState.row += 1;
                 }
+                this.update();
             }
-            this.update();
+            if(e.target.className === `ability`) {
+                this.attemptAbilityCast(e.target);
+            }
+            if (e.target.className === `PC`) {
+                this.selectCaster(e.target);
+                this.updateTopBar();
+                this.updateBotBar(this.casterSelectionState);
+            } else if(e.target.classList.contains(`PCBarRow1,PCBarRow2,PCBarRow3`)) { // TODO: this is gonna be a problem
+                this.deselectCaster();
+                this.updateTopBar();
+                this.updateBotBar(this.casterSelectionState);
+            }
+            if(e.target.className === `inventory`) {
+                this.clearTabSelectionDisplay();
+                this.selectedUtilDivisionTabState = `inventory`;
+                this.selectedUtilDivisionTab = e.target;
+                this.updateUtilDivisionDisplay();
+                this.updateTabSelectionDisplay();
+            }
+            if(e.target.className === `charInfo`) {
+                this.clearTabSelectionDisplay();
+                this.selectedUtilDivisionTabState = `charInfo`;
+                this.selectedUtilDivisionTab = e.target;
+                this.updateUtilDivisionDisplay();
+                this.updateTabSelectionDisplay();
+            }
+            if(e.target.className === `party`) {
+                this.clearTabSelectionDisplay();
+                this.selectedUtilDivisionTabState = `party`;
+                this.selectedUtilDivisionTab = e.target;
+                this.updateUtilDivisionDisplay();
+                this.updateTabSelectionDisplay();
+            } 
         })
     },
     clearTooltips: function () {
@@ -2176,21 +2230,6 @@ const DOM = {
         this.update();
         this.updateTopBar();
     },
-    listenForBotBar: function () {
-        this.botBar.addEventListener(`click`, (e) => {
-            switch (e.target.className) {
-                case `ability`:
-                    this.attemptAbilityCast(e.target);
-                    break;
-                case `slideLeft`:
-
-                    break;
-                case `slideRight`:
-
-                    break;
-            }
-        })
-    },
     updateTopBar: function () {
         if (this.casterSelectionState) {
             this.casterSelectionDisplay.textContent = `Caster: ${this.casterSelectionState.name}`;
@@ -2274,17 +2313,6 @@ const DOM = {
         }
         this.updateBotBar();
         this.updateUtilDivisionDisplay();
-    },
-    listenForCasterSelection: function () {
-        this.PCBar.addEventListener(`click`, (e) => {
-            if (e.target.className === `PC`) {
-                this.selectCaster(e.target);
-            } else {
-                this.deselectCaster();
-            }
-            this.updateTopBar();
-            this.updateBotBar(this.casterSelectionState);
-        })
     },
     listenForTargetSelection: function () {
         this.midBar.addEventListener(`contextmenu`, (e) => {
@@ -2404,33 +2432,6 @@ const DOM = {
                 console.log(`Error: Something weird happened here.`);
                 break;
         }
-    },
-    listenForTabSelection: function () { // * Listens to the tab buttons at the top-right of the screen.
-        this.utilDivisionTabs.addEventListener(`click`, (e) => {
-            switch(e.target.className) {
-                case `inventory`:
-                    this.clearTabSelectionDisplay();
-                    this.selectedUtilDivisionTabState = `inventory`;
-                    this.selectedUtilDivisionTab = e.target;
-                    this.updateUtilDivisionDisplay();
-                    this.updateTabSelectionDisplay();
-                break;
-                case `charInfo`:
-                    this.clearTabSelectionDisplay();
-                    this.selectedUtilDivisionTabState = `charInfo`;
-                    this.selectedUtilDivisionTab = e.target;
-                    this.updateUtilDivisionDisplay();
-                    this.updateTabSelectionDisplay();
-                break;
-                case `party`:
-                    this.clearTabSelectionDisplay();
-                    this.selectedUtilDivisionTabState = `party`;
-                    this.selectedUtilDivisionTab = e.target;
-                    this.updateUtilDivisionDisplay();
-                    this.updateTabSelectionDisplay();
-                break;
-            }
-        })
     },
     listenForDrag: function () { // * Using this to make sure things are not draggable if they aren't supposed to be, also sets DOM.dragTarget and clears tooltips.
         this.body.addEventListener(`dragstart`, (e) => {
@@ -2964,12 +2965,8 @@ const DOM = {
     },
     startDOM: function () { // Runs all of the nessesary DOM functions.
         DOM.update();
-        DOM.listenForCasterSelection();
-        DOM.listenForBotBar();
-        DOM.listenForEndTurnButton();
+        DOM.listenForClicks();
         DOM.listenForTargetSelection();
-        DOM.listenForMoveRowButtons();
-        DOM.listenForTabSelection();
         DOM.listenForMouseOver();
         DOM.listenForDrag();
         DOM.listenForDragover();

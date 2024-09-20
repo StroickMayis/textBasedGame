@@ -244,3 +244,55 @@ div.tooltip.hotBarTooltip{
     justify-content: space-around;
     font-size: .8dvw;
 }
+.mainMenu {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+.mainMenuLogo {
+    height: 500px;
+    margin-top: -100px;
+}
+.mainMenuButton {
+    font-size: 30px;
+    border: 2px solid rgb(116, 36, 36);
+    padding: 10px 40px;
+    margin: 10px;
+    width: 275px;
+    text-align: center;
+}
+
+.charCreationContainer {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+.charCreation {
+    color: white;
+    font-size: xx-large;
+}
+
+.intro {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+.introText {
+    color: white;
+    font-size: xx-large;
+}
