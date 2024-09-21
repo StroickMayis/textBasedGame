@@ -309,21 +309,24 @@ div.tooltip.hotBarTooltip{
     -webkit-transform: translateY(100%);
     transform: translateY(100%);
 
-    -moz-animation: my-animation 600s linear;
+    /* -moz-animation: my-animation 600s linear;
     -webkit-animation: my-animation 600s linear;
-    animation: my-animation 600s linear;
+    animation: my-animation 600s linear; */
+    -moz-animation: my-animation 100s linear;
+    -webkit-animation: my-animation 100s linear;
+    animation: my-animation 100s linear;
 }
   
 /* for Firefox */
 @-moz-keyframes my-animation {
     from { -moz-transform: translateY(125%); }
-    to { -moz-transform: translateY(-500%); }
+    to { -moz-transform: translateY(-125%); }
 }
   
 /* for Chrome */
 @-webkit-keyframes my-animation {
     from { -webkit-transform: translateY(125%); }
-    to { -webkit-transform: translateY(-500%); }
+    to { -webkit-transform: translateY(-125%); }
 }
   
 @keyframes my-animation {
@@ -333,13 +336,13 @@ div.tooltip.hotBarTooltip{
       transform: translateY(125%);
     }
     to {
-      -moz-transform: translateY(-500%);
-      -webkit-transform: translateY(-500%);
-      transform: translateY(-500%);
+      -moz-transform: translateY(-125%);
+      -webkit-transform: translateY(-125%);
+      transform: translateY(-125%);
     }
 }
 .skipText {
     margin-top: -150px;
-    background-color: black;
-    padding: 6px;
+    background-color: rgb(45, 10, 10);
+    padding: 6px 12px;
 }

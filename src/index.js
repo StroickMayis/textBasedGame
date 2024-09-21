@@ -2069,14 +2069,26 @@ const DOM = {
     selectedUtilDivisionTabState: `inventory`,
     dragTarget: null,
     timeout: null,
+    isIntroActive: false,
+    introTimeout: null,
 
     // TODO: Combine all listeners of same type into one big body listener that calls diferent functions for different targets. This will save performance big time later on.
     // ! On this commit say that I added main menu listeners and combined many listeners to save performance.
-
+    endIntro: function () {
+        DOM.isIntroActive = false;
+        const intro = document.querySelector(`.intro`);
+        intro.remove();
+        clearTimeout(DOM.introTimeout);
+        DOM.introTimeout = null;
+    },
     listenForClicks: function () {
         DOM.body.addEventListener(`click`, (e) => {
             // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
+            if(DOM.isIntroActive) {
+                DOM.endIntro();
+            }
             if(e.target.classList.contains(`newGameButton`)) {
+                DOM.isIntroActive = true;
                 DOM.mainMenu.style.display = `none`;
                 const intro = document.createElement(`div`);
                 const introText = document.createElement(`div`);
@@ -2108,6 +2120,7 @@ Who are you?<br>
                 intro.append(skipText);
                 intro.append(introText);
                 DOM.body.append(intro);
+                DOM.introTimeout = setTimeout( function() {DOM.endIntro()} , 100000);
             }
             if(e.target.classList.contains(`loadGameButton`)) {
                 console.log(`2`)
