@@ -346,3 +346,9 @@ div.tooltip.hotBarTooltip{
     background-color: rgb(45, 10, 10);
     padding: 6px 12px;
 }
+.audioButton {
+    height: 50px;
+    position: absolute;
+    left: 25px;
+    top: 25px; 
+}

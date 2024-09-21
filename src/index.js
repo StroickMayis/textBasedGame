@@ -30,7 +30,9 @@ import "./images/kliftin.jpg";
 import "./images/evil.jpg";
 import "./images/logo.png";
 import "./images/logoTrans.png";
-
+import "./images/audioPlaying.png";
+import "./images/audioMuted.png";
+import "./audio/mainMenuMusic.mp3";
 
 "use strict";
 
@@ -2071,9 +2073,11 @@ const DOM = {
     timeout: null,
     isIntroActive: false,
     introTimeout: null,
+    mainMenuMusic: new Audio(`./audio/mainMenuMusic.mp3`),
 
     // TODO: Combine all listeners of same type into one big body listener that calls diferent functions for different targets. This will save performance big time later on.
     // ! On this commit say that I added main menu listeners and combined many listeners to save performance.
+
     endIntro: function () {
         DOM.isIntroActive = false;
         const intro = document.querySelector(`.intro`);
@@ -2086,6 +2090,20 @@ const DOM = {
             // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
             if(DOM.isIntroActive) {
                 DOM.endIntro();
+            }
+            if(e.target.classList.contains(`audioButton`)) {
+                DOM.mainMenuMusic.play();
+                DOM.mainMenuMusic.loop = true;
+                const audioButton = document.querySelector(`.audioButton`);
+                if(audioButton.alt === `audioMuted`) {
+                    audioButton.src = `./images/audioPlaying.png`;
+                    audioButton.alt = `audioPlaying`;
+                    DOM.mainMenuMusic.muted = false;
+                } else {
+                    audioButton.src = `./images/audioMuted.png`;
+                    audioButton.alt = `audioMuted`;
+                    DOM.mainMenuMusic.muted = true;
+                }
             }
             if(e.target.classList.contains(`newGameButton`)) {
                 DOM.isIntroActive = true;
