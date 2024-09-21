@@ -2078,6 +2078,36 @@ const DOM = {
             // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
             if(e.target.classList.contains(`newGameButton`)) {
                 DOM.mainMenu.style.display = `none`;
+                const intro = document.createElement(`div`);
+                const introText = document.createElement(`div`);
+                const skipText = document.createElement(`div`);
+                intro.className = `intro`;
+                introText.className = `introText`;
+                skipText.className = `skipText`;
+                introText.innerHTML = `You are one of the condemned.<br>
+Cast like a shadow, into the depths.<br>
+Your body aches, your head throbs, and your gut wrenches as you are thrown in by cosmic force.<br>
+Falling through the vastness of space, time & experience.<br>
+Visions are given to you which you cannot grasp.<br>
+Falling into the flesh which you inhabit, you begin to feel it, though you are not conscious.<br>
+Cold, wet, filthy & exhausted you are, even in sleep.<br>
+Still falling, you see the end, a festering puddle.<br>
+It approaches quicker and quicker...<br>
+A great crash awakes you violently.<br>
+You look around at your dark cell.<br>
+Beyond the damp iron bars, little can be seen.<br>
+A puddle of water sits at your feet.<br>
+You realize you had been startled awake by a splash in the puddle from a leak in the ceiling above.<br>
+One candle on the wall lights your cell.<br>
+Nothing else, no cot, no clothes.<br>
+Were you only dreaming? It felt so vivid. Where are you?<br>
+You sit up, and looking into the puddle at your feet you think see yourself...<br>
+Who are you?<br>
+`;
+                skipText.textContent = `[ Press any button to skip... ]`;
+                intro.append(skipText);
+                intro.append(introText);
+                DOM.body.append(intro);
             }
             if(e.target.classList.contains(`loadGameButton`)) {
                 console.log(`2`)
