@@ -33,6 +33,8 @@ import "./images/logoTrans.png";
 import "./images/audioPlaying.png";
 import "./images/audioMuted.png";
 import "./audio/mainMenuMusic.mp3";
+import "./audio/introAudio.mp3";
+
 
 "use strict";
 
@@ -2074,6 +2076,7 @@ const DOM = {
     isIntroActive: false,
     introTimeout: null,
     mainMenuMusic: new Audio(`./audio/mainMenuMusic.mp3`),
+    introAudio: new Audio(`./audio/introAudio.mp3`),
 
     // TODO: Combine all listeners of same type into one big body listener that calls diferent functions for different targets. This will save performance big time later on.
     // ! On this commit say that I added main menu listeners and combined many listeners to save performance.
@@ -2088,10 +2091,10 @@ const DOM = {
     listenForClicks: function () {
         DOM.body.addEventListener(`click`, (e) => {
             // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
-            if(DOM.isIntroActive) {
+            if(DOM.isIntroActive) { // * Ability to skip the intro of the game by clicking.
                 DOM.endIntro();
             }
-            if(e.target.classList.contains(`audioButton`)) {
+            if(e.target.classList.contains(`audioButton`)) { // * Audio Mute/Unmute button
                 DOM.mainMenuMusic.play();
                 DOM.mainMenuMusic.loop = true;
                 const audioButton = document.querySelector(`.audioButton`);
@@ -2105,7 +2108,7 @@ const DOM = {
                     DOM.mainMenuMusic.muted = true;
                 }
             }
-            if(e.target.classList.contains(`newGameButton`)) {
+            if(e.target.classList.contains(`newGameButton`)) { // * New game Button
                 DOM.isIntroActive = true;
                 DOM.mainMenu.style.display = `none`;
                 const intro = document.createElement(`div`);
@@ -2116,29 +2119,32 @@ const DOM = {
                 skipText.className = `skipText`;
                 introText.innerHTML = `You are one of the condemned.<br>
 Cast like a shadow, into the depths.<br>
-Your body aches, your head throbs, and your gut wrenches as you are thrown in by cosmic force.<br>
+Your body aches, your head throbs, and your gut wrenches as you are thrown down by cosmic force.<br>
 Falling through the vastness of space, time & experience.<br>
 Visions are given to you which you cannot grasp.<br>
-Falling into the flesh which you inhabit, you begin to feel it, though you are not conscious.<br>
+Falling into the flesh which you inhabit, you begin to <em>feel</em> it.. though you are not conscious.<br>
 Cold, wet, filthy & exhausted you are, even in sleep.<br>
-Still falling, you see the end, a festering puddle.<br>
+Still falling, you see the end, a <em>festering</em> puddle.<br>
 It approaches quicker and quicker...<br>
-A great crash awakes you violently.<br>
+A great <em>crash</em> awakes you violently.<br>
 You look around at your dark cell.<br>
 Beyond the damp iron bars, little can be seen.<br>
 A puddle of water sits at your feet.<br>
 You realize you had been startled awake by a splash in the puddle from a leak in the ceiling above.<br>
-One candle on the wall lights your cell.<br>
-Nothing else, no cot, no clothes.<br>
-Were you only dreaming? It felt so vivid. Where are you?<br>
-You sit up, and looking into the puddle at your feet you think see yourself...<br>
-Who are you?<br>
+One candle on the wall lights your empty cell.<br>
+Nothing else, no cot, no clothes, only you in the <em>dirt</em>.<br>
+Were you only dreaming? It felt so.. vivid. Where are you?<br>
+You sit up, and looking into the puddle at your feet you think you see yourself...<br>
+<em>Who are you?</em><br>
 `;
                 skipText.textContent = `[ Press any button to skip... ]`;
                 intro.append(skipText);
                 intro.append(introText);
                 DOM.body.append(intro);
-                DOM.introTimeout = setTimeout( function() {DOM.endIntro()} , 100000);
+                DOM.introTimeout = setTimeout( function() {DOM.endIntro()} , 127000);
+                DOM.mainMenuMusic.pause();
+                DOM.mainMenuMusic.currentTime = 0;
+                DOM.introAudio.play();
             }
             if(e.target.classList.contains(`loadGameButton`)) {
                 console.log(`2`)
