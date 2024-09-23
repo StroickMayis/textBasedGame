@@ -1,3 +1,6 @@
+/* :root {
+   -- 
+} */
 * {
     color: white;
     box-sizing: border-box;
@@ -350,6 +353,8 @@ div.tooltip.hotBarTooltip{
 }
 .charCreation {
     color: white;
+    font-size: 24px;
+
 }
 .charCreation.header {
     width: 100%;
@@ -445,7 +450,9 @@ div.tooltip.hotBarTooltip{
 .charCreation.statsPreview {
     border: 1px solid white;
 }
-
+.charCreation.statsPreview div{
+    font-size: 16px !important;
+}
 .charCreation.equipmentItem {
     border: 1px solid white;
     flex: 0 1 auto;

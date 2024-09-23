@@ -1,5 +1,6 @@
 import { drop, forEach } from "lodash";
-import printMe from './print.js';
+import {combatLog} from './combatLog.js';
+import {logicLib} from './logicLib.js';
 import "./index.css"; 
 import "./images/dagger.png";
 import "./images/amulet.png";
@@ -49,269 +50,6 @@ import "./audio/introAudio.mp3";
 
 /* #endregion Notes*/
 
-/* #region  Combat Log */
-
-const combatLog = {
-    critHit: function (caster, target, damage) {
-        console.log(`            - ${caster.name} -->  CRITICALLY HITS!!! --> ${target.name} -
-            ▼             - ROLLS -            ▼`);
-        combatLog.displayDamageRollsByResist(damage);
-        console.log(`            ▼         - DAMAGE TOTALS (2X)-        ▼`)
-    },
-    attackAttempt: function (caster, target, attackRoll, defendRoll, attackBonus, defendBonus, ability, attackRollAdvantages, defendRollAdvantages) {
-        const attack = attackRoll + attackBonus;
-        const defend = defendRoll + defendBonus;
-        let logModForAttackAdvantage = [``,``];
-        let logModForDefendAdvantage = [``,``];
-        if(attackRollAdvantages > 0) {
-            logModForAttackAdvantage = [`${attackRollAdvantages} Advantage `, `'s`];
-        }
-        if(defendRollAdvantages > 0) {
-            logModForDefendAdvantage = [`${defendRollAdvantages} Advantage `, `'s`];
-        }
-        if(attackRollAdvantages < 0) {
-            logModForAttackAdvantage = [`${attackRollAdvantages * -1} Disadvantage `, `'s`];
-        }
-        if(defendRollAdvantages < 0) {
-            logModForDefendAdvantage = [`${defendRollAdvantages * -1} Disadvantage `, `'s`];
-        }
-        console.log(`${caster.name} attacks --> ${target.name} 
-            - Weapon: ${caster.equipment.mainHand.name} - Ability: ${ability.name} - 
-            - ${logModForAttackAdvantage[0]}Attack Roll${logModForAttackAdvantage[1]} : ${attackRoll} + Bonus : ${attackBonus} -
-            - ${logModForDefendAdvantage[0]}Defend Roll${logModForDefendAdvantage[1]} : ${defendRoll} + Bonus : ${defendBonus} -
-            ▼          - HIT TOTALS: -         ▼
-            - Attack   ${attack}   -->   ${defend}   Defense -`);
-    },
-    displayDamageRollsByResist: function (damage) {
-        // input looks like: [[0,2][0,3][0,4]] last index is the damage bonus.
-        //takes off the damage bonus and stores in this variable.
-        let damageBonus = damage.pop();
-        // So the below goes from [[0,2][0,3][0,4][2,6]] to [[2,3,4],[null],[6],[null],... etc] if that makes sense.
-        let resistanceSortArr = [[null],[null],[null],[null],[null],[null],[null],[null],[null]];
-        damage.forEach((ele) => {
-            switch(ele[0]) {
-                case 0:
-                    if(resistanceSortArr[0][0] === null) {
-                        resistanceSortArr[0] = [];
-                    }
-                    resistanceSortArr[0].push(ele[1]);
-                    break;
-                case 1:
-                    if(resistanceSortArr[1][0] === null) {
-                        resistanceSortArr[1] = [];
-                    }
-                    resistanceSortArr[1].push(ele[1]);
-                    break;
-                case 2:
-                    if(resistanceSortArr[2][0] === null) {
-                        resistanceSortArr[2] = [];
-                    }
-                    resistanceSortArr[2].push(ele[1]);
-                    break;
-                case 3:
-                    if(resistanceSortArr[3][0] === null) {
-                        resistanceSortArr[3] = [];
-                    }
-                    resistanceSortArr[3].push(ele[1]);
-                    break;
-                case 4:
-                    if(resistanceSortArr[4][0] === null) {
-                        resistanceSortArr[4] = [];
-                    }
-                    resistanceSortArr[4].push(ele[1]);
-                    break;
-                case 5:
-                    if(resistanceSortArr[5][0] === null) {
-                        resistanceSortArr[5] = [];
-                    }
-                    resistanceSortArr[5].push(ele[1]);
-                    break;
-                case 6:
-                    if(resistanceSortArr[6][0] === null) {
-                        resistanceSortArr[6] = [];
-                    }
-                    resistanceSortArr[6].push(ele[1]);
-                    break;
-                case 7:
-                    if(resistanceSortArr[7][0] === null) {
-                        resistanceSortArr[7] = [];
-                    }
-                    resistanceSortArr[7].push(ele[1]);
-                    break;
-                case 8:
-                    if(resistanceSortArr[8][0] === null) {
-                        resistanceSortArr[8] = [];
-                    }
-                    resistanceSortArr[8].push(ele[1]);
-                    break;
-            }
-        });
-        for(let i = 0; i < 9; i++) {
-            if(resistanceSortArr[i][0] !== null) {
-                switch(i) {
-                    case 0:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Flat damage rolls: ${createRollOutcomeString(resistanceSortArr[0])}`);
-                        }
-                    break;
-                    case 1:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Piercing damage rolls: ${createRollOutcomeString(resistanceSortArr[1])}`);
-                        }
-                    break;
-                    case 2:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Ice damage rolls: ${createRollOutcomeString(resistanceSortArr[2])}`);
-                        }
-                    break;
-                    case 3:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Fire damage rolls: ${createRollOutcomeString(resistanceSortArr[3])}`);
-                        }
-                    break;
-                    case 4:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Corrosive damage rolls: ${createRollOutcomeString(resistanceSortArr[4])}`);
-                        }
-                    break;
-                    case 5:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Poison damage rolls: ${createRollOutcomeString(resistanceSortArr[5])}`);
-                        }
-                    break;
-                    case 6:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Spiritual damage rolls: ${createRollOutcomeString(resistanceSortArr[6])}`);
-                        }
-                    break;
-                    case 7:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Lightning damage rolls: ${createRollOutcomeString(resistanceSortArr[7])}`);
-                        }
-                    break;
-                    case 8:
-                        if(damageBonus[0] === i) {
-                            console.log(`            Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])} + a bonus of ${damageBonus[1]}.`);
-                        } else {
-                            console.log(`            Arcane damage rolls: ${createRollOutcomeString(resistanceSortArr[8])}`);
-                        }
-                    break;
-                }
-            }
-        };
-    },
-    hit: function (caster, target, damage) {
-        console.log(`            - ${caster.name} --> HITS --> ${target.name} -
-            ▼             - ROLLS -            ▼`);
-        combatLog.displayDamageRollsByResist(damage);
-        console.log(`            ▼         - DAMAGE TOTALS -        ▼`)
-    },
-    damageResist: function (typeNumber, damage, resist, damageSum, caster, target, guardState) {
-        const resistTypeName = getResistTypeNameFromIndexNumber(typeNumber); // * Converts the index-style number of a resist ex. 0 = flat, into its name for console display.
-        if(guardState === `guarded`) {
-            let targetDamage = Math.ceil(damage / 2);
-            let targetGuardDamage = Math.floor(damage / 2);
-            console.log(`            ${caster.name}'s' ${damage} ${resistTypeName} is split in half to guard : ${targetGuardDamage} --> ${target.buffs.guarded.caster.name},
-        so the remaining ${targetDamage} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} ${resistTypeName} damage.`);
-        
-        } else if(guardState === `guarding`){
-            let targetGuardDamage = Math.floor(damage / 2);
-            console.log(`            ${target.name} takes half of the damage intended for ${target.buffs.guarding.target.name}, 
-        so ${caster.name}'s ${targetGuardDamage} ${resistTypeName} --> ${target.name}'s ${resist} Resist = ${target.name} takes ${damageSum} ${resistTypeName} damage.`);
-
-        } else {
-            console.log(`            ${caster.name}'s ${damage} ${resistTypeName} --> ${target.name}'s ${resist} Resist = ${damageSum} ${resistTypeName} Damage`);
-        }
-    },
-    totalDamage: function (caster, target, totalDamage) {
-        console.log(`->          ${caster.name} deals a total of ${totalDamage} damage to ${target.name}`);
-    },
-    hitBackupCopy: function (caster, target, damage) {
-        let damageDisplayArray = combatLog.damageDisplay(damage); // * damageDisplayArray is an array with the index[0]
-        let targetDamageSplit = Math.floor((damageDisplayArray[1]) / 2);
-        let guardDamageSplit = Math.ceil((damageDisplayArray[1]) / 2);
-        if (target.buffs.guarded) {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage, but because ${target.name} is guarded, the damage is split between him and his guard ${target.buffs.guarded.caster.name}, ${target.name} takes ${targetDamageSplit} and ${target.buffs.guarded.caster.name} will take ${guardDamageSplit} but has a chance to defend it.`);
-        } else {
-            console.log(`${caster.name} hits ${target.name} and rolls a ${damageDisplayArray[0]} for a total of ${damageDisplayArray[1]} damage.`);
-        }
-
-    },
-    defend: function (caster, target) {
-        console.log(`${target.name} defends ${caster.name}'s attack!`);
-    },
-    guardDefend: function (caster, target, guard) {
-        console.log(`${guard.name} defends the incoming damage from ${caster.name} redirected to him from his guard target ${target}!`)
-    },
-    guardFailsDefend: function (caster, target, guard) {
-        console.log(`            ${caster.name}'s SPLIT HITS --> ${guard.name} from guarding --> ${target.name}`);
-    },
-    critHeal: function (caster, target, healAmountRoll, healBonus, healAmount) {
-        console.log(`${caster.name} CRITICALLY HEALS ${target.name} and rolls a ${healAmountRoll} with a ${healBonus} bonus times 2 for a total of ${healAmount} healing!`)
-    },
-    healAttempt: function (caster, target, healRoll, healBonus) {
-        console.log(`${caster.name} attempts to heal ${target.name} with a roll of: ${healRoll}.`)
-    },
-    heal: function (caster, target, healAmountRoll, healBonus, healAmount) {
-        console.log(`${caster.name} heals ${target.name} with a heal roll of ${healAmountRoll} and a ${healBonus} bonus for a total of ${healAmount} healing!`)
-    },
-    healFail: function (caster, target) {
-        console.log(`${caster.name} fails to heal ${target.name}!`)
-    },
-    noAP: function (abilityName, abilityAPCost) {
-        console.log(`Not enough AP to cast ${abilityName}. Total AP: ${turn.AP} - Ability Cost: ${abilityAPCost} `)
-    },
-    charIsDead: function (char, ability) {
-        console.log(`${char.name} cannot cast ${ability.name} while he is dead!`);
-    },
-    guard: function (caster, target) {
-        console.log(`${caster.name} casts his Guard onto ${target.name}.`);
-    },
-    guardSwitch: function (caster, target) {
-        console.log(`${caster.name} switches his Guard from ${caster.buffs.guarding.target.name} to ${target.name}.`);
-    },
-    riposte: function (caster, target) {
-        console.log(`${caster.name} defends well enough to attempt a riposte on ${target.name}.`)
-    },
-    startNPCTurn: function () {
-        console.log(`
-            Start NPC Turn:
-            `);
-    },
-    startPCTurn: function () {
-        console.log(`
-            Start PC Turn:
-            `);
-    },
-    casterOnlyBuff: function (caster, buff) {
-        console.log(`${caster.name} casts ${buff.name} on himself.`);
-    },
-    debuff: function (caster, target, targetDebuff) {
-        console.log(`${caster.name} casts ${targetDebuff.name} onto ${target.name}.`)
-    },
-    targetNotInRange: function (target, abilityName) {
-        console.log(`${target.name} is not in range for ${abilityName} to hit them!`);
-    }, 
-}
-
-/* #endregion Combat Log*/
-
 /* #region  Ability Effects & Logic */ 
 
 const turn = {
@@ -341,11 +79,11 @@ const turn = {
         }
     },
     getAttackingNPC: function () { // *
-        const attackingNPC = NPCs.charList[diceMinus1(NPCs.charList.length)];
+        const attackingNPC = NPCs.charList[effect.diceMinus1(NPCs.charList.length)];
         return attackingNPC
     },
     NPCMakeAttack: function (attackingNPC, attackablePCs) {
-        attackingNPC.useAbility(1, attackablePCs[diceMinus1(attackablePCs.length)]);
+        attackingNPC.useAbility(1, attackablePCs[effect.diceMinus1(attackablePCs.length)]);
     }
 }
 
@@ -356,14 +94,14 @@ const effect = {
         let damageSum;
 
         /* #region  CASTER ATTACK */
-        let attackRollAdvantages = calcTargetAttackAdvatages(caster);
-        let attackRoll = rollWithAdvantageCount(100, attackRollAdvantages);
+        let attackRollAdvantages = effect.calcTargetAttackAdvatages(caster);
+        let attackRoll = effect.rollWithAdvantageCount(100, attackRollAdvantages);
         const attack = attackRoll + mods.attackBonus;
         /* #endregion */
 
         /* #region  TARGET DEFEND */
-        let defendRollAdvantages = calcTargetDefendAdvatages(target);
-        let defendRoll = rollWithAdvantageCount(20, defendRollAdvantages);
+        let defendRollAdvantages = effect.calcTargetDefendAdvatages(target);
+        let defendRoll = effect.rollWithAdvantageCount(20, defendRollAdvantages);
         const defend = defendRoll + mods.getDefendBonus();
         /* #endregion */
 
@@ -388,35 +126,35 @@ const effect = {
         }
         /* #endregion */
 
-        const damageRollArr = concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
+        const damageRollArr = effect.concatRollDice(mods.damageRollDice.mainHandWeapon, mods.damageRollDice.offHandWeapon, mods.damageRollDice.ability);
         damageRollArr.push(mods.damageBonus);
         // sum of damage array will return something like this: if input is equal to [[0,3][0,4][4,8]] then output is [7,0,0,0,8,0,0,0,0]
-        let totalDamagePerResist = sumOfDamageArray(damageRollArr);
+        let totalDamagePerResist = effect.sumOfDamageArray(damageRollArr);
 
         if (attackRoll >= mods.critThreshold) { // * ON CRIT
             combatLog.critHit(caster, target, damageRollArr);
-            totalDamagePerResist = resistArrayMultiply(totalDamagePerResist, 2); // ! Crit multiplier, currently just locked at 2. Can make dynamic later.
+            totalDamagePerResist = effect.resistArrayMultiply(totalDamagePerResist, 2); // ! Crit multiplier, currently just locked at 2. Can make dynamic later.
         } else { // * ON HIT
             combatLog.hit(caster, target, damageRollArr)
         } 
 
         if (target.buffs.guarded) {
-            const guardDefense = getGuardDefense(`melee`, target.buffs.guarded.caster);
-            const targetDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, `guarded`);
-            combatLog.totalDamage(caster, target, sumOfArray(targetDamage));
-            target.hp -= sumOfArray(targetDamage);
+            const guardDefense = effect.getGuardDefense(`melee`, target.buffs.guarded.caster);
+            const targetDamage = effect.calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, `guarded`);
+            combatLog.totalDamage(caster, target, effect.sumOfArray(targetDamage));
+            target.hp -= effect.sumOfArray(targetDamage);
             if (attack > guardDefense) {
                 combatLog.guardFailsDefend(caster, target, target.buffs.guarded.caster);
-                const guardDamage = calcTotalDamageAfterResists(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster, `guarding`);
-                combatLog.totalDamage(caster, target.buffs.guarded.caster, sumOfArray(guardDamage));
-                target.buffs.guarded.caster.hp -= sumOfArray(guardDamage);
+                const guardDamage = effect.calcTotalDamageAfterResists(totalDamagePerResist, target.buffs.guarded.caster.resistsArray, caster, target.buffs.guarded.caster, `guarding`);
+                combatLog.totalDamage(caster, target.buffs.guarded.caster, effect.sumOfArray(guardDamage));
+                target.buffs.guarded.caster.hp -= effect.sumOfArray(guardDamage);
             } else {
                 combatLog.guardDefend(caster, target, target.buffs.guarded.caster);
             }
         } else {
-            damageSum = calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, false); // * also calls combatLog()
-            combatLog.totalDamage(caster, target, sumOfArray(damageSum));
-            target.hp -= sumOfArray(damageSum); 
+            damageSum = effect.calcTotalDamageAfterResists(totalDamagePerResist, target.resistsArray, caster, target, false); // * also calls combatLog()
+            combatLog.totalDamage(caster, target, effect.sumOfArray(damageSum));
+            target.hp -= effect.sumOfArray(damageSum); 
         }
 
         if (riposte) {
@@ -434,8 +172,8 @@ const effect = {
     //         defendBonus
 
     //     }
-    //     const attackRoll = dice(100);
-    //     const defendRoll = dice(20);
+    //     const attackRoll = effect.dice(100);
+    //     const defendRoll = effect.dice(20);
     //     const attackBonus = caster.stats.dexterity;
     //     const defendBonus = this.determineDefendBonus(caster, target);
     //     const damage = this.determineDamage(caster);
@@ -443,19 +181,19 @@ const effect = {
     //     const defend = defendRoll + defendBonus;
     //     if (attackRoll === 100) {
     //         combatLog.critHit(caster, target, damage);
-    //         if (sumOfArray(damage) < 1) {
+    //         if (effect.sumOfArray(damage) < 1) {
     //             target.hp -= 2;
     //         } else {
-    //             target.hp -= sumOfArray(damage) * 2;
+    //             target.hp -= effect.sumOfArray(damage) * 2;
     //         }
     //     } else {
     //         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
     //         if (attack >= defend) {
     //             combatLog.hit(caster, target, damage);
-    //             if (sumOfArray(damage) < 1) {
+    //             if (effect.sumOfArray(damage) < 1) {
     //                 target.hp -= 1;
     //             } else {
-    //                 target.hp -= sumOfArray(damage);
+    //                 target.hp -= effect.sumOfArray(damage);
     //             }
     //         } else {
     //             combatLog.defend(caster, target);
@@ -471,8 +209,8 @@ const effect = {
     //         defendBonus
 
     //     }
-    //     const attackRoll = dice(100);
-    //     const defendRoll = dice(20);
+    //     const attackRoll = effect.dice(100);
+    //     const defendRoll = effect.dice(20);
     //     const attackBonus = caster.stats.dexterity;
     //     const defendBonus = this.determineDefendBonus(caster, target);
     //     const damage = this.determineDamage(caster);
@@ -480,19 +218,19 @@ const effect = {
     //     const defend = defendRoll + defendBonus;
     //     if (attackRoll === 100) {
     //         combatLog.critHit(caster, target, damage);
-    //         if (sumOfArray(damage) < 1) {
+    //         if (effect.sumOfArray(damage) < 1) {
     //             target.hp -= 2;
     //         } else {
-    //             target.hp -= sumOfArray(damage) * 2;
+    //             target.hp -= effect.sumOfArray(damage) * 2;
     //         }
     //     } else {
     //         combatLog.attackAttempt(caster, target, attackRoll, defendRoll, attackBonus, defendBonus);
     //         if (attack >= defend) {
     //             combatLog.hit(caster, target, damage);
-    //             if (sumOfArray(damage) < 1) {
+    //             if (effect.sumOfArray(damage) < 1) {
     //                 target.hp -= 1;
     //             } else {
-    //                 target.hp -= sumOfArray(damage);
+    //                 target.hp -= effect.sumOfArray(damage);
     //             }
     //         } else {
     //             combatLog.defend(caster, target);
@@ -501,8 +239,8 @@ const effect = {
     // },
 
     heal: function (caster, target) {
-        const healRoll = dice(100);
-        const healAmountRoll = dice(4);
+        const healRoll = effect.dice(100);
+        const healAmountRoll = effect.dice(4);
         const healBonus = caster.stats.willpower;
         const healAmount = healAmountRoll + healBonus;
         if (healRoll === 100) {
@@ -558,491 +296,165 @@ const effect = {
         target.debuffs[mods.debuffNameForBuffObj] = targetDebuff;
         combatLog.debuff(caster, target, targetDebuff);
     },
-};
-
-/* #region  LOGIC */
-
-function getFirstEmptyInventorySlot(char) { // * returns a number representing the first empty inventory index.
-    for(let i = 0; i < char.inventory.length; i++) {
-        if(char.inventory[i].isDefaultItem) {
-            return i;
-        }
-    }
-    return false;
-}
-function putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget) {
-    switch(dragTargetCharData.itemType) {
-        case `weapon`:
-            if(dragTarget.classList.contains(`mainHand`)) {
-                char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[0];
-            } else {
-                char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[1];
-            }
-        break;
-        case `armor`:
-            switch(dragTarget.classList[1]) {
-                case `head`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[0];
-                break;
-                case `torso`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[1];
-                break;
-                case `arms`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[2];
-                break;
-                case `legs`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[3];
-                break;
-                case `amulet1`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[4];
-                break;
-                case `amulet2`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[5];
-                break;
-                case `quickAccess1`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[6];
-                break;
-                case `quickAccess2`:
-                    char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[7];
-                break;
-            }
-        break;
-    }
-}
-function updateCharStats(char, addOrRemove, item) { 
-    if(addOrRemove === `add`) {
-        if(item.resists) {
-            for(let i = 0; i < 9; i++) {
-                char.resistsArray[i] += item.resists[i];
+    resistArrayMultiply: function (inputResistArray, multiplier) { // * Takes input like so: [7,0,0,0,8,0,0,0,0] and outputs all of those numbers multiplied by the amount specified.
+        let outputResistArray = [0,0,0,0,0,0,0,0,0];
+        for(let i = 0; i < 9; i++) {
+            if (inputResistArray[i] > 0) {
+                outputResistArray[i] = inputResistArray[i] * multiplier;
             }
         }
-        if(item.parry) {
-            char.parry += item.parry;
-        }
-        if(item.dodge) {
-            char.dodge += item.dodge;
-        }
-        if(item.disrupt) {
-            char.disrupt += item.disrupt;
-        }
-        if(item.block) {
-            char.block += item.block;
-        }
-    } else if (addOrRemove === `remove`) {
-        if(item.resists) {
-            for(let i = 0; i < 9; i++) {
-                char.resistsArray[i] -= item.resists[i];
-            }
-        }
-        if(item.parry) {
-            char.parry -= item.parry;
-        }
-        if(item.dodge) {
-            char.dodge -= item.dodge;
-        }
-        if(item.disrupt) {
-            char.disrupt -= item.disrupt;
-        }
-        if(item.block) {
-            char.block -= item.block;
-        }
-    }
-}
-function formatResistArrayToText (resistArray) { // * input will look like the following:       resists: [0,0,-5,-5,-5,-5,-5,-5,-5], output will exclude resists that are 0.
-    let resistNames = [`Flat`, `Piercing`, `Ice`,`Fire`,`Corrosive`,`Poison`,`Spiritual`,`Lightning`,`Arcane`];
-    let outputText = ``;
-    for(let i = 0; i < 9; i++) {
-        if(resistArray[i] !== 0) {
-            resistNames[i] += ` : ${resistArray[i]}`;
-            outputText += `${resistNames[i]}<br>`
-        }    
-    }
-    return outputText;
-}
-function formatDamageDiceToText (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
-    let outputText = ``;
-    for(let i = 0; i < damageDice.length; i++) {
-        outputText += `${damageDice[i][1]}d${damageDice[i][2]} ${getResistTypeNameFromIndexNumber(damageDice[i][0])}`;
-        if(i < damageDice.length - 1) {
-            outputText += ` & `;
-        }
-    }
-    return outputText; 
-}
-function getResistTypeNameFromIndexNumber(typeNumber) {
-    let resistName;
-        switch(typeNumber) {
-            case 0:
-                resistName = `Flat`;
-            break;
-            case 1:
-                resistName = `Piercing`;
-            break;
-            case 2:
-                resistName = `Ice`;
-            break;
-            case 3:
-                resistName = `Fire`;
-            break;
-            case 4:
-                resistName = `Corrosive`;
-            break;
-            case 5:
-                resistName = `Poison`;
-            break;
-            case 6:
-                resistName = `Spiritual`;
-            break;
-            case 7:
-                resistName = `Lightning`;
-            break;
-            case 8:
-                resistName = `Arcane`;
-            break;
-        }
-        return resistName;
-}
-function resistArrayMultiply(inputResistArray, multiplier) { // * Takes input like so: [7,0,0,0,8,0,0,0,0] and outputs all of those numbers multiplied by the amount specified.
-    let outputResistArray = [0,0,0,0,0,0,0,0,0];
-    for(let i = 0; i < 9; i++) {
-        if (inputResistArray[i] > 0) {
-            outputResistArray[i] = inputResistArray[i] * multiplier;
-        }
-    }
-    return outputResistArray;
-
-}
-function createRollOutcomeString(rollOutcomeString) {
-    // before the string is implied something along the lines of "rolls :"
-    let output = ``;
-    for(let i = 0; i < rollOutcomeString.length; i++) {
-        output += rollOutcomeString[i];
-        if(i + 1 !== rollOutcomeString.length)
-        output += ` + `;
-    }
-    return output;
-}
-function calcTotalDamageAfterResists(damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
-    // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
-    let damageSum = [0,0,0,0,0,0,0,0,0];
-    for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
-        if(damage[i] > 0) { // * If the damage is more than 0
-            if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
-                damageSum[i] += 1;
-            } else if(resists[i] < 0){  // * If the resist is negative
-                if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
-                    damageSum[i] += damage[i] * 2;
-                } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
-                    damageSum[i] += damage[i] + (resists[i] * -1);
-                }
-            } else { // * If the resist is positive, but is less than the total damage.
-                damageSum[i] += (damage[i] - resists[i])
-            }
-            divideGuardDamage(damageSum, i, guardState);
-            combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
-        } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
-            divideGuardDamage(damageSum, i, guardState);
-            combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
-            damageSum[i] += 1;
-        } else {
-            damageSum[i] = 0;
-        }
-    }
-    return damageSum;
-}
-function divideGuardDamage(damageSum, i, guardState) { // * checks for any kinds of guard states and divides accordingly. NOTE!: Alters the actual objects via reference.
-    if (guardState === `guarded`) { 
-        damageSum[i] = Math.ceil(damageSum[i] / 2);
-    } else if(guardState === `guarding`) {
-        damageSum[i] = Math.floor(damageSum[i] / 2);
-    } else {
-        return;
-    }
-    return;
-}
-function calcTargetAttackAdvatages(caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
-    let attackRollAdvantages = [];
-    Object.keys(caster.buffs).forEach((buffKey) => {
-        if (caster.buffs[buffKey].attackRollAdvantage) {
-            attackRollAdvantages.push(caster.buffs[buffKey].attackRollAdvantage);
-        }
-    });
-    Object.keys(caster.debuffs).forEach((buffKey) => {
-        if (caster.debuffs[buffKey].attackRollAdvantage) {
-            attackRollAdvantages.push(caster.debuffs[buffKey].attackRollAdvantage);
-        }
-    });
-    return sumOfArray(attackRollAdvantages);
-}
-function calcTargetDefendAdvatages(target) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
-    let defendRollAdvantages = [];
-    Object.keys(target.buffs).forEach((buffKey) => {
-        if (target.buffs[buffKey].defendRollAdvantage) {
-            defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
-        }
-    });
-    Object.keys(target.debuffs).forEach((buffKey) => {
-        if (target.debuffs[buffKey].defendRollAdvantage) {
-            defendRollAdvantages.push(target.debuffs[buffKey].defendRollAdvantage);
-        }
-    });
-    return sumOfArray(defendRollAdvantages);
-}
-function rollWithAdvantageCount(diceSize, advantageCount) { // * Takes a dice size input, and a advantage or disadvantage count input (pos 1 will be a regular roll, lower will be disadvantage and higher will be advantage) returns the highest or lowest number respectiveley.
-    let arrOfRolls = [];
-    let isAdvantageCountPos;
-    if (advantageCount < 0) {
-        advantageCount *= -1;
-        isAdvantageCountPos = false;
-    } else {
-        isAdvantageCountPos = true;
-    }
-    advantageCount += 1;
-    for (let i = 0; i < advantageCount; i++) {
-        arrOfRolls.push(dice(diceSize))
-    };
-    if (isAdvantageCountPos) {
-        return Math.max(...arrOfRolls);
-    } else {
-        return Math.min(...arrOfRolls);
-    }
-}
-function getGuardDefense(attackType, guarder) {
-    const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
-    let returnValue;
-    switch (attackType) {
-        case `melee`:
-            const guarderParry = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.dexterity / 4) + guarder.parry);
-            returnValue = Math.max(guarderParry, guarderBlock);
-            break;
-        case `ranged`:
-            const guarderDodge = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.agility / 4) + guarder.dodge);
-            returnValue = Math.max(guarderDodge, guarderBlock);
-            break;
-        case `magic`:
-            const guarderDisrupt = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.willpower / 4) + guarder.disrupt);
-            returnValue = Math.max(guarderDisrupt, guarderBlock);
-            break;
-    }
-    return returnValue;
-}
-function concatRollDice(...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
-    let outputArr = [];
-    args.forEach((el) => {
-        if (el) {
-            let i = rollDice(el);
-            outputArr = outputArr.concat(i);
-        }
-    });
-    return outputArr;
-}
-function rollDice(diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result, now with resistances.
-    if (diceArr === null) {
-        return null;
-    }
-    let rollArr = [];
-    for (let i = 0; i < diceArr.length; i++) {
-        for (let x = 0; x < diceArr[i][1]; x++) {
-
-            rollArr.push([diceArr[i][0],dice(diceArr[i][2])]);
-        }
-    }
-    return rollArr;
-}
-function dice(dMax) { // * Takes an integer number X as input and outputs a random number between 1 and X like a single dice roll.
-    return Math.floor(Math.random() * dMax + 1);
-}
-function diceMinus1(dMax) { // * Takes an integer number X as input and outputs a random number between 0 and X.
-    return Math.floor(Math.random() * dMax + 1) - 1;
-}
-function sumOfDamageArray(arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was summed.
-    if (arrayOfNumbers === null) {
-        return null;
-    }
-    let sum = [0,0,0,0,0,0,0,0,0];
-    for (let i = 0; i < arrayOfNumbers.length; i++) {
-        sum[arrayOfNumbers[i][0]] += arrayOfNumbers[i][1];
-    }
-    return sum;
-}
-function sumOfArray(arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
-    let sum = 0;
-    arrayOfNumbers.forEach((el) => { if (el === null) { el = 0 } sum += el });
-    return sum;
-}
-function isTargetDead(target) {
-    if (target.hp < 1) {
-        console.log(`Target is dead.`)
-        return true
-    }
-}
-function isAttackingAllies(caster, target) {
-    if (caster.groupName === `PC` && target.groupName === `PC`) {
-        console.log(`Don't attack your allies!`);
-        return true
-    }
-    if (caster.groupName === `NPC` && target.groupName === `NPC`) {
-        return true
-    }
-    return false;
-};
-function isHealingEnemies(caster, target) {
-    if (caster.groupName === `PC` && target.groupName === `NPC`) {
-        console.log(`Don't heal the enemy!`);
-        return true
-    }
-    if (caster.groupName === `NPC` && target.groupName === `PC`) {
-        return true
-    }
-    return false;
-};
-function isBuffingEnemies(caster, target) {
-    if (caster.groupName === `PC` && target.groupName === `NPC`) {
-        console.log(`Don't buff the enemy!`);
-        return true
-    }
-    if (caster.groupName === `NPC` && target.groupName === `PC`) {
-        return true
-    }
-    return false;
-};
-function isHealingDeadTarget(target, abilityName) {
-    if (target.hp < 1) {
-        console.log(`${abilityName} is not powerful enough to ressurect ${target.name}.`)
-        return true
-    }
-};
-function forceHPtoZero(char) {
-    if (char.hp < 0) {
-        char.hp = 0;
-    }
-};
-function isTargetInRangeOfCaster(caster, target, abilityRange) {
-    let casterRowConverted;
-    let targetRowConverted;
-    if (caster.groupName !== target.groupName) {
-        if(caster.groupName === `PC`) {
-            switch (caster.row) {
-                case 3:
-                    casterRowConverted = 6;
-                break;
-                case 2:
-                    casterRowConverted = 5;
-                break;
-                case 1:
-                    casterRowConverted = 4;
-                break;
-            }
-            switch (target.row) {
-                case 3:
-                    targetRowConverted = 1;
-                break;
-                case 2:
-                    targetRowConverted = 2;
-                break;
-                case 1:
-                    targetRowConverted = 3;
-                break;
-            }
-            if(Math.abs(casterRowConverted - targetRowConverted) <= abilityRange) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if(caster.groupName === `NPC`) {
-            switch (caster.row) {
-                case 3:
-                    casterRowConverted = 1;
-                break;
-                case 2:
-                    casterRowConverted = 2;
-                break;
-                case 1:
-                    casterRowConverted = 3;
-                break;
-            }
-            switch (target.row) {
-                case 3:
-                    targetRowConverted = 6;
-                break;
-                case 2:
-                    targetRowConverted = 5;
-                break;
-                case 1:
-                    targetRowConverted = 4;
-                break;
-            }
-            if(Math.abs(casterRowConverted - targetRowConverted) <= abilityRange) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    } else {
-        if(caster.groupName === `PC`) {
-            switch (caster.row) {
-                case 3:
-                    casterRowConverted = 6;
-                break;
-                case 2:
-                    casterRowConverted = 5;
-                break;
-                case 1:
-                    casterRowConverted = 4;
-                break;
-            }
-            switch (target.row) {
-                case 3:
-                    targetRowConverted = 6;
-                break;
-                case 2:
-                    targetRowConverted = 5;
-                break;
-                case 1:
-                    targetRowConverted = 4;
-                break;
-            }
-            if((Math.abs(casterRowConverted - targetRowConverted) <= abilityRange)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if(caster.groupName === `NPC`) {
-            switch (caster.row) {
-                case 3:
-                    casterRowConverted = 1;
-                break;
-                case 2:
-                    casterRowConverted = 2;
-                break;
-                case 1:
-                    casterRowConverted = 3;
-                break;
-            }
-            switch (target.row) {
-                case 3:
-                    targetRowConverted = 1;
-                break;
-                case 2:
-                    targetRowConverted = 2;
-                break;
-                case 1:
-                    targetRowConverted = 3;
-                break;
-            }
-            if((Math.abs(casterRowConverted - targetRowConverted) <= abilityRange)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
+        return outputResistArray;
     
+    },
+    calcTotalDamageAfterResists: function (damage, resists, caster, target, guardState) { // * Takes two 9 index long resist arrays, outputs the aftermath of damage. 
+        // ! NOTE ! : guardState should only take `guarded` `guarding` or false as is args. 
+        let damageSum = [0,0,0,0,0,0,0,0,0];
+        for(let i = 0; i < 9; i++) { // * cycles 9 times for each resist
+            if(damage[i] > 0) { // * If the damage is more than 0
+                if(resists[i] >=  damage[i]) {  // * If the resist is more than or equal to the damage, then 1 damage is taken.
+                    damageSum[i] += 1;
+                } else if(resists[i] < 0){  // * If the resist is negative
+                    if((resists[i] * -1) > damage[i]) { // * If the resist is more negative than the damage is positive, we just multiply the damage by 2, because a vulnerability cant do more than the original damage.
+                        damageSum[i] += damage[i] * 2;
+                    } else { // * If the resist is negative, and all of it will be taken as damage, because the damage is higher than it.
+                        damageSum[i] += damage[i] + (resists[i] * -1);
+                    }
+                } else { // * If the resist is positive, but is less than the total damage.
+                    damageSum[i] += (damage[i] - resists[i])
+                }
+                effect.divideGuardDamage(damageSum, i, guardState);
+                combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
+            } else if (damageSum[i] < 0){ // * if the damage is negative, then 1 damage is taken, because you cannot deal negative damage on an attack.
+                effect.divideGuardDamage(damageSum, i, guardState);
+                combatLog.damageResist(i, damage[i], resists[i], damageSum[i], caster, target, guardState);
+                damageSum[i] += 1;
+            } else {
+                damageSum[i] = 0;
+            }
+        }
+        return damageSum;
+    },
+    divideGuardDamage: function (damageSum, i, guardState) { // * checks for any kinds of guard states and divides accordingly. NOTE!: Alters the actual objects via reference.
+        if (guardState === `guarded`) { 
+            damageSum[i] = Math.ceil(damageSum[i] / 2);
+        } else if(guardState === `guarding`) {
+            damageSum[i] = Math.floor(damageSum[i] / 2);
+        } else {
+            return;
+        }
+        return;
+    },
+    calcTargetAttackAdvatages: function (caster) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
+        let attackRollAdvantages = [];
+        Object.keys(caster.buffs).forEach((buffKey) => {
+            if (caster.buffs[buffKey].attackRollAdvantage) {
+                attackRollAdvantages.push(caster.buffs[buffKey].attackRollAdvantage);
+            }
+        });
+        Object.keys(caster.debuffs).forEach((buffKey) => {
+            if (caster.debuffs[buffKey].attackRollAdvantage) {
+                attackRollAdvantages.push(caster.debuffs[buffKey].attackRollAdvantage);
+            }
+        });
+        return effect.sumOfArray(attackRollAdvantages);
+    },
+    calcTargetDefendAdvatages: function (target) { // * Takes target as input, returns the total advantage count for their defend roll, counting buffs and debuffs.
+        let defendRollAdvantages = [];
+        Object.keys(target.buffs).forEach((buffKey) => {
+            if (target.buffs[buffKey].defendRollAdvantage) {
+                defendRollAdvantages.push(target.buffs[buffKey].defendRollAdvantage);
+            }
+        });
+        Object.keys(target.debuffs).forEach((buffKey) => {
+            if (target.debuffs[buffKey].defendRollAdvantage) {
+                defendRollAdvantages.push(target.debuffs[buffKey].defendRollAdvantage);
+            }
+        });
+        return effect.sumOfArray(defendRollAdvantages);
+    },
+    rollWithAdvantageCount: function (diceSize, advantageCount) { // * Takes a dice size input, and a advantage or disadvantage count input (pos 1 will be a regular roll, lower will be disadvantage and higher will be advantage) returns the highest or lowest number respectiveley.
+        let arrOfRolls = [];
+        let isAdvantageCountPos;
+        if (advantageCount < 0) {
+            advantageCount *= -1;
+            isAdvantageCountPos = false;
+        } else {
+            isAdvantageCountPos = true;
+        }
+        advantageCount += 1;
+        for (let i = 0; i < advantageCount; i++) {
+            arrOfRolls.push(effect.dice(diceSize))
+        };
+        if (isAdvantageCountPos) {
+            return Math.max(...arrOfRolls);
+        } else {
+            return Math.min(...arrOfRolls);
+        }
+    },
+    getGuardDefense: function (attackType, guarder) {
+        const guarderBlock = Math.floor((guarder.stats.initiative / 2) + guarder.block);
+        let returnValue;
+        switch (attackType) {
+            case `melee`:
+                const guarderParry = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.dexterity / 4) + guarder.parry);
+                returnValue = Math.max(guarderParry, guarderBlock);
+                break;
+            case `ranged`:
+                const guarderDodge = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.agility / 4) + guarder.dodge);
+                returnValue = Math.max(guarderDodge, guarderBlock);
+                break;
+            case `magic`:
+                const guarderDisrupt = Math.floor((guarder.stats.initiative / 2) + (guarder.stats.willpower / 4) + guarder.disrupt);
+                returnValue = Math.max(guarderDisrupt, guarderBlock);
+                break;
+        }
+        return returnValue;
+    },
+    concatRollDice: function (...args) { // * Takes multiple 2D dice array input like rollDice does, but outputs will ignore null inputs.
+        let outputArr = [];
+        args.forEach((el) => {
+            if (el) {
+                let i = effect.rollDice(el);
+                outputArr = outputArr.concat(i);
+            }
+        });
+        return outputArr;
+    },
+    rollDice: function (diceArr) { // * Takes a 2D dice array input like so: [ [2,4] , [3,6] ] - equivilent to 2d4 + 3d6. Outputs array of each individual roll result, now with resistances.
+        if (diceArr === null) {
+            return null;
+        }
+        let rollArr = [];
+        for (let i = 0; i < diceArr.length; i++) {
+            for (let x = 0; x < diceArr[i][1]; x++) {
+    
+                rollArr.push([diceArr[i][0],effect.dice(diceArr[i][2])]);
+            }
+        }
+        return rollArr;
+    },
+    dice: function (dMax) { // * Takes an integer number X as input and outputs a random number between 1 and X like a single dice roll.
+        return Math.floor(Math.random() * dMax + 1);
+    },
+    diceMinus1: function (dMax) { // * Takes an integer number X as input and outputs a random number between 0 and X.
+        return Math.floor(Math.random() * dMax + 1) - 1;
+    },
+    sumOfDamageArray: function (arrayOfNumbers) { // * Takes a 2D array of numbers and adds the index [1's] up, then returns an array 9 indexes long representing each damage resist type, and how much of that type was summed.
+        if (arrayOfNumbers === null) {
+            return null;
+        }
+        let sum = [0,0,0,0,0,0,0,0,0];
+        for (let i = 0; i < arrayOfNumbers.length; i++) {
+            sum[arrayOfNumbers[i][0]] += arrayOfNumbers[i][1];
+        }
+        return sum;
+    },
+    sumOfArray: function (arrayOfNumbers) { // * Takes a 1D array of numbers and adds them up, then returns the sum.
+        let sum = 0;
+        arrayOfNumbers.forEach((el) => { if (el === null) { el = 0 } sum += el });
+        return sum;
+    },
 };
-
-/* #endregion END LOGIC*/
 
 /* #endregion Ability Effects & Logic*/
 
@@ -1054,8 +466,8 @@ function defineAllAbilities() {
         name: `empty`,
         effect: function (caster, target) {
             return;
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 0,
@@ -1079,13 +491,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1100,8 +512,8 @@ function defineAllAbilities() {
     allAbilities[1] = {
         name: `Attack`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 1,
@@ -1125,13 +537,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1146,8 +558,8 @@ function defineAllAbilities() {
     allAbilities[2] = {
         name: `Powerful Strike`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 2,
@@ -1171,13 +583,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1192,8 +604,8 @@ function defineAllAbilities() {
     allAbilities[3] = {
         name: `Precision Strike`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 3,
@@ -1217,13 +629,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1238,8 +650,8 @@ function defineAllAbilities() {
     allAbilities[4] = {
         name: `Healing Word`,
         effect: function (caster, target) {
-            if (!isHealingEnemies(caster, target)) {
-                if (!isHealingDeadTarget(target, this.name)) {
+            if (!logicLib.isHealingEnemies(caster, target)) {
+                if (!logicLib.isHealingDeadTarget(target, this.name)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 4,
@@ -1263,13 +675,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.heal(caster, target); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1284,8 +696,8 @@ function defineAllAbilities() {
     allAbilities[5] = {
         name: `Guard`,
         effect: function (caster, target) {
-            if (!isBuffingEnemies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isBuffingEnemies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (!target.buffs.guarded) {
                         if (turn.AP >= this.APCost) {
                             const mods = {
@@ -1296,13 +708,13 @@ function defineAllAbilities() {
                                 buffDescForTarget: `Guarded by ${caster.name}`,
                                 buffDescForCaster: `Guarding ${target.name}`,
                             };
-                            if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                            if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                                 effect.guard(caster, target, mods); turn.AP -= this.APCost
                             } else {
                                 combatLog.targetNotInRange(target, this.name);
                             }
                         } else {
-                            combatLog.noAP(this.name, this.APCost);
+                            combatLog.noAP(this.name, this.APCost, turn.AP);
                         }
                     }
                 }
@@ -1318,8 +730,8 @@ function defineAllAbilities() {
     allAbilities[6] = {
         name: `Leaping Strike`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 6,
@@ -1343,13 +755,13 @@ function defineAllAbilities() {
                                 return Math.max(this.targetParry, this.targetBlock)
                             },
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.meleeAttack(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1375,7 +787,7 @@ function defineAllAbilities() {
                     };
                     effect.casterOnlyBuff(caster, mods); turn.AP -= this.APCost
                 } else {
-                    combatLog.noAP(this.name, this.APCost);
+                    combatLog.noAP(this.name, this.APCost, turn.AP);
                 }
             } else {
                 // TODO: Need a combat log for the target
@@ -1391,8 +803,8 @@ function defineAllAbilities() {
     allAbilities[8] = {
         name: `Reveal Weakness`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     if (turn.AP >= this.APCost) {
                         const mods = {
                             abilityIndex: 8,
@@ -1402,13 +814,13 @@ function defineAllAbilities() {
                             defendRollAdvantage: -1,
                             abilityRange: 5,
                         };
-                        if(isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
+                        if(logicLib.isTargetInRangeOfCaster(caster, target, mods.abilityRange)) {
                             effect.debuff(caster, target, mods); turn.AP -= this.APCost
                         } else {
                             combatLog.targetNotInRange(target, this.name);
                         }
                     } else {
-                        combatLog.noAP(this.name, this.APCost);
+                        combatLog.noAP(this.name, this.APCost, turn.AP);
                     }
                 }
             }
@@ -1424,11 +836,11 @@ function defineAllAbilities() {
         name: `Taunt`,
         effect: function (caster, target) {
             return;
-            if (!isAttackingAllies(caster, target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
                 if (turn.AP >= this.APCost) {
                     effect.attack(caster, target); turn.AP -= this.APCost
                 } else {
-                    combatLog.noAP(this.name, this.APCost);
+                    combatLog.noAP(this.name, this.APCost, turn.AP);
                 }
             }
         },
@@ -1442,8 +854,8 @@ function defineAllAbilities() {
     allAbilities[10] = {
         name: `Riposte`,
         effect: function (caster, target) {
-            if (!isAttackingAllies(caster, target)) {
-                if (!isTargetDead(target)) {
+            if (!logicLib.isAttackingAllies(caster, target)) {
+                if (!logicLib.isTargetDead(target)) {
                     const mods = {
                         isRiposte: true,
                         abilityIndex: 10,
@@ -1989,10 +1401,10 @@ function Char(name, race) {
     this.inventory = [allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0], allItems[0]];
     this.addEquipment = function (slotName, equipment) {
         this.equipment[slotName] = equipment;
-        this.parry = sumOfArray([this.equipment.mainHand.parry, this.equipment.offHand.parry, this.equipment.armor.parry]);
-        this.dodge = sumOfArray([this.equipment.mainHand.dodge, this.equipment.offHand.dodge, this.equipment.armor.dodge]);
-        this.disrupt = sumOfArray([this.equipment.mainHand.disrupt, this.equipment.offHand.disrupt, this.equipment.armor.disrupt]);
-        this.block = sumOfArray([this.equipment.mainHand.block, this.equipment.offHand.block, this.equipment.armor.block]);
+        this.parry = effect.sumOfArray([this.equipment.mainHand.parry, this.equipment.offHand.parry, this.equipment.armor.parry]);
+        this.dodge = effect.sumOfArray([this.equipment.mainHand.dodge, this.equipment.offHand.dodge, this.equipment.armor.dodge]);
+        this.disrupt = effect.sumOfArray([this.equipment.mainHand.disrupt, this.equipment.offHand.disrupt, this.equipment.armor.disrupt]);
+        this.block = effect.sumOfArray([this.equipment.mainHand.block, this.equipment.offHand.block, this.equipment.armor.block]);
     };
     this.addStatBonus = function (statName, amount) {
         switch (statName) {
@@ -2580,6 +1992,16 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
             }
         });
     },
+    formatDamageDiceToText: function (damageDice) { // * Input will look like:   [[0, 1, 4],[1, 2, 6]]   : this would mean 1d4 Flat & 2d6 Piercing.
+        let outputText = ``;
+        for(let i = 0; i < damageDice.length; i++) {
+            outputText += `${damageDice[i][1]}d${damageDice[i][2]} ${logicLib.getResistTypeNameFromIndexNumber(damageDice[i][0])}`;
+            if(i < damageDice.length - 1) {
+                outputText += ` & `;
+            }
+        }
+        return outputText; 
+    },
     displayItemTooltip: function (target) {
         let tooltips = document.getElementsByClassName(`tooltip`);
         if(tooltips.length > 0) {
@@ -2593,7 +2015,6 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
 
         if(target.classList.contains(`utilDivisionAbility`)) { //  * If hover is over an ability
             ability = allAbilities[target.dataset.abilityIndex];
-            // damageDiceDisplay = formatDamageDiceToText(item.damage); 
             x.className = `tooltip`;
             x.innerHTML = `
                         <div class="tooltipContent">${ability.name}:</div>
@@ -2605,7 +2026,6 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
         }
         if(target.classList.contains(`ability`)) { //  * If hover is over an ability
             ability = allAbilities[target.dataset.abilityIndex];
-            // damageDiceDisplay = formatDamageDiceToText(item.damage); 
             x.className = `tooltip hotBarTooltip`;
             x.innerHTML = `
                         <div class="tooltipContent hotBarTooltipContent">${ability.name}:</div>
@@ -2620,7 +2040,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
             switch(target.dataset.itemType) {
                 case `weapon`:
                     item = allWeapons[target.dataset.itemIndex];
-                    damageDiceDisplay = formatDamageDiceToText(item.damage); 
+                    damageDiceDisplay = DOM.formatDamageDiceToText(item.damage); 
                     x.className = `tooltip`;
                     x.innerHTML = `
                                 <div class="tooltipContent">${item.name}:</div>
@@ -2629,7 +2049,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                 break;
                 case `armor`:
                     item = allArmors[target.dataset.itemIndex];
-                    resistsDisplay = formatResistArrayToText(item.resists); 
+                    resistsDisplay = DOM.formatResistArrayToText(item.resists); 
                     if(!resistsDisplay) {
                         resistsDisplay = `None`;
                     }
@@ -2644,6 +2064,17 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
 
         target.append(x);
         this.timeout = null;
+    },
+    formatResistArrayToText: function (resistArray) { // * input will look like the following:       resists: [0,0,-5,-5,-5,-5,-5,-5,-5], output will exclude resists that are 0.
+        let resistNames = [`Flat`, `Piercing`, `Ice`,`Fire`,`Corrosive`,`Poison`,`Spiritual`,`Lightning`,`Arcane`];
+        let outputText = ``;
+        for(let i = 0; i < 9; i++) {
+            if(resistArray[i] !== 0) {
+                resistNames[i] += ` : ${resistArray[i]}`;
+                outputText += `${resistNames[i]}<br>`
+            }    
+        }
+        return outputText;
     },
     attemptAbilityCast: function (target) {
         const abilityDatasetIndex = target.dataset.abilityIndex;
@@ -2801,6 +2232,11 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
             this.createChar(NPCs.charList[i], i)
         };
     },
+    forceHPtoZero: function (char) {
+        if (char.hp < 0) {
+            char.hp = 0;
+        }
+    },
     createChar: function (char, charListIndex) {
         const i = document.createElement(`div`);
         i.className = `${char.groupName}`;
@@ -2814,7 +2250,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
         i.style.display = `flex`;
         i.style.flexDirection = `column`;
         i.style.justifyContent = `space-between`;
-        forceHPtoZero(char);
+        DOM.forceHPtoZero(char);
         if (char.hp === 0) {
             i.style.borderColor = `rgb(50,50,50)`;
             i.innerHTML = `<div class="name">${char.name}</div>
@@ -2953,13 +2389,13 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
                                 char.inventory[this.dragTarget.dataset.inventoryIndex] = allItems[0];
                                 char.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
-                                updateCharStats(char, `add`, dragTargetCharData);
+                                DOM.updateCharStats(char, `add`, dragTargetCharData);
                                 // do the swap and add stats
                             } else { // ! If drop contains item
                                 char.inventory[this.dragTarget.dataset.inventoryIndex] = dropTargetCharData;
                                 char.equipment[dropTarget.dataset.equipmentSlotName] = tempStorage;
-                                updateCharStats(char, `add`, dragTargetCharData);
-                                updateCharStats(char, `remove`, dropTargetCharData);
+                                DOM.updateCharStats(char, `add`, dragTargetCharData);
+                                DOM.updateCharStats(char, `remove`, dropTargetCharData);
                                 // do the swap and add drag stats, subtract drop stats
                             }
 
@@ -2971,15 +2407,15 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                         case `inventoryItem`: // *** If drop is to inventory
 
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
-                                putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
+                                DOM.putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
                                 char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
-                                updateCharStats(char, `remove`, dragTargetCharData);
+                                DOM.updateCharStats(char, `remove`, dragTargetCharData);
                                 // do the swap and remove drag stats
                             } else { // ! If drop contains item
                                 char.equipment[this.dragTarget.dataset.equipmentSlotName] = dropTargetCharData;
                                 char.inventory[dropTarget.dataset.inventoryIndex] = tempStorage;
-                                updateCharStats(char, `remove`, dragTargetCharData);
-                                updateCharStats(char, `add`, dropTargetCharData);
+                                DOM.updateCharStats(char, `remove`, dragTargetCharData);
+                                DOM.updateCharStats(char, `add`, dropTargetCharData);
                                 // do the swap and remove drag stats, add drop stats
                             }
 
@@ -2987,7 +2423,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                         case `equipmentItem`: // *** If drop is to equipment
 
                             if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
-                                putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
+                                DOM.putDefaultItemInPlaceOfDrag(char, dragTargetCharData, this.dragTarget)
                                 char.equipment[this.dragTarget.dataset.equipmentSlotName] = tempStorage;
                                 // do the swap
                             } else { // ! If drop contains item
@@ -3005,6 +2441,14 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
             this.dragTarget = null;
         }) 
     },
+    getFirstEmptyInventorySlot: function (char) { // * returns a number representing the first empty inventory index.
+        for(let i = 0; i < char.inventory.length; i++) {
+            if(char.inventory[i].isDefaultItem) {
+                return i;
+            }
+        }
+        return false;
+    },
     listenForRightClickEquip: function () { // * Where the right click swapping logic is.
         this.utilDivisionDisplay.addEventListener(`contextmenu`, (e) => {
             e.preventDefault();
@@ -3017,7 +2461,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                 switch(dragTarget.classList[0]) { // * links dom element properties to the char data for DRAGTARGET
                     case `equipmentItem` :
                         dragTargetCharData = char.equipment[dragTarget.dataset.equipmentSlotName];
-                        dropTargetCharData = char.inventory[getFirstEmptyInventorySlot(char)];
+                        dropTargetCharData = char.inventory[DOM.getFirstEmptyInventorySlot(char)];
                     break;
                     case `inventoryItem` :
                         dragTargetCharData = char.inventory[dragTarget.dataset.inventoryIndex];
@@ -3032,26 +2476,104 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                         if(dropTargetCharData.isDefaultItem) { // ! If drop is empty
                             char.inventory[dragTarget.dataset.inventoryIndex] = allItems[0];
                             char.equipment[dragTargetCharData.itemEquipType[0]] = tempStorage;
-                            updateCharStats(char, `add`, dragTargetCharData);
+                            DOM.updateCharStats(char, `add`, dragTargetCharData);
                             // do the swap and add stats
                         } else { // ! If drop contains item
                             char.inventory[dragTarget.dataset.inventoryIndex] = dropTargetCharData;
                             char.equipment[dragTargetCharData.itemEquipType[0]] = tempStorage;
-                            updateCharStats(char, `add`, dragTargetCharData);
-                            updateCharStats(char, `remove`, dropTargetCharData);
+                            DOM.updateCharStats(char, `add`, dragTargetCharData);
+                            DOM.updateCharStats(char, `remove`, dropTargetCharData);
                             // do the swap and add drag stats, subtract drop stats
                         }
                     break;
                     case `equipmentItem` : // ***** If drag is from equipment
-                        putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget)
-                        char.inventory[getFirstEmptyInventorySlot(char)] = dragTargetCharData;
-                        updateCharStats(char, `remove`, dragTargetCharData);
+                        DOM.putDefaultItemInPlaceOfDrag(char, dragTargetCharData, dragTarget)
+                        char.inventory[DOM.getFirstEmptyInventorySlot(char)] = dragTargetCharData;
+                        DOM.updateCharStats(char, `remove`, dragTargetCharData);
                         // do the swap and remove drag stats
                     break;
                 }
             }
             this.updateUtilDivisionDisplay();
         })
+    },
+    updateCharStats: function (char, addOrRemove, item) { 
+        if(addOrRemove === `add`) {
+            if(item.resists) {
+                for(let i = 0; i < 9; i++) {
+                    char.resistsArray[i] += item.resists[i];
+                }
+            }
+            if(item.parry) {
+                char.parry += item.parry;
+            }
+            if(item.dodge) {
+                char.dodge += item.dodge;
+            }
+            if(item.disrupt) {
+                char.disrupt += item.disrupt;
+            }
+            if(item.block) {
+                char.block += item.block;
+            }
+        } else if (addOrRemove === `remove`) {
+            if(item.resists) {
+                for(let i = 0; i < 9; i++) {
+                    char.resistsArray[i] -= item.resists[i];
+                }
+            }
+            if(item.parry) {
+                char.parry -= item.parry;
+            }
+            if(item.dodge) {
+                char.dodge -= item.dodge;
+            }
+            if(item.disrupt) {
+                char.disrupt -= item.disrupt;
+            }
+            if(item.block) {
+                char.block -= item.block;
+            }
+        }
+    },
+    putDefaultItemInPlaceOfDrag: function(char, dragTargetCharData, dragTarget) {
+        switch(dragTargetCharData.itemType) {
+            case `weapon`:
+                if(dragTarget.classList.contains(`mainHand`)) {
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[0];
+                } else {
+                    char.equipment[dragTarget.dataset.equipmentSlotName] = allWeapons[1];
+                }
+            break;
+            case `armor`:
+                switch(dragTarget.classList[1]) {
+                    case `head`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[0];
+                    break;
+                    case `torso`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[1];
+                    break;
+                    case `arms`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[2];
+                    break;
+                    case `legs`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[3];
+                    break;
+                    case `amulet1`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[4];
+                    break;
+                    case `amulet2`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[5];
+                    break;
+                    case `quickAccess1`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[6];
+                    break;
+                    case `quickAccess2`:
+                        char.equipment[dragTarget.dataset.equipmentSlotName] = allArmors[7];
+                    break;
+                }
+            break;
+        }
     },
     updateUtilDivisionDisplay: function () { // * is called when you select a different char or tab.
         switch(this.selectedUtilDivisionTabState) {
