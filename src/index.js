@@ -42,6 +42,10 @@ import "./audio/introAudio.mp3";
 
 // TODO: Must make ID's for everything, to make them easier to handle.
 // TODO: I am copying data too much, all characters should REFERENCE ability data etc, this will make it easier to code and should improve performance.
+// TODO: Need to do full ability and attack logic rewrite, to make it easier to work with, need to make it super ultra modular.
+// TODO: Eventually make tooltips for absolutely everything, tooltips within tooltips. Want to make tooltips for stats that break down where they all came from.
+// TODO: important dialogues should literally be html dialogues/modals.
+// TODO: add some local storage to the game.
 
 /* #endregion Notes*/
 
@@ -1718,6 +1722,22 @@ function defineAllItems() {
 const allRaces = [];
 function defineAllRaces() {
     allRaces[0] = {
+        index: 0,
+        name: `None`,
+        stats: {
+            strength: 0,
+            dexterity: 0,
+            willpower: 0,
+            vitality: 0,
+            agility: 0,
+            initiative: 0,
+            intelligence: 0,
+            charisma: 0,
+        },
+        resistsArray: [0,0,0,0,0,0,0,0,0],   
+    };
+    allRaces[1] = {
+        index: 1,
         name: `Man`,
         stats: {
             strength: 0,
@@ -1731,7 +1751,8 @@ function defineAllRaces() {
         },
         resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
-    allRaces[1] = {
+    allRaces[2] = {
+        index: 2,
         name: `Elf`,
         stats: {
             strength: -2,
@@ -1745,7 +1766,8 @@ function defineAllRaces() {
         },
         resistsArray: [0,0,-5,-5,-5,-5,-5,-5,-5],   
     };
-    allRaces[2] = {
+    allRaces[3] = {
+        index: 3,
         name: `Dwarf`,
         stats: {
             strength: 2,
@@ -1760,7 +1782,8 @@ function defineAllRaces() {
         resistsArray: [0,0,-3,-3,-3,-3,-3,-3,-3],   
 
     };
-    allRaces[3] = {
+    allRaces[4] = {
+        index: 4,
         name: `Saurus`,
         stats: {
             strength: 14,
@@ -1778,54 +1801,70 @@ function defineAllRaces() {
 const allTalents = [];
 function defineAllTalents() {
     allTalents[0] = {
+        index: 0,
+        name: `None`,
+        statBonusName: `None`,
+        statBonusAmount: null,
+        ability: null,
+    };
+    allTalents[1] = {
+        index: 1,
         name: `Strong`,
         statBonusName: `strength`,
         statBonusAmount: 4,
         ability: 2,
     };
-    allTalents[1] = {
+    allTalents[2] = {
+        index: 2,
         name: `Dexterous`,
         statBonusName: `dexterity`,
         statBonusAmount: 4,
         ability: 3,
     };
-    allTalents[2] = {
+    allTalents[3] = {
+        index: 3,
         name: `Soulful`,
         statBonusName: `willpower`,
         statBonusAmount: 4,
         ability: 4,
     };
-    allTalents[3] = {
+    allTalents[4] = {
+        index: 4,
         name: `Resilient`,
         statBonusName: `vitality`,
         statBonusAmount: 4,
         ability: 5,
     };
-    allTalents[4] = {
+    allTalents[5] = {
+        index: 5,
         name: `Agile`,
         statBonusName: `agility`,
         statBonusAmount: 4,
         ability: 6,
     };
-    allTalents[5] = {
+    allTalents[6] = {
+        index: 6,
         name: `Responsive`,
         statBonusName: `initiative`,
         statBonusAmount: 4,
         ability: 7,
     };
-    allTalents[6] = {
+    allTalents[7] = {
+        index: 7,
         name: `Genius`,
         statBonusName: `intelligence`,
         statBonusAmount: 4,
         ability: 8,
     };
-    allTalents[7] = {
+    allTalents[8] = {
+        index: 8,
         name: `Charismatic`,
         statBonusName: `charisma`,
         statBonusAmount: 4,
         ability: 9,
     };
-    allTalents[8] = {
+    allTalents[9] = {
+        index: 9,
         name: `Sorcerous`,
     };
 }
@@ -1849,13 +1888,23 @@ function defineAllFeats() {
 const allBackgrounds = [];
 function defineAllBackgrounds() {
     allBackgrounds[0] = {
-        name: `Peasant`,
+        index: 0,
+        name: `None`,
         parry: 0,
         dodge: 0,
         disrupt: 0,
         block: 0,
     }
     allBackgrounds[1] = {
+        index: 1,
+        name: `Peasant`,
+        parry: 0,
+        dodge: 0,
+        disrupt: 0,
+        block: 0,
+    }
+    allBackgrounds[2] = {
+        index: 2,
         name: `Mercenary`,
         parry: 1,
         dodge: 0,
@@ -1908,8 +1957,17 @@ function Char(name, race) {
     this.hp = 100;
     this.abilities = [1];
     this.hotBar = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    this.stats = race.stats;
-    this.resistsArray = race.resistsArray; 
+    this.stats = {
+        strength: race.stats.strength,
+        dexterity: race.stats.dexterity,
+        willpower: race.stats.willpower,
+        vitality: race.stats.vitality,
+        agility: race.stats.agility,
+        initiative: race.stats.initiative,
+        intelligence: race.stats.intelligence,
+        charisma: race.stats.charisma,
+    }
+    this.resistsArray = [race.resistsArray[0],race.resistsArray[1],race.resistsArray[2],race.resistsArray[3],race.resistsArray[4],race.resistsArray[5],race.resistsArray[6],race.resistsArray[7],race.resistsArray[8]],
     this.buffs = {};
     this.debuffs = {};
     this.row = 1;
@@ -2009,10 +2067,18 @@ function characterCreator(name, race, talent1, talent2, group, icon) {
         const talent2Ability = talent2.ability;
         targetChar.talent1Name = talent1.name;
         targetChar.talent2Name = talent2.name;
-        targetChar.addStatBonus(talent1StatBonusName, talent1StatBonusAmount);
-        targetChar.addStatBonus(talent2StatBonusName, talent2StatBonusAmount);
-        targetChar.abilities.push(talent1Ability);
-        targetChar.abilities.push(talent2Ability);
+        if(talent1StatBonusAmount) {
+            targetChar.addStatBonus(talent1StatBonusName, talent1StatBonusAmount);
+        }
+        if(talent2StatBonusAmount) {
+            targetChar.addStatBonus(talent2StatBonusName, talent2StatBonusAmount);
+        }
+        if(talent1Ability) {
+            targetChar.abilities.push(talent1Ability);
+        }
+        if(talent2Ability) {
+            targetChar.abilities.push(talent2Ability);
+        }
     }
     function addEquipment() {
         const targetChar = unassignedGroup.charList[unassignedGroup.charList.length - 1];
@@ -2042,6 +2108,14 @@ function characterCreator(name, race, talent1, talent2, group, icon) {
 const DOM = {
     body: document.querySelector(`body`),
     mainMenu: document.querySelector(`.mainMenu`),
+    charCreationMasterContainer: document.querySelector(`.charCreation.masterContainer`),
+    charCreationStatsPreview: document.querySelector(`.charCreation.statsPreview`),
+    charCreationConfirmButton: document.querySelector(`.charCreation.confirm`),
+    charCreationChoices: document.querySelector(`.charCreation.choices`),
+    charCreationRaceBar: document.querySelector(`.charCreation.raceBar`),
+    charCreationBackground: document.querySelector(`.charCreation.background`),
+    charCreationTalent1: document.querySelector(`.charCreation.talent1`),
+    charCreationTalent2: document.querySelector(`.charCreation.talent2`),
     mainMenuButton: document.querySelectorAll(`.mainMenuButton`),
     newGameButton: document.querySelector(`.newGameButton`),
     loadGameButton: document.querySelector(`.loadGameButton`),
@@ -2077,22 +2151,306 @@ const DOM = {
     introTimeout: null,
     mainMenuMusic: new Audio(`./audio/mainMenuMusic.mp3`),
     introAudio: new Audio(`./audio/introAudio.mp3`),
+    isPlayerDoneCreatingChar: false,
+    currentcharCreationOptionSelection: null,
+    currentcharCreationChoiceSelection: null,
+    charCreationCharData: {
+        name: ``,
+        icon: `url("./images/kliftin.jpg")`,
+        race: allRaces[0],
+        background: allBackgrounds[0],
+        talent1: allTalents[0],
+        talent2: allTalents[0],
+    },
 
-    // TODO: Combine all listeners of same type into one big body listener that calls diferent functions for different targets. This will save performance big time later on.
-    // ! On this commit say that I added main menu listeners and combined many listeners to save performance.
+    updateCharCreationStatsPreview: function () {
+        let char = PCs.charList[0];
 
-    endIntro: function () {
+        DOM.charCreationStatsPreview.innerHTML = ``;
+        // ! Below is the code that I want to refactor for char creation screen
+        const equipDisplay = document.createElement(`div`);
+        equipDisplay.className = `equipDisplay charCreation`;
+        // * Main Container
+        DOM.charCreationStatsPreview.append(equipDisplay);
+
+        // * Subcontainers
+        const equipLeft = document.createElement(`div`);
+        equipLeft.className = `equipLeft charCreation`;
+        const equipCenter = document.createElement(`div`);
+        equipCenter.className = `equipCenter charCreation`;
+        const equipRight = document.createElement(`div`);
+        equipRight.className = `equipRight charCreation`;
+        equipDisplay.append(equipLeft, equipCenter, equipRight);
+
+        // * Main Armor Slots on the left
+        const headSlot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(headSlot, char, `head`);
+        const torsoSlot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(torsoSlot, char, `torso`);
+        const armsSlot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(armsSlot, char, `arms`);
+        const legsSlot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(legsSlot, char, `legs`);
+        equipLeft.append(headSlot, torsoSlot, armsSlot, legsSlot);
+
+        // * Middle Subcontainers
+        const statsDisplay = document.createElement(`div`);
+        statsDisplay.className = `statsDisplay charCreation`;
+
+            const statsDisplayLeft = document.createElement(`div`);
+            statsDisplayLeft.className = `statsDisplayLeft charCreation`;
+
+                const strengthDisplay = document.createElement(`div`);
+                strengthDisplay.textContent = `STR: ${char.stats.strength}`;
+
+                const dexterityDisplay = document.createElement(`div`);
+                dexterityDisplay.textContent = `DEX: ${char.stats.dexterity}`;
+
+                const willpowerDisplay = document.createElement(`div`);
+                willpowerDisplay.textContent = `WIL: ${char.stats.willpower}`;
+
+                const vitalityDisplay = document.createElement(`div`);
+                vitalityDisplay.textContent = `VIT: ${char.stats.vitality}`;
+
+                const divider1 = document.createElement(`div`);
+                divider1.textContent = `-`;
+
+                const parryDisplay = document.createElement(`div`);
+                parryDisplay.textContent = `PARRY: ${char.parry}`;
+
+                const dodgeDisplay = document.createElement(`div`);
+                dodgeDisplay.textContent = `DODGE: ${char.dodge}`;
+
+                const divider3 = document.createElement(`div`);
+                divider3.textContent = `-`;
+
+                const flatResistDisplay = document.createElement(`div`);
+                flatResistDisplay.textContent = `FLAT R: ${char.resistsArray[0]}`;
+
+                const iceResistDisplay = document.createElement(`div`);
+                iceResistDisplay.textContent = `ICE R: ${char.resistsArray[2]}`;
+
+                const corrosiveResistDisplay = document.createElement(`div`);
+                corrosiveResistDisplay.textContent = `CORRO. R: ${char.resistsArray[4]}`;
+
+                const spiritualResistDisplay = document.createElement(`div`);
+                spiritualResistDisplay.textContent = `SPIRIT R: ${char.resistsArray[6]}`;
+
+                const arcaneResistDisplay = document.createElement(`div`);
+                arcaneResistDisplay.textContent = `ARCANE R: ${char.resistsArray[8]}`;
+                
+                statsDisplayLeft.append(strengthDisplay, dexterityDisplay, willpowerDisplay, vitalityDisplay, divider1, parryDisplay, dodgeDisplay, divider3, flatResistDisplay, iceResistDisplay, corrosiveResistDisplay, spiritualResistDisplay, arcaneResistDisplay);
+
+            const statsDisplayRight = document.createElement(`div`);
+            statsDisplayRight.className = `statsDisplayRight charCreation`;
+
+                const agilityDisplay = document.createElement(`div`);
+                agilityDisplay.textContent = `AGI: ${char.stats.agility}`;
+
+                const initiativeDisplay = document.createElement(`div`);
+                initiativeDisplay.textContent = `INI: ${char.stats.initiative}`;
+
+                const intelligenceDisplay = document.createElement(`div`);
+                intelligenceDisplay.textContent = `INT: ${char.stats.intelligence}`;
+
+                const charismaDisplay = document.createElement(`div`);
+                charismaDisplay.textContent = `CHA: ${char.stats.charisma}`;
+
+                const divider2 = document.createElement(`div`);
+                divider2.textContent = `-`;
+
+                const disruptDisplay = document.createElement(`div`);
+                disruptDisplay.textContent = `DISRUPT: ${char.disrupt}`;
+
+                const blockDisplay = document.createElement(`div`);
+                blockDisplay.textContent = `BLOCK: ${char.block}`;
+
+                const divider4 = document.createElement(`div`);
+                divider4.textContent = `-`;
+
+                const piercingResistDisplay = document.createElement(`div`);
+                piercingResistDisplay.textContent = `PIERCE R: ${char.resistsArray[1]}`;
+
+                const fireResistDisplay = document.createElement(`div`);
+                fireResistDisplay.textContent = `FIRE R: ${char.resistsArray[3]}`;
+
+                const poisonResistDisplay = document.createElement(`div`);
+                poisonResistDisplay.textContent = `POISON R: ${char.resistsArray[5]}`;
+
+                const lightningResistDisplay = document.createElement(`div`);
+                lightningResistDisplay.textContent = `LIGHTN. R: ${char.resistsArray[7]}`;
+                
+                statsDisplayRight.append( agilityDisplay, initiativeDisplay, intelligenceDisplay, charismaDisplay, divider2, disruptDisplay, blockDisplay, divider4, piercingResistDisplay, fireResistDisplay, poisonResistDisplay, lightningResistDisplay);
+
+        statsDisplay.append(statsDisplayLeft, statsDisplayRight);
+
+        const weaponsDisplay = document.createElement(`div`);
+        weaponsDisplay.className = `weaponsDisplay charCreation`;
+
+            const mainHandWeaponSlot = document.createElement(`div`);
+                this.charCreationCreateEquipmentSlot(mainHandWeaponSlot, char, `mainHand`);
+            const offHandWeaponSlot = document.createElement(`div`);
+                this.charCreationCreateEquipmentSlot(offHandWeaponSlot, char, `offHand`);
+            weaponsDisplay.append(mainHandWeaponSlot, offHandWeaponSlot);
+
+        equipCenter.append(statsDisplay, weaponsDisplay);
+
+        // * Amulet & Quick Access Slots on the right.
+        const amulet1Slot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(amulet1Slot, char, `amulet1`);
+        const amulet2Slot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(amulet2Slot, char, `amulet2`);
+        const quickAccess1Slot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(quickAccess1Slot, char, `quickAccess1`);
+        const quickAccess2Slot = document.createElement(`div`);
+            this.charCreationCreateEquipmentSlot(quickAccess2Slot, char, `quickAccess2`);
+        equipRight.append(amulet1Slot, amulet2Slot, quickAccess1Slot, quickAccess2Slot);
+
+        const inventoryContainer = document.createElement(`div`);
+        inventoryContainer.className = `inventoryContainer charCreation`;
+        this.charCreationStatsPreview.appendChild(inventoryContainer);
+        this.charCreationGenerateInventory(inventoryContainer, char); // ! Here I will eventually want to replace the first param with something like -   char.invSpace   -.
+    },
+    endIntro: function () { // * Ends the intro and takes player to charCreation screen.
         DOM.isIntroActive = false;
         const intro = document.querySelector(`.intro`);
         intro.remove();
         clearTimeout(DOM.introTimeout);
         DOM.introTimeout = null;
+        DOM.introAudio.pause();
+        DOM.introAudio.currentTime = 0;
+        DOM.charCreationMasterContainer.style.display = `flex`; // * Shows charCreation screen
+
+        DOM.charCreationCharData.race = allRaces[0]; // ! IDK why I have to define these even though I already do it on the definition of the DOM object above...
+        DOM.charCreationCharData.background = allBackgrounds[0];
+        DOM.charCreationCharData.talent1 = allTalents[0];
+        DOM.charCreationCharData.talent2 = allTalents[0];
+
+        characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, PCs, DOM.charCreationCharData.icon);
+        DOM.updateCharCreationStatsPreview();
+    },
+    endCharCreation: function () {
+        DOM.charCreationMasterContainer.style.display = `none`; // * Hides charCreation screen
+    },
+    createCharCreationChoices: function (choiceType, choiceTypeString) {
+            DOM.charCreationChoices.innerHTML = ``;
+            choiceType.forEach((ele) => {
+                if(ele == DOM.charCreationCharData.race || ele == DOM.charCreationCharData.background || ele == DOM.charCreationCharData.talent1 || ele == DOM.charCreationCharData.talent2) {
+                    return;
+                }
+                let x = document.createElement(`button`);
+                x.className = `charCreation choice`;
+                x.dataset.index = ele.index;
+                x.dataset.choiceType = choiceTypeString;
+                x.textContent = ele.name;
+                DOM.charCreationChoices.append(x);
+            })
+    },
+    updateCharCreationChoices: function (type) {
+        switch(type) {
+            case `races`:
+                DOM.createCharCreationChoices(allRaces, `race`);
+            break;
+            case `backgrounds`:
+                DOM.createCharCreationChoices(allBackgrounds, `background`);
+            break;
+            case `talent1`:
+                DOM.createCharCreationChoices(allTalents, `talent1`);
+            break;
+            case `talent2`:
+                DOM.createCharCreationChoices(allTalents, `talent2`);
+            break;
+        }
+    },
+    updateCharCreationCharData: function (choiceType, index) {
+        switch(choiceType) {
+            case `race`:
+                DOM.charCreationCharData.race = allRaces[index];
+                console.log(`nut`)
+                if(allRaces[index].name === `None`) {
+                    console.log(`nut1`)
+                    DOM.charCreationRaceBar.textContent = `Race`;
+                } else {
+                    DOM.charCreationRaceBar.textContent = `${allRaces[index].name}`;
+                }
+            break;
+            case `background`:
+                DOM.charCreationCharData.background = allBackgrounds[index];
+                if(allBackgrounds[index].name === `None`) {
+                    DOM.charCreationBackground.textContent = `Background`;
+                } else {
+                    DOM.charCreationBackground.textContent = `${allBackgrounds[index].name}`;
+                }
+            break;
+            case `talent1`:
+                DOM.charCreationCharData.talent1 = allTalents[index];
+                if(allTalents[index].name === `None`) {
+                    DOM.charCreationTalent1.textContent = `Talent 1`;
+                } else {
+                    DOM.charCreationTalent1.textContent = `${allTalents[index].name}`;
+                }
+            break;
+            case `talent2`:
+                DOM.charCreationCharData.talent2 = allTalents[index];
+                if(allTalents[index].name === `None`) {
+                    DOM.charCreationTalent2.textContent = `Talent 2`;
+                } else {
+                    DOM.charCreationTalent2.textContent = `${allTalents[index].name}`;
+                }
+            break;
+        }
+        PCs.charList.splice(0, 1);
+        characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, PCs, DOM.charCreationCharData.icon);
+        DOM.updateCharCreationStatsPreview();
     },
     listenForClicks: function () {
         DOM.body.addEventListener(`click`, (e) => {
             // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
             if(DOM.isIntroActive) { // * Ability to skip the intro of the game by clicking.
                 DOM.endIntro();
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`choice`)) { 
+                DOM.updateCharCreationCharData(e.target.dataset.choiceType, e.target.dataset.index);
+                if(DOM.currentcharCreationChoiceSelection) {
+                    DOM.currentcharCreationChoiceSelection.style.borderColor = `white`;
+                }
+                e.target.style.borderColor = `blue`;
+                DOM.currentcharCreationChoiceSelection = e.target;
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`raceBar`)) { 
+                DOM.updateCharCreationChoices(`races`);
+                if(DOM.currentcharCreationOptionSelection) {
+                    DOM.currentcharCreationOptionSelection.style.borderColor = `white`;
+                }
+                e.target.style.borderColor = `blue`;
+                DOM.currentcharCreationOptionSelection = e.target;
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`background`)) { 
+                DOM.updateCharCreationChoices(`backgrounds`);
+                if(DOM.currentcharCreationOptionSelection) {
+                    DOM.currentcharCreationOptionSelection.style.borderColor = `white`;
+                }
+                e.target.style.borderColor = `blue`;
+                DOM.currentcharCreationOptionSelection = e.target;
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`talent1`)) { 
+                DOM.updateCharCreationChoices(`talent1`);
+                if(DOM.currentcharCreationOptionSelection) {
+                    DOM.currentcharCreationOptionSelection.style.borderColor = `white`;
+                }
+                e.target.style.borderColor = `blue`;
+                DOM.currentcharCreationOptionSelection = e.target;
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`talent2`)) { 
+                DOM.updateCharCreationChoices(`talent2`);
+                if(DOM.currentcharCreationOptionSelection) {
+                    DOM.currentcharCreationOptionSelection.style.borderColor = `white`;
+                }
+                e.target.style.borderColor = `blue`;
+                DOM.currentcharCreationOptionSelection = e.target;
+            }
+            if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`confirm`)) { 
+                DOM.endCharCreation();
             }
             if(e.target.classList.contains(`audioButton`)) { // * Audio Mute/Unmute button
                 DOM.mainMenuMusic.play();
@@ -2141,7 +2499,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                 intro.append(skipText);
                 intro.append(introText);
                 DOM.body.append(intro);
-                DOM.introTimeout = setTimeout( function() {DOM.endIntro()} , 127000);
+                DOM.introTimeout = setTimeout( function() {DOM.endIntro()} , 126000);
                 DOM.mainMenuMusic.pause();
                 DOM.mainMenuMusic.currentTime = 0;
                 DOM.introAudio.play();
@@ -2737,8 +3095,43 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
             inventoryContainer.append(x);
         }
     },
+    charCreationGenerateInventory: function (inventoryContainer, char) { 
+        for (let i = 0; i < char.inventory.length; i++) {
+            const x = document.createElement(`div`);
+            if(char.inventory[i]) {
+                x.className = `charCreation inventoryItem`;
+                x.dataset.itemType = char.inventory[i].itemType;
+                x.dataset.itemIndex = char.inventory[i].index;
+                x.dataset.inventoryIndex = i;
+                x.style.backgroundImage = char.inventory[i].icon;
+                x.style.backgroundRepeat = `no-repeat`;
+                x.style.backgroundSize = `100%`;
+                if(!char.inventory[i].isDefaultItem) {
+                    x.draggable = true;
+                } else {
+                    x.draggable = false;
+                }
+            }
+            inventoryContainer.append(x);
+        }
+    },
     createEquipmentSlot: function (ele, char, slotName) {
         ele.className = `equipmentItem ${slotName}`;
+        const item = char.equipment[slotName];
+        ele.dataset.itemType = item.itemType;
+        ele.dataset.itemIndex = item.index;
+        ele.dataset.equipmentSlotName = slotName;
+        ele.style.backgroundImage = char.equipment[slotName].icon;
+        ele.style.backgroundRepeat = `no-repeat`;
+        ele.style.backgroundSize = `100%`;
+        if(!item.isDefaultItem) {
+            ele.draggable = true;
+        } else {
+            ele.draggable = false;
+        }
+    },
+    charCreationCreateEquipmentSlot: function (ele, char, slotName) {
+        ele.className = `equipmentItem ${slotName} charCreation`;
         const item = char.equipment[slotName];
         ele.dataset.itemType = item.itemType;
         ele.dataset.itemIndex = item.index;
@@ -3050,20 +3443,20 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
 
 defineAllLists();
 
-characterCreator(`Stroick`, allRaces[0], allTalents[3], allTalents[5], PCs, `url("./images/stroick.jpg")`);
-characterCreator(`Kliftin`, allRaces[1], allTalents[2], allTalents[6], PCs, `url("./images/kliftin.jpg")`);
-characterCreator(`Dahmer Hobo`, allRaces[3], allTalents[6], allTalents[7], NPCs, `url("./images/dahmerHobo.jpg")`);
-characterCreator(`Evil`, allRaces[2], allTalents[4], allTalents[5], NPCs, `url("./images/evil.jpg")`);
+// characterCreator(`Stroick`, allRaces[1], allTalents[4], allTalents[6], PCs, `url("./images/stroick.jpg")`);
+// characterCreator(`Kliftin`, allRaces[2], allTalents[3], allTalents[7], PCs, `url("./images/kliftin.jpg")`);
+// characterCreator(`Dahmer Hobo`, allRaces[4], allTalents[7], allTalents[8], NPCs, `url("./images/dahmerHobo.jpg")`);
+// characterCreator(`Evil`, allRaces[3], allTalents[5], allTalents[6], NPCs, `url("./images/evil.jpg")`);
 
-const stroick = PCs.charList[0];
-const evil = NPCs.charList[1];
-const kliftin = PCs.charList[1];
-const hobo = NPCs.charList[0];
+// const stroick = PCs.charList[0];
+// const evil = NPCs.charList[1];
+// const kliftin = PCs.charList[1];
+// const hobo = NPCs.charList[0];
 
-stroick.inventory[0] = allWeapons[2];
-stroick.inventory[1] = allArmors[8];
-stroick.inventory[2] = allArmors[9];
+// stroick.inventory[0] = allWeapons[2];
+// stroick.inventory[1] = allArmors[8];
+// stroick.inventory[2] = allArmors[9];
 
 DOM.startDOM();
 
-console.log(stroick);
+// console.log(stroick);

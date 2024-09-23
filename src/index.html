@@ -6,12 +6,42 @@
     <title>Index</title>
 </head>
 <body>
-    <div class="charCreationContainer">
-        <div class="charCreation backButton charCreationBackButton">BackButton</div>
-        <div class="charCreation charCreationTitle">Create Your Character</div>
-        <div class="charCreation charCreationNameBar">NameBar</div>
-        <div class="charCreation charCreationRaceBar">RaceBar</div>
+
+    <div class="charCreation masterContainer">
+        <div class="charCreation header">
+            <button class="charCreation back">Back</button>
+            <div class="charCreation title">Create Your Character</div>
+            <button class="charCreation confirm">Confirm</button>
+        </div>
+        <div class="charCreation content">
+            <div class="charCreation charOptionsAndChoiceSelectionDisplay">
+                <div class="charCreation charOptions">
+                    <div class="charCreation portrait"></div>
+                    <div class="charCreation nameRaceBackgroundTalents">
+                        <input class="charCreation charNameInput"  type="text" name="charName" id="charName" placeholder="Character Name" required />
+                        <button class="charCreation raceBar">Race</button>
+                        <button class="charCreation background">Background</button>
+                        <div class="charCreation talents">
+                            <button class="charCreation talent1">Talent 1</button>
+                            <button class="charCreation talent2">Talent 2</button>
+                        </div>
+                    </div> 
+                </div>
+                <div class="charCreation choiceSelectionDisplay">choiceSelectionDisplay
+
+                </div>
+            </div>
+            <div class="charCreation choiceSelection">
+                <div class="charCreation choices"></div>
+                <button class="charCreation select">select</button>
+            </div>
+            <div class="charCreation statsPreview">
+                
+            </div>
+        </div>
+        
     </div>
+
     <div class="mainMenu">
         <img src="./images/audioMuted.png" alt="audioMuted" class="audioButton">
         <img src="./images/logo.png" alt="" class="mainMenuLogo">
