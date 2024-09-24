@@ -270,4 +270,4 @@ const combatLog = {
     }, 
 }
 
-export {combatLog};
+export { combatLog } ;

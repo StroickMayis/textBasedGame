@@ -12,6 +12,8 @@ body {
     display: flex;
     min-height: 100vh;
 }
+
+/* Game Display Styles */
 .gameDivision,
 .chatDivision,
 .utilDivision {
@@ -41,9 +43,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-/* .gameDivision .botBar{
-    flex: 10 1 auto;
-} */
 .NPCBar {
     border: 1px solid white;
     flex: 1 1 auto;
@@ -229,10 +228,6 @@ div.tooltip.hotBarTooltip{
     padding: 10px;
     display: flex;
 }
-/* .equipLeft,
-.equipRight {
-    margin: 10px;
-} */
 .equipCenter {
     flex: auto;
 }
@@ -247,6 +242,8 @@ div.tooltip.hotBarTooltip{
     justify-content: space-around;
     font-size: .8dvw;
 }
+
+/* Main Menu Styles */
 .mainMenu {
     flex-direction: column;
     align-items: center;
@@ -269,228 +266,9 @@ div.tooltip.hotBarTooltip{
     width: 275px;
     text-align: center;
 }
-
-.intro {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: black;
-    text-align: center;
-}
-.introText {
-    color: white;
-    font-size: xx-large;
-}
-.intro {
-    border: 3px solid black;
-    border-radius: 5px;
-    overflow: hidden;
-}
-  
-.introText {
-    /* animation properties */
-    -moz-transform: translateY(100%);
-    -webkit-transform: translateY(100%);
-    transform: translateY(100%);
-
-    /* -moz-animation: my-animation 600s linear;
-    -webkit-animation: my-animation 600s linear;
-    animation: my-animation 600s linear; */
-    -moz-animation: my-animation 140s linear;
-    -webkit-animation: my-animation 140s linear;
-    animation: my-animation 140s linear;
-}
-  
-/* for Firefox */
-@-moz-keyframes my-animation {
-    from { -moz-transform: translateY(125%); }
-    to { -moz-transform: translateY(0%); }
-}
-  
-/* for Chrome */
-@-webkit-keyframes my-animation {
-    from { -webkit-transform: translateY(125%); }
-    to { -webkit-transform: translateY(0%); }
-}
-  
-@keyframes my-animation {
-    from {
-      -moz-transform: translateY(125%);
-      -webkit-transform: translateY(125%);
-      transform: translateY(125%);
-    }
-    to {
-      -moz-transform: translateY(0%);
-      -webkit-transform: translateY(0%);
-      transform: translateY(0%);
-    }
-}
-.skipText {
-    margin-top: -150px;
-    background-color: rgb(45, 10, 10);
-    padding: 6px 12px;
-}
 .audioButton {
     height: 50px;
     position: absolute;
     left: 25px;
     top: 25px; 
 }
-
-.charCreation.masterContainer {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: black;
-}
-.charCreation {
-    color: white;
-    font-size: 24px;
-
-}
-.charCreation.header {
-    width: 100%;
-    text-align: center;
-    display: flex;
-    justify-content: space-between;
-}
-.charCreation.confirm,
-.charCreation.back {
-    background-color: black;
-    border: 1px solid white;
-}
-.charCreation.content {
-    width: 100%;
-    text-align: center;
-    flex: 1 1 auto;
-    display: flex;
-}
-.charCreation.charOptionsAndChoiceSelectionDisplay {
-    display: flex;
-    flex-direction: column;
-}
-.charCreation.charOptions {
-    display: flex;
-}
-.charCreation.nameRaceBackgroundTalents {
-    display: flex;
-    flex-direction: column;
-    height: 200px;
-}
-.charCreation.talents {
-    display: flex;
-}
-.charCreation.portrait {
-    width: 200px;
-    height: 200px;
-    background-image: url("./images/kliftin.jpg");
-    background-repeat: no-repeat;
-    background-size: 100%;
-}
-.charCreation.charNameInput {
-    background-color: black;
-    color: white;
-    width: 400px;
-    flex: 1 1 auto;
-}
-.charCreation.raceBar {
-    background-color: black;
-    width: 400px;
-    border: 1px solid white;
-    flex: 1 1 auto;
-}
-.charCreation.background {
-    background-color: black;
-    width: 400px;
-    border: 1px solid white;
-    flex: 1 1 auto;
-}
-.charCreation.talents {
-    flex: 1 1 auto;
-}
-.charCreation.talent1,
-.charCreation.talent2 {
-    background-color: black;
-    width: 200px;
-    border: 1px solid white;
-}
-.charCreation.choiceSelectionDisplay {
-    width: 600px;
-    height: 100%;
-    border: 1px solid white;
-}
-.charCreation.choiceSelection {
-    border: 1px solid white;
-    width: 200px;
-    display: flex;
-    flex-direction: column;
-}
-.charCreation.choices {
-    border: 1px solid white;
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-}
-.charCreation.choice {
-    border: 1px solid white;
-    background-color: black;
-}
-.charCreation.select {
-    background-color: black;
-    border: 1px solid white;
-}
-.charCreation.statsPreview {
-    border: 1px solid white;
-}
-.charCreation.statsPreview div{
-    font-size: 16px !important;
-}
-.charCreation.equipmentItem {
-    border: 1px solid white;
-    flex: 0 1 auto;
-    height: 2.7dvw;
-    width: 2.7dvw;
-    margin: 4px;
-}
-.charCreation.equipmentItem.mainHand {
-    margin-left: 0px;
-}
-.charCreation.equipmentItem.offHand {
-    margin-right: 0px;
-}
-.charCreation.inventoryItem {
-    margin: 2px;
-}
-.charCreation.equipmentContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-.charCreation.equipDisplay {
-    padding: 10px;
-    display: flex;
-}
-.charCreation.equipCenter {
-    flex: auto;
-}
-.charCreation.weaponsDisplay {
-    /* Need to fix this, need mainHand and offHand to line up with bottom armors consistently as the screen changes */
-    margin-top: 1.45dvh;
-    display: flex;
-    justify-content: space-between;
-}
-.charCreation.statsDisplay {
-    display: flex;
-    justify-content: space-around;
-    font-size: .8dvw;
-}
-/* Need to fix all the text sizes */

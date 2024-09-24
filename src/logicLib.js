@@ -201,4 +201,4 @@ const logicLib = {
     },
 }
 
-export {logicLib};
+export { logicLib } ;
