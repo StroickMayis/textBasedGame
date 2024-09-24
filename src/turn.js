@@ -14,6 +14,9 @@ const turn = {
             if(!attackablePCs[0]) {
                 break;
             }
+            if(turn.allNPCsAreDead()) {
+                break;
+            }
             const attackingNPC = turn.getAttackingNPC();
             turn.NPCMakeAttack(attackingNPC, attackablePCs);
         };
@@ -27,6 +30,19 @@ const turn = {
             if(char.group.PCs.charList[i].hp > 1) {
                 attackablePCs.push(char.group.PCs.charList[i]);
             }
+        }
+    },
+    allNPCsAreDead: function () { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
+        let amountOfDeadNPCs = 0;
+        for(let i = 0; i < char.group.NPCs.charList.length; i++) { 
+            if(char.group.NPCs.charList[i].hp < 1) {
+                amountOfDeadNPCs++;
+            }
+        }
+        if(amountOfDeadNPCs >= char.group.NPCs.charList.length) {
+            return true;
+        } else {
+            return false;
         }
     },
     getAttackingNPC: function () { // *
