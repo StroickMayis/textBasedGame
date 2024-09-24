@@ -7,6 +7,7 @@ import {allRaces} from './jsLists/allRaces.js';
 import {allTalents} from './jsLists/allTalents.js';
 import {allWeapons} from './jsLists/allWeapons.js';
 import {effect} from './effect.js';
+import {combatLog} from './combatLog.js';
 
 const char = {
     Char: function (name, race) {
