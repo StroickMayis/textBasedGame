@@ -690,13 +690,18 @@ const DOM = {
             DOM.charCreationCharData.talent1 = allTalents[0];
             DOM.charCreationCharData.talent2 = allTalents[0];
     
+            console.log(`1`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
         },
         end: function () {
             DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
+            charJS.group.PCs.charList.splice(0, 1);
+
+            console.log(`2`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.selectors.charCreation.masterContainer.style.display = `none`; // * Hides charCreation screen
+            DOM.update.chars();
         },
         createChoices: function (choiceType, choiceTypeString) {
                 DOM.selectors.charCreation.choices.innerHTML = ``;
@@ -765,6 +770,8 @@ const DOM = {
             }
             DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
             charJS.group.PCs.charList.splice(0, 1);
+
+            console.log(`3`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
         },
@@ -923,18 +930,18 @@ const DOM = {
                 DOM.create.hotBar(DOM.casterSelectionState);
             }
         },
-        chars: function (PCs, NPCs) {
+        chars: function () {
             DOM.selectors.gameDivision.NPCBarRow3.innerHTML = ``;
             DOM.selectors.gameDivision.NPCBarRow2.innerHTML = ``;
             DOM.selectors.gameDivision.NPCBarRow1.innerHTML = ``;
             DOM.selectors.gameDivision.PCBarRow1.innerHTML = ``;
             DOM.selectors.gameDivision.PCBarRow2.innerHTML = ``;
             DOM.selectors.gameDivision.PCBarRow3.innerHTML = ``;
-            for (let i = (PCs.charList.length - 1); i >= 0; i--) {
-                DOM.create.char(PCs.charList[i], i) // ! DOM should not directly access the PC charlist, but should interact with a function (maybe on pccharlist object) to get the pcs by reference.
+            for (let i = (charJS.group.PCs.charList.length - 1); i >= 0; i--) {
+                DOM.create.char(charJS.group.PCs.charList[i], i) // ! DOM should not directly access the PC charlist, but should interact with a function (maybe on pccharlist object) to get the pcs by reference.
             };
-            for (let i = (NPCs.charList.length - 1); i >= 0; i--) {
-                DOM.create.char(NPCs.charList[i], i)
+            for (let i = (charJS.group.NPCs.charList.length - 1); i >= 0; i--) {
+                DOM.create.char(charJS.group.NPCs.charList[i], i)
             };
         },
         charStats: function (char, addOrRemove, item) { 
