@@ -29,6 +29,7 @@ const DOM = {
             background: document.querySelector(`.charCreation.background`),
             talent1: document.querySelector(`.charCreation.talent1`),
             talent2: document.querySelector(`.charCreation.talent2`),
+            nameInput: document.querySelector(`.charCreation.charNameInput`),
         },
         chatDivision: {
             moveRowButtons: document.querySelector(`.moveRowButtons`),
@@ -693,6 +694,8 @@ const DOM = {
             DOM.charCreation.updateStatsPreview();
         },
         end: function () {
+            DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
+            charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.selectors.charCreation.masterContainer.style.display = `none`; // * Hides charCreation screen
         },
         createChoices: function (choiceType, choiceTypeString) {
@@ -760,6 +763,7 @@ const DOM = {
                     }
                 break;
             }
+            DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
             charJS.group.PCs.charList.splice(0, 1);
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
