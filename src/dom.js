@@ -10,7 +10,7 @@ import {char as charJS} from './char.js';
 import {logicLib} from './logicLib.js';
 import {turn} from './turn.js';
 
-const DOM = { // TODO: The top of this object is ridiculous, fix.
+const DOM = { 
     selectors: {
         body: document.querySelector(`body`),
         mainMenu: {
@@ -56,7 +56,10 @@ const DOM = { // TODO: The top of this object is ridiculous, fix.
             endTurnButton: document.querySelector(`.endTurnButton`),
         },   
     },
+
     // Below are all some kind of state/var.
+    // TODO: Could modularize this too.
+
     casterSelection: null,
     targetSelection: null,
     casterSelectionState: null,
@@ -85,7 +88,6 @@ const DOM = { // TODO: The top of this object is ridiculous, fix.
     listen: {
         click: function () {
             DOM.selectors.body.addEventListener(`click`, (e) => {
-                // TODO: Write the scrolling text part first, then create the layout for the char creation screen, then it should take you to the game.
                 if(DOM.isIntroActive) { // * Ability to skip the intro of the game by clicking.
                     DOM.charCreation.endIntro();
                 }
@@ -214,7 +216,7 @@ const DOM = { // TODO: The top of this object is ridiculous, fix.
                     DOM.char.selectCaster(e.target);
                     DOM.update.topBar();
                     DOM.update.botBar(DOM.casterSelectionState);
-                } else if(e.target.classList.contains(`PCBarRow1,PCBarRow2,PCBarRow3`)) { // TODO: this is gonna be a problem
+                } else if(e.target.classList.contains(`PCBarRow1`) || e.target.classList.contains(`PCBarRow2`) || e.target.classList.contains(`PCBarRow3`)) { 
                     DOM.char.deselectCaster();
                     DOM.update.topBar();
                     DOM.update.botBar(DOM.casterSelectionState);
