@@ -21,6 +21,7 @@ const DOM = {
     charCreationBackground: document.querySelector(`.charCreation.background`),
     charCreationTalent1: document.querySelector(`.charCreation.talent1`),
     charCreationTalent2: document.querySelector(`.charCreation.talent2`),
+    charCreationNameInput: document.querySelector(`.charCreation.charNameInput`),
     mainMenuButton: document.querySelectorAll(`.mainMenuButton`),
     newGameButton: document.querySelector(`.newGameButton`),
     loadGameButton: document.querySelector(`.loadGameButton`),
@@ -56,9 +57,11 @@ const DOM = {
     introTimeout: null,
     mainMenuMusic: new Audio(`./audio/mainMenuMusic.mp3`),
     introAudio: new Audio(`./audio/introAudio.mp3`),
+    jailAmbienceAudio: new Audio(`./audio/jailAmbienceAudio.mp3`),
     isPlayerDoneCreatingChar: false,
     currentcharCreationOptionSelection: null,
     currentcharCreationChoiceSelection: null,
+    hasPlayerInteractedWithMainMenu: false,
     charCreationCharData: {
         name: ``,
         icon: `url("./images/kliftin.jpg")`,
@@ -67,9 +70,6 @@ const DOM = {
         talent1: allTalents[0],
         talent2: allTalents[0],
     },
-
-    
-
 
     updateCharCreationStatsPreview: function () {
         let char = charJS.group.PCs.charList[0];
@@ -236,10 +236,27 @@ const DOM = {
 
         charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
         DOM.updateCharCreationStatsPreview();
+        DOM.jailAmbienceAudio.play();
     },
     endCharCreation: function () {
-        DOM.charCreationMasterContainer.style.display = `none`; // * Hides charCreation screen
+        function charIsValid () {
+            if(DOM.charCreationCharData.name !== `` && DOM.charCreationCharData.race !== allRaces[0] && DOM.charCreationCharData.talent1 !== allTalents[0] && DOM.charCreationCharData.talent2 !== allTalents[0]) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        DOM.charCreationCharData.name = DOM.charCreationNameInput.value;
+        if(charIsValid()) {
+            charJS.group.PCs.charList.splice(0, 1);
+            charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
+            DOM.charCreationMasterContainer.style.display = `none`;
+            DOM.update(charJS.group.PCs, charJS.group.NPCs);
+        } else {
+            console.log(`Character is Invalid`);
+        }
     },
+    
     createCharCreationChoices: function (choiceType, choiceTypeString) {
             DOM.charCreationChoices.innerHTML = ``;
             choiceType.forEach((ele) => {
@@ -305,6 +322,7 @@ const DOM = {
                 }
             break;
         }
+        DOM.charCreationCharData.name = DOM.charCreationNameInput.value;
         charJS.group.PCs.charList.splice(0, 1);
         charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
         DOM.updateCharCreationStatsPreview();
@@ -357,6 +375,17 @@ const DOM = {
             }
             if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`confirm`)) { 
                 DOM.endCharCreation();
+            }
+            if(!DOM.hasPlayerInteractedWithMainMenu && (e.target.classList.contains(`mainMenu`) || e.target.classList.contains(`mainMenuLogo`) || e.target.classList.contains(`loadGameButton`) || e.target.classList.contains(`settingsGameButton`))) { // * This unmutes the mainMenu music only once if you click anywhere else than NEWGAME.
+                DOM.mainMenuMusic.play();
+                DOM.mainMenuMusic.loop = true;
+                const audioButton = document.querySelector(`.audioButton`);
+                if(audioButton.alt === `audioMuted`) {
+                    audioButton.src = `./images/audioPlaying.png`;
+                    audioButton.alt = `audioPlaying`;
+                    DOM.mainMenuMusic.muted = false;
+                }
+                DOM.hasPlayerInteractedWithMainMenu = true;
             }
             if(e.target.classList.contains(`audioButton`)) { // * Audio Mute/Unmute button
                 DOM.mainMenuMusic.play();
@@ -440,7 +469,7 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                 this.selectCaster(e.target);
                 this.updateTopBar();
                 this.updateBotBar(this.casterSelectionState);
-            } else if(e.target.classList.contains(`PCBarRow1,PCBarRow2,PCBarRow3`)) { // TODO: this is gonna be a problem
+            } else if(e.target.classList.contains(`PCBarRow1`) || e.target.classList.contains(`PCBarRow2`) || e.target.classList.contains(`PCBarRow3`)) { 
                 this.deselectCaster();
                 this.updateTopBar();
                 this.updateBotBar(this.casterSelectionState);

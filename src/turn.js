@@ -21,13 +21,13 @@ const turn = {
             turn.NPCMakeAttack(attackingNPC, attackablePCs);
         };
         turn.AP = 100;
-        DOM.update.chars(char.group.PCs, char.group.NPCs);
-        DOM.update.topBar();
+        DOM.update(char.group.PCs, char.group.NPCs);
+        DOM.updateTopBar();
         combatLog.startPCTurn();
     },
     getAttackablePCs: function (attackablePCs) { // * Checks if a PC is alive, if so, add them to the list of attackable PCs.
         for(let i = 0; i < char.group.PCs.charList.length; i++) { 
-            if(char.group.PCs.charList[i].hp > 1) {
+            if(char.group.PCs.charList[i].hp > 0) {
                 attackablePCs.push(char.group.PCs.charList[i]);
             }
         }
