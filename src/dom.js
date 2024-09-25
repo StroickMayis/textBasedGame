@@ -704,19 +704,29 @@ const DOM = {
             DOM.charCreationCharData.talent1 = allTalents[0];
             DOM.charCreationCharData.talent2 = allTalents[0];
     
-            console.log(`1`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
             DOM.jailAmbienceAudio.play();
         },
         end: function () {
             DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
-            charJS.group.PCs.charList.splice(0, 1);
+            if(DOM.charCreation.charIsValid()) {
+                charJS.group.PCs.charList.splice(0, 1);
+                charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
+                DOM.selectors.charCreation.masterContainer.style.display = `none`; // * Hides charCreation screen
+                DOM.update.chars();
+            } else {
+                console.log(`Character is Invalid`);
+            }
 
-            console.log(`2`)
-            charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
-            DOM.selectors.charCreation.masterContainer.style.display = `none`; // * Hides charCreation screen
-            DOM.update.chars();
+            
+        },
+        charIsValid: function () {
+            if(DOM.charCreationCharData.name !== `` && DOM.charCreationCharData.race !== allRaces[0] && DOM.charCreationCharData.talent1 !== allTalents[0] && DOM.charCreationCharData.talent2 !== allTalents[0]) {
+                return true;
+            } else {
+                return false;
+            }
         },
         createChoices: function (choiceType, choiceTypeString) {
                 DOM.selectors.charCreation.choices.innerHTML = ``;
@@ -786,7 +796,6 @@ const DOM = {
             DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;
             charJS.group.PCs.charList.splice(0, 1);
 
-            console.log(`3`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
         },
