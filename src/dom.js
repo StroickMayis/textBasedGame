@@ -73,6 +73,7 @@ const DOM = {
     introTimeout: null,
     mainMenuMusic: new Audio(`./audio/mainMenuMusic.mp3`),
     introAudio: new Audio(`./audio/introAudio.mp3`),
+    jailAmbienceAudio: new Audio(`./audio/jailAmbienceAudio.mp3`),
     isPlayerDoneCreatingChar: false,
     currentcharCreationOptionSelection: null,
     currentcharCreationChoiceSelection: null,
@@ -693,6 +694,7 @@ const DOM = {
             console.log(`1`)
             charJS.characterCreator(DOM.charCreationCharData.name, DOM.charCreationCharData.race, DOM.charCreationCharData.talent1, DOM.charCreationCharData.talent2, charJS.group.PCs, DOM.charCreationCharData.icon);
             DOM.charCreation.updateStatsPreview();
+            DOM.jailAmbienceAudio.play();
         },
         end: function () {
             DOM.charCreationCharData.name = DOM.selectors.charCreation.nameInput.value;

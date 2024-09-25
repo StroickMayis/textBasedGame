@@ -47,6 +47,7 @@ import "./images/audioPlaying.png";
 import "./images/audioMuted.png";
 import "./audio/mainMenuMusic.mp3";
 import "./audio/introAudio.mp3";
+import "./audio/jailAmbienceAudio.mp3";
 
 "use strict";
 
