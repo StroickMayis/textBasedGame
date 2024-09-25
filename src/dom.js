@@ -9,6 +9,7 @@ import {allWeapons} from './jsLists/allWeapons.js';
 import {char as charJS} from './char.js';
 import {logicLib} from './logicLib.js';
 import {turn} from './turn.js';
+import { has } from 'lodash';
 
 const DOM = { 
     selectors: {
@@ -77,6 +78,7 @@ const DOM = {
     isPlayerDoneCreatingChar: false,
     currentcharCreationOptionSelection: null,
     currentcharCreationChoiceSelection: null,
+    hasPlayerInteractedWithMainMenu: false,
     charCreationCharData: {
         name: ``,
         icon: `url("./images/kliftin.jpg")`,
@@ -135,6 +137,17 @@ const DOM = {
                 }
                 if(e.target.classList.contains(`charCreation`) && e.target.classList.contains(`confirm`)) { 
                     DOM.charCreation.end();
+                }
+                if(!DOM.hasPlayerInteractedWithMainMenu && (e.target.classList.contains(`mainMenu`) || e.target.classList.contains(`mainMenuLogo`) || e.target.classList.contains(`loadGameButton`) || e.target.classList.contains(`settingsGameButton`))) { // * This unmutes the mainMenu music only once if you click anywhere else than NEWGAME.
+                    DOM.mainMenuMusic.play();
+                    DOM.mainMenuMusic.loop = true;
+                    const audioButton = document.querySelector(`.audioButton`);
+                    if(audioButton.alt === `audioMuted`) {
+                        audioButton.src = `./images/audioPlaying.png`;
+                        audioButton.alt = `audioPlaying`;
+                        DOM.mainMenuMusic.muted = false;
+                    }
+                    DOM.hasPlayerInteractedWithMainMenu = true;
                 }
                 if(e.target.classList.contains(`audioButton`)) { // * Audio Mute/Unmute button
                     DOM.mainMenuMusic.play();
