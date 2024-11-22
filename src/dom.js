@@ -13,6 +13,7 @@ import {turn} from './turn.js';
 const DOM = {
     body: document.querySelector(`body`),
     mainMenu: document.querySelector(`.mainMenu`),
+    charCreationChoiceSelectionDisplay: document.querySelector(`.charCreation.choiceSelectionDisplay`),
     charCreationMasterContainer: document.querySelector(`.charCreation.masterContainer`),
     charCreationStatsPreview: document.querySelector(`.charCreation.statsPreview`),
     charCreationConfirmButton: document.querySelector(`.charCreation.confirm`),
@@ -70,7 +71,9 @@ const DOM = {
         talent1: allTalents[0],
         talent2: allTalents[0],
     },
-
+    updateCharCreationChoiceSelectionDisplay: function () {
+        // DOM.charCreationChoiceSelectionDisplay
+    },
     updateCharCreationStatsPreview: function () {
         let char = charJS.group.PCs.charList[0];
 
@@ -256,20 +259,21 @@ const DOM = {
             console.log(`Character is Invalid`);
         }
     },
-    
-    createCharCreationChoices: function (choiceType, choiceTypeString) {
+    createCharCreationChoices: function (choiceType, choiceTypeString) { // TODO: Make the options highlighted correctly upon pop-up
             DOM.charCreationChoices.innerHTML = ``;
             choiceType.forEach((ele) => {
-                if(ele == DOM.charCreationCharData.race || ele == DOM.charCreationCharData.background || ele == DOM.charCreationCharData.talent1 || ele == DOM.charCreationCharData.talent2) {
-                    return;
-                }
                 let x = document.createElement(`button`);
                 x.className = `charCreation choice`;
                 x.dataset.index = ele.index;
                 x.dataset.choiceType = choiceTypeString;
                 x.textContent = ele.name;
+                if(ele.name === DOM.charCreationCharData[choiceTypeString].name) {
+                    x.style.borderColor = `blue`;
+                    DOM.currentcharCreationChoiceSelection = x;
+                }
                 DOM.charCreationChoices.append(x);
             })
+            console.log(DOM.currentcharCreationChoiceSelection)
     },
     updateCharCreationChoices: function (type) {
         switch(type) {
