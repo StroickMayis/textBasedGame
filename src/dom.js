@@ -256,7 +256,7 @@ const DOM = {
             DOM.charCreationMasterContainer.style.display = `none`;
             DOM.update(charJS.group.PCs, charJS.group.NPCs);
         } else {
-            console.log(`Character is Invalid`);
+            DOM.displayCenterScreenMessage(`Character is Invalid`);
         }
     },
     createCharCreationChoices: function (choiceType, choiceTypeString) { // TODO: Make the options highlighted correctly upon pop-up
@@ -500,6 +500,31 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
                 this.updateTabSelectionDisplay();
             } 
         })
+    },
+    displayCenterScreenMessage: function (messageText) {
+        let messageDiv = document.createElement(`div`);
+        messageDiv.className = "popUpMessage";
+        messageDiv.textContent = messageText;
+        messageDiv.style.cssText = `
+            opacity: 0;
+            animation-name: fadingMessage;
+            animation-duration: 3000ms; 
+            animation-timing-function: linear; 
+            z-index: 5;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); 
+            position: absolute;
+            color: rgb(160, 29, 29);
+            font-size: 100px;
+            width: 75%;
+            text-align: center;
+            pointer-events: none;
+        `;
+        this.body.append(messageDiv);
+
+        const messageClearTimeout = setTimeout(function() {messageDiv.remove()}, 4000);
+        
     },
     clearTooltips: function () {
         clearTimeout(this.timeout);

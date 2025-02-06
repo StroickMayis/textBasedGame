@@ -242,6 +242,14 @@ div.tooltip.hotBarTooltip{
     justify-content: space-around;
     font-size: .8dvw;
 }
+@keyframes fadingMessage {
+    0%{
+        opacity: 100;
+    }
+    100%{
+        opacity: 0;
+    }
+}
 
 /* Main Menu Styles */
 .mainMenu {
