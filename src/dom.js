@@ -508,8 +508,8 @@ You sit up, and looking into the puddle at your feet you think you see yourself.
         messageDiv.style.cssText = `
             opacity: 0;
             animation-name: fadingMessage;
-            animation-duration: 3000ms; 
-            animation-timing-function: linear; 
+            animation-duration: 4000ms; 
+            animation-timing-function: linear;
             z-index: 5;
             left: 50%;
             top: 50%;
